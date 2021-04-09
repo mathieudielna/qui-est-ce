@@ -1,0 +1,57 @@
+<div id='calendar'></div>
+
+<script>
+var calendarEl = document.getElementById('calendar');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        height: 650,
+        locale: 'fr',
+        plugins: [ 'dayGrid', 'list', 'bootstrap' ],
+        themeSystem: 'bootstrap',
+        editable: false,
+        droppable: false,
+        weekNumbers: true,
+        header: {left:   'dayGridMonth, dayGridWeek, listMonth', center: 'title', right:  'today prev,next' }, // buttons for switching between views
+        defaultView: 'listMonth',
+        eventLimit: true,
+        views: {
+            dayGridMonth: { // name of view
+                titleFormat: { year: 'numeric', month: 'long' }
+                // other view-specific options here
+            },
+            dayGridWeek: { // name of view
+                titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+                // other view-specific options here
+            },
+            listMonth: { // name of view
+                titleFormat: { year: 'numeric', month: 'long' },
+                buttonText: 'Planning'
+            }
+        },
+        events: [
+                {% for action in actions %}
+                {% for jalon in action.jalonconnectactions %}
+                {% set desi = jalon.action.designation|replace({"'" : "`"}) %}
+                {% set jal = jalon.jalon|replace({"'" : "`"}) %}
+                { 
+                    title: "{{ jal }} -> ACT-{{ jalon.action.id }} {{ desi }}",
+                    start: "{{ jalon.daterevue | date("Y-m-d")  }}",
+                    url: "{{path('tache_edit',{'id' : jalon.id, 'r' : 'portfolio_list', 'rr' : 'SI'} ) }}"
+                },
+                {% endfor %}
+                {% endfor %}
+                ],
+        eventClick: function(info) {
+            info.jsEvent.preventDefault(); // don't let the browser navigate
+
+                if (info.event.url) {
+                    window.open(info.event.url);
+                }
+                },
+        businessHours: {
+            daysOfWeek: [ 1, 2, 3, 4, 5 ]
+        }
+                            
+    });
+    calendar.render();
+</script>

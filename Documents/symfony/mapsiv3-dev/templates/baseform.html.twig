@@ -1,0 +1,276 @@
+<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+
+		.change-message {
+				display: none;
+			}
+    </style>
+
+<script>
+	$('select').select2();
+
+    $(document).ready(function() {	
+        $('#add-objectif').click(function(){
+			const index =$('#processus_objectifs div.row').length;
+			const tmpl =$('#processus_objectifs').data('prototype').replace(/__name__/g, index);
+			$('#processus_objectifs').append(tmpl);
+			$('select').select2();
+			handleDeleteButtons();
+		});
+
+		//Ajout des flux
+		$('#add-flux').click(function(){
+			const index1 =$('#activite_fluxConnectActivites div.row').length;
+			const tmpl =$('#activite_fluxConnectActivites').data('prototype').replace(/__name__/g, index1);
+			$('#activite_fluxConnectActivites').append(tmpl);
+			$( "#msgflux" ).hide();
+			handleDeleteButtons();
+		});
+		$('#add-app').click(function(){
+			const index1 =$('#activite_appConnectActivites div.row').length;
+			const tmpl1 =$('#activite_appConnectActivites').data('prototype').replace(/__name__/g, index1);
+			$('#activite_appConnectActivites').append(tmpl1);
+			handleDeleteButtons();
+			$( "#msgapp" ).hide();
+		});
+
+		$('#add-act').click(function(){
+			const index1 =$('#application_appConnectActivites div.row').length;
+			const tmpl1 =$('#application_appConnectActivites').data('prototype').replace(/__name__/g, index1);
+			$('#application_appConnectActivites').append(tmpl1);
+			handleDeleteButtons();
+		});
+		//Ajout des flux
+		$('#add-flu').click(function(){
+			const index =$('#flux_fluxConnectActivites div.row').length;
+			const tmpl =$('#flux_fluxConnectActivites').data('prototype').replace(/__name__/g, index);
+			$('#flux_fluxConnectActivites').append(tmpl);
+			$('select').select2();
+			handleDeleteButtons();
+		});
+
+		//Ajout des flux
+		$('#add-tache').click(function(){
+			const index =$('#action_jalonConnectActions div.row').length;
+			const tmpl =$('#action_jalonConnectActions').data('prototype').replace(/__name__/g, index);
+			$('#action_jalonConnectActions').append(tmpl);
+			handleDeleteButtons();
+		});
+
+		//Ajout / Supp. des nons conformités
+		$('#add-nc').click(function(){
+			const index =$('#audit_nonconformites div.row').length;
+			const tmpl =$('#audit_nonconformites').data('prototype').replace(/__name__/g, index);
+		
+			$('#audit_nonconformites').append(tmpl);
+			$('select').select2()
+			handleDeleteButtons();
+		});
+
+		//Ajout des objectifs
+		$('#add-indicateur').click(function(){
+			const index =$('#objectif_indicateurs div.row').length;
+			const tmpl =$('#objectif_indicateurs').data('prototype').replace(/__name__/g, index);
+		
+			$('#objectif_indicateurs').append(tmpl);
+			handleDeleteButtons();
+		});
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+
+		$('.ajaxWorkflow').on('click', function() {
+		event.preventDefault();
+		$("#overlay").fadeIn(300);
+		console.log('click'+$(this).data('id')+$(this).data('statewk')+$(this).data('entite'));
+		var id = $(this).data('id') ;
+		var infostatut = $(this).data('statewk') ;
+		var entite = $(this).data('entite') ;
+		var pathArray = window.location.pathname.split('/');
+		var domid = pathArray[2];
+		var url = "{{ path('ajax_workflow', {'id':'vid', 'statut':'vstatut', 'entite':'ventite', 'domid':'vdomid'}) }}";
+		url = url.replace("vid", id);url = url.replace("vstatut", infostatut);url = url.replace("ventite", entite);url = url.replace("vdomid", domid);
+		console.log(url);
+		$.ajax({  
+			url:        url,  
+			type:       'POST',   
+			dataType:   'json', 
+			async:      true,  
+			success: function(response) { 
+				editEntite(id, entite);
+				$('#dataTables-'+entite).DataTable().ajax.reload();
+				$("#overlay").fadeOut(300);
+				toastr.success(response, 'Succès')
+			},  
+			error : function(xhr, textStatus, errorThrown) {  
+				console.log('error'); 
+				alert('Ajax request failed.'); 
+				$("#overlay").fadeOut(300); 
+			} 
+
+		});
+		});
+
+		scoreColor();
+		scoreCibleColor();	
+
+		function scoreColor() {
+		var impact = $('#risque_impact').val();
+				var probabilite = $('#risque_probabilite').val();
+				var impact = $('#risque_impact').val();
+				var score = impact * probabilite;
+				var color = "#1b998b";
+				if ((score < '15')) {var color = "#1b998b"; var colortxt = "#000";}
+				else if ((score >='15') && (score < '40')) {var color = "#ffe156"; var colortxt = "#000";}
+				else if ((score >='40') && (score < '60')) {var color = "#F69D5C"; var colortxt = "#fff";}
+				else if ((score >='60') && (score < '80')) {var color = "#ed5861"; var colortxt = "#fff";}
+				else if ((score >='80') && (score <= '100')) {var color = "#623b5a"; var colortxt = "#fff";}
+				$('#risque_score').val(score).css("background-color", color);
+				$('#risque_score').val(score).css("color", colortxt);
+				}
+
+		function scoreCibleColor() {
+		var impact = $('#risque_impactcible').val();
+				var probabilitecible = $('#risque_probabilitecible').val();
+				var impactcible = $('#risque_impactcible').val();
+				var scorecible = impactcible * probabilitecible;
+				var color = "#1b998b";
+				if ((scorecible < '15')) {var colorcible = "#1b998b"; var colortxtcible = "#000";}
+				else if ((scorecible >='15') && (scorecible < '40')) {var colorcible = "#ffe156"; var colortxtcible = "#000";}
+				else if ((scorecible >='40') && (scorecible < '60')) {var colorcible = "#F69D5C"; var colortxtcible = "#fff";}
+				else if ((scorecible >='60') && (scorecible < '80')) {var colorcible = "#ed5861"; var colortxtcible = "#fff";}
+				else if ((scorecible >='80') && (scorecible <= '100')) {var colorcible = "#623b5a"; var colortxtcible = "#fff";}
+				else {var color = "#1b998b";}
+				$('#risque_scorecible').val(scorecible).css("background-color", colorcible);
+				$('#risque_scorecible').val(scorecible).css("color", colortxtcible);
+				}
+		
+		//Ajout des flux
+		$('#add-action').click(function(){
+			const index1 =$('#risque_RisqueConnectAction div.row').length;
+			const tmpl =$('#risque_RisqueConnectAction').data('prototype').replace(/__name__/g, index1);
+			$('#risque_RisqueConnectAction').append(tmpl);
+			$( "#msgrisque" ).hide();
+			$('.risquefield').select2();
+			handleDeleteButtons();
+		});
+
+		
+
+
+	/////////////// script AES
+
+		function scoreAes() {
+			var sum = 0;
+		    var count = 0;
+			jQuery.each( $( ".impact" ), function( i )
+			 {
+			var pureid = this.id.replace('aspect_env_impacts_',''); var pureid = pureid.replace('block_','');
+			var gravite = $('#aspect_env_impacts_'+pureid+'_gravite').val();
+			var probabilite = $('#aspect_env_impacts_'+pureid+'_probabilite').val();
+			var sensibilite = $('#aspect_env_impacts_'+pureid+'_sensibilite').val();
+			var maitrise = $('#aspect_env_impacts_'+pureid+'_maitrise').val();
+			var scoring = gravite * probabilite * sensibilite / maitrise
+			if (scoring==0) {}
+			else {
+			sum += scoring;
+		    count += 1;
+			}
+			console.log(pureid + ' ' + scoring);
+
+			
+			var color = "#1b998b";
+			if ((scoring < '50')) {var colorcible = "#1b998b"; var colortxtcible = "#000"; var crit = "Peu important";}
+			else if ((scoring >='50') && (scoring < '249')) {var colorcible = "#ffe156"; var colortxtcible = "#000"; var crit = "Important";}
+			else if ((scoring >='249') && (scoring < '500')) {var colorcible = "#F69D5C"; var colortxtcible = "#fff"; var crit = "Très important";}
+			else if ((scoring >='500') && (scoring < '1000')) {var colorcible = "#ed5861"; var colortxtcible = "#fff"; var crit = "Inacceptable";}
+			else if (scoring >='1000') {var colorcible = "#623b5a"; var colortxtcible = "#fff"; var crit = "Extrème";}
+			else {var color = "#1b998b";}
+			$('#aspect_env_impacts_'+pureid+'_criticite').val(scoring).css("background-color", colorcible);
+			$('#aspect_env_impacts_'+pureid+'_criticite').val(scoring).css("color", colortxtcible);
+			$('#aspect_env_impacts_'+pureid+'_critere').val(crit);
+			});
+
+			if ( (sum==0) && (count==0) ) {avg =0}
+			else {avg = sum / count;}
+			var avg = Math.round(avg);
+			var color = "#1b998b";
+			if ((avg < '50')) {var colorcible = "#1b998b"; var colortxtcible = "#000"; var crit = "Peu important";}
+			else if ((avg >='50') && (avg < '249')) {var colorcible = "#ffe156"; var colortxtcible = "#000"; var crit = "Important";}
+			else if ((avg >='249') && (avg < '500')) {var colorcible = "#F69D5C"; var colortxtcible = "#fff"; var crit = "Très important";}
+			else if ((avg >='500') && (avg < '1000')) {var colorcible = "#ed5861"; var colortxtcible = "#fff"; var crit = "Inacceptable";}
+			else if (avg >='1000') {var colorcible = "#623b5a"; var colortxtcible = "#fff"; var crit = "Extrème";}
+			else {var color = "#1b998b";}
+			$('#aspect_env_criticite').val(avg).css("background-color", colorcible);
+			$('#aspect_env_criticite').val(avg).css("color", colortxtcible);;
+        }
+
+		function rangeSlider() {
+        //range slider
+        $(".range").ionRangeSlider({
+        min: 0,
+        max: 15,
+        grid: true,
+        step: 1,
+        onFinish: function () {scoreAes();}
+        });
+		 }
+
+		//Ajout / Supp. des impacts
+		$('#add-aesim').click(function(){
+			const index =$('#aspect_env_impacts div.row').length;
+			const tmpl =$('#aspect_env_impacts').data('prototype').replace(/__name__/g, index);
+		
+			$('#aspect_env_impacts').append(tmpl);
+			$('select').select2()
+            rangeSlider();
+			handleDeleteButtons();
+			scoreAes();
+		});
+		
+		handleDeleteButtons();
+		scoreAes();
+		rangeSlider();
+
+
+		//range slider
+		$(".range").ionRangeSlider({
+        min: 0,
+        max: 10,
+		grid: true,
+		step: 0.5,
+        onFinish: function () {scoreColor(); scoreCibleColor();}
+    	});
+
+
+	});
+	
+
+
+</script>
+
+    {% block body %}
+
+    {% endblock %}
+<script>
+
+</script>
+  

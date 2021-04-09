@@ -1,0 +1,736 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formActivite _self %}
+{% block stylesheets %}
+	<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+		
+		@media print
+		{
+		.tab-pane * { visibility: visible; }
+		}
+
+		.change-message {
+				display: none;
+			}
+    </style>
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+            {% if editMode %}
+			<h2>Fiche activité</h2>
+			{% else %}
+			<h2>Créer une nouvelle activité</h2>
+			{% endif %} 
+            <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+				<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+				</svg> Retour vers {{ rr }}
+			</a>
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+               
+            </div>
+        </div>
+    </div>
+{% endblock %}
+              
+
+{% block body %}
+{{ form_start(formActivite) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" class="printed">
+	            <div class="ibox-content">
+		            
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                     <a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+									{% if editMode %}
+									Enregistrer <span class="change-message">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+									</svg>
+									</span>
+									{% else %}
+									Ajouter
+									{% endif %}
+									</button>
+									{% endif %}
+								</span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									A-{{ activite.id }} {{ activite.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Statut :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(activite) %}<strong>{{ workflow_metadata(activite, 'title', place) ?: ''}}</strong>{% endfor %}
+									
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if activite.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : activite.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ activite.responsable.firstname | default("") }} {{ activite.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if activite.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : activite.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ activite.suppleant.firstname | default("") }} {{ activite.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in activite.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ activite.publishedat | date("d M Y")  }} par {{ activite.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+								
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">Passé en {% for place in workflow_marked_places(activite) %} {{ workflow_metadata(activite, 'title', place)|lower ?: ''}}{% endfor %} le {{ activite.validatedat | date("d M Y")  }} par {{ activite.validator.firstname | default("n/c") }} </dd>
+									{% set rolep = "" %}
+									{% for people in activite.peoples %}
+										{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}
+									{% endfor %}
+									{% set roles = "" %}{% if activite.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% set roler = "" %}{% if activite.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% for transition in workflow_transitions(activite) %}
+										{% if workflow_can(activite, transition.name) %}
+											{% if workflow_metadata(activite, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(activite, 'ambiance', transition)}} btn-xs adisab" href="{{path('activite_workflow', {
+												'id' : activite.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(activite, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No actions available.
+									{% endfor %}
+                                </div>
+
+								
+                            </dl>
+                        </div>
+                        {% endif %}
+                    </div>
+					<br><br>
+					
+					
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+									{% if editMode %}
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+				                            <span style="font-size: 18px;">
+												Synthèse
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+		                            	<a class="nav-link {% if not editMode %}active show{% endif %}" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+		                            <li>
+		                            	<a class="nav-link" data-toggle="tab" href="#relation"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+		                            <li><a class="nav-link" data-toggle="tab" href="#pca"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-superpowers"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#comment"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+									{% if editMode %}
+									<div id="introduction" class="tab-pane active show">
+			                            <div class="panel-body">			                                
+			                                <div class="form-group row">				
+												<div class="col-lg-8">
+													<p class="small">
+														{{ activite.description | raw}}
+												
+													</p>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Processus :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1">{{ formActivite.vars.value.processus.designation | default("N/C") }}</dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Métier :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1">{{ formActivite.vars.value.processus.metier.code  | default("N/C") }}</dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>DIMA :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span class="badge {{ activite.dima1.color | default("N/C") }}">{{ activite.dima1.designation | default("N/C") }}</span></dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>PDMA :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span class="badge {{ activite.pdma1.color | default("N/C") }}">{{ activite.pdma1.designation | default("N/C") }}</span></dd>
+														</div>
+													</dl>
+												
+												</div>
+												<div class="col-lg-4">
+													<div class="row">
+														<div class="col-lg-12">	
+															<h5>Comply</h5>
+															{% set dcp = "" %}
+															<span class="badge badge-{% if dcp == 'oui' %}warning{% else %}gray{% endif %}">{% if dcp == 'oui' %}RGPD{% endif %}</span>
+															{% if activite.dima1.designation is defined %}
+															<span class="badge {{ activite.dima1.color | default("N/C") }}">PCA {{ activite.dima1.designation | default("") }}</span>
+															{% endif %}
+														</div>
+														
+														{% if activite.appConnectActivites|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Application</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for app in activite.appConnectActivites%}
+																<li><a href="{{path('activite_edit',{'id' : app.activite.id, 'r' : 'process_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ app.application.designation|length > 50 ? app.application.designation|slice(0, 50) ~ '...' : app.application.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														
+														{% if activite.fluxConnectActivites|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Flux</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for actconnect in activite.fluxConnectActivites%}
+																<li><a href="{{path('activite_edit',{'id' : actconnect.activite.id, 'r' : 'process_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ actconnect.flux.designation|length > 50 ? actconnect.flux.designation|slice(0, 50) ~ '...' : actconnect.flux.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if activite.tiers|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Tiers</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for t in activite.tiers %}
+																<li><a href="{{path('tier_edit',{'id' : t.id, 'r' : 'process_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ t.designation|length > 42 ? t.designation|slice(0, 42) ~ '...' : t.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if activite.ressources|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Ressources</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for r in activite.ressources %}
+																<li><a href="{{path('tier_edit',{'id' : r.id, 'r' : 'process_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ r.designation|length > 42 ? r.designation|slice(0, 42) ~ '...' : r.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+													</div>	
+												</div>
+										    </div>
+			                            </div>
+			                        </div>
+									{% endif %}
+		                            <div id="information" class="tab-pane {% if not editMode %}active show{% endif %}">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+		                                    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.designation, 'Désignation') }}
+												
+												        {{ form_errors(formActivite.designation) }}
+												   
+											    </label>
+												<div class="col-sm-10">{{ form_widget(formActivite.designation)}}</div>
+						    				</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.description)}}</div>
+										    </div>
+						    
+											<div class="hr-line-dashed"></div>
+						    
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formActivite.responsable)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formActivite.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formActivite.peoples)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										   
+											
+											<div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Organisation</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">Processus</span>{{ form_widget(formActivite.processus)}}</div>
+										            </div>
+										        </div>
+										    </div>						
+		                                </div>
+		                            </div>
+		                            <div id="relation" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Relations</h3></div>
+											</div>
+											<br>											
+											<div class="form-group row">
+												<div class="col-sm-2 col-form-label">Flux
+													<br>
+												{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type='button' id="add-flux" class="btn btn-outline-success btn-sm">+</button>{% endif %}
+												</div>
+												<div class="col-sm-10">
+										            {{ form_widget(formActivite.fluxConnectActivites) }}
+										            <span id="msgflux">Aucun flux.</span>
+											    </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+											<div class="form-group row">
+												<div class="col-sm-2 col-form-label">Applications
+													<br>
+												{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type='button' id="add-app" class="btn btn-outline-success btn-sm">+</button>{% endif %}
+												</div>
+												<div class="col-sm-10">
+										            {{ form_widget(formActivite.appConnectActivites) }}
+										            <span id="msgapp">Aucune application.</span>
+											    </div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.tiers, 'Tiers') }}</label>
+												<div class="col-sm-10">
+													{{ form_widget(formActivite.tiers)}}
+												</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.ressources, 'Ressources') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.ressources)}}</div>
+										    </div>
+										</div>
+		                            </div>
+		                            <div id="pca" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-10"><h3>Analyse d'impact sur activité</h3></div>
+											</div>
+											<br>											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.pca, 'Intégration PCA') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.pca)}}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Criticité</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-5"><span class="form-text m-b-none text-navy">DIMA</span>{{ form_widget(formActivite.dima1)}}</div>
+										                <div class="col-md-5"><span class="form-text m-b-none text-navy">PDMA</span>{{ form_widget(formActivite.pdma1)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+											
+											
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Clés</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-5"><span class="form-text m-b-none text-navy">Niveau de reprise</span>{{ form_widget(formActivite.niveaureprise)}}</div>
+										                <div class="col-md-5"><span class="form-text m-b-none text-navy">Période de pic</span>{{ form_widget(formActivite.periodepic)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+											
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Evaluation des pertes et des impacts</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-5"><span class="form-text m-b-none text-navy">Perte de revenus</span>{{ form_widget(formActivite.perteca)}}</div>
+										                <div class="col-md-5"><span class="form-text m-b-none text-navy">Perte de nouvelles affaires</span>{{ form_widget(formActivite.perteactivite)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Mesure des impacts</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-2"><span class="form-text m-b-none text-navy">Image externe</span>{{ form_widget(formActivite.impactimg)}}</div>
+										                <div class="col-md-2"><span class="form-text m-b-none text-navy">Relations partenaires et clients</span>{{ form_widget(formActivite.impactactionnaire)}}</div>
+										                <div class="col-md-2"><span class="form-text m-b-none text-navy">Affaires (récurrente)</span>{{ form_widget(formActivite.activitebusinessfutur)}}</div>
+										                <div class="col-md-2"><span class="form-text m-b-none text-navy">Satisfaction des collaborateurs</span>{{ form_widget(formActivite.impactcollaborateur)}}</div>
+										                <div class="col-md-2"><span class="form-text m-b-none text-navy">Impact sur l'organisation interne</span>{{ form_widget(formActivite.impactinterne)}}</div>
+										                
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row"><label class="col-sm-2 col-form-label"></label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Impact à 4 heures</span>{{ form_widget(formActivite.impact4h)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Impact à 1 jour</span>{{ form_widget(formActivite.impact1j)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Impact à 3 jours</span>{{ form_widget(formActivite.impact3j)}}</div>
+										                
+										            </div>
+										        </div>
+										    </div>
+										    
+										     <div class="form-group row"><label class="col-sm-2 col-form-label"></label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Impact à 1 semaine</span>{{ form_widget(formActivite.impact1s)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Impact à 2 semaines</span>{{ form_widget(formActivite.impact2s)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Impact à 1 mois</span>{{ form_widget(formActivite.impact1m)}}</div>
+										                
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.perturbationinterne, 'Perturbation interne') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.perturbationinterne)}}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.perturbationexterne, 'Perturbation externe') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.perturbationexterne)}}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.procedurepca, 'Procédure PCA existante ?') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.procedurepca)}}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.latencepca, 'Délais nécessaire au redémarrage') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.latencepca)}}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.traitementimmediat, 'Traitement immédiat') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.traitementimmediat)}}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formActivite.conditionmaintien, 'Conditions au maintien') }}</label>
+												<div class="col-sm-10">{{ form_widget(formActivite.conditionmaintien)}}</div>
+										    </div>
+										    	
+		                                </div>
+		                            </div>
+		                            {% if editMode %}
+		                             <div id="files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'ProcessusActivites', 'entryprefix': 'A', 'entryid': activite.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+			                        {% endif %}
+		                            <div id="comment" class="tab-pane">
+		                                <div class="panel-body">
+			                                
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formActivite.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formActivite) }}
+{% endblock %}
+
+{% block _activite_fluxConnectActivites_widget %}
+	{{ form_widget(form)}}
+{% endblock %}
+
+{% block _activite_appConnectActivites_widget %}
+	{{ form_widget(form)}}
+{% endblock %}
+
+{% block _activite_fluxConnectActivites_entry_widget %}
+		<div class="row"  id="block_{{id}}">
+            <div class="col-md-7">
+	            <span class="form-text m-b-none text-navy">Flux</span>
+	            {{ form_widget(form.flux)}}
+	        </div>
+			<div class="col-md-4"><span class="form-text m-b-none text-navy">Direction</span>{{ form_widget(form.direction)}}</div>
+            <div class="col-1"><span class="form-text m-b-none text-navy">.</span>{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-flux" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>{% endif %}</div>	
+        </div>
+{% endblock %}
+
+{% block _activite_appConnectActivites_entry_widget %}
+        <div class="row" id="block_{{id}}">
+            <div class="col-md-7"><span class="form-text m-b-none text-navy">Application</span>{{ form_widget(form.application)}}</div>
+            <div class="col-md-2"><span class="form-text m-b-none text-navy">DIMA</span>{{ form_widget(form.dima)}}</div>
+            <div class="col-md-2"><span class="form-text m-b-none text-navy">PDMA</span>{{ form_widget(form.pdma)}}</div>
+            <div class="col-1"><span class="form-text m-b-none text-navy">.</span>{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-flux" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+        </div>
+{% endblock %}
+
+{% block javascripts %}
+	<script>
+		
+		$(document).ready(function() {
+			
+			mermaid.initialize({})
+			
+			CKEDITOR.replace( 'activite_commentaire' );
+			CKEDITOR.replace( 'activite_description' );
+			
+			if ( $('#activite_fluxConnectActivites div.row').length > 0 ) {
+		           $( "#msgflux" ).hide();
+			   }
+			   if ( $('#activite_appConnectActivites div.row').length > 0 ) {
+		           $( "#msgapp" ).hide();
+			   }
+		});
+
+		//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+
+		//Ajout des flux
+		$('#add-flux').click(function(){
+			const index1 =$('#activite_fluxConnectActivites div.row').length;
+			const tmpl =$('#activite_fluxConnectActivites').data('prototype').replace(/__name__/g, index1);
+			$('#activite_fluxConnectActivites').append(tmpl);
+			$( "#msgflux" ).hide();
+			handleDeleteButtons();
+		});
+		$('#add-app').click(function(){
+			const index1 =$('#activite_appConnectActivites div.row').length;
+			const tmpl1 =$('#activite_appConnectActivites').data('prototype').replace(/__name__/g, index1);
+			$('#activite_appConnectActivites').append(tmpl1);
+			handleDeleteButtons();
+			$( "#msgapp" ).hide();
+		});
+		
+		function handleDeleteButtons (){
+				$('button[data-action="delete"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment supprimer cet élément ?',
+						    buttons: {
+						        supprimer: function () {
+						           $(target).remove();
+						           if ( $('#activite_fluxConnectActivites div.row').length == 0 ) {
+							           $( "#msgflux" ).show();
+								   }
+								   if ( $('#activite_appConnectActivites div.row').length == 0 ) {
+							           $( "#msgapp" ).show();
+								   }
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		handleDeleteButtons();
+	
+		
+		
+		/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+		
+
+	
+	</script>
+	
+{% endblock %}
+
+

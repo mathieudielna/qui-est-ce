@@ -1,0 +1,430 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formAxe _self %}
+
+{% block stylesheets %}
+	<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+    </style>
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+            {% if editMode %}
+			<h2>Fiche axe</h2>
+			{% else %}
+			<h2>Créer une nouvel axe</h2>
+			{% endif %} 
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{path('start')}}">Mapsi</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{path('axe_list')}}">Axes
+                    </a>
+                </li>
+                {% if editMode %}
+                <li class="breadcrumb-item active">
+                    <strong><a>AX-{{ axe.id }}</a></strong>
+                </li>
+                {% else %}
+                <li class="breadcrumb-item active">
+                    <strong><a>Nouvel axe</a></strong>
+                </li>
+				{% endif %}
+            </ol>
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+               
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block body %}
+{{ form_start(formAxe) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <button type='button'  class="btn btn-white" data-target="{{path('axe_list')}}"  data-action="leave">Quitter</button>
+									<button type='submit' class="btn btn-primary">
+									{% if editMode %}
+									Enregistrer
+									{% else %}
+									Ajouter
+									{% endif %}
+									</button>
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									AX-{{ axe.id }} {{ axe.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Status :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1"><span class="label label-primary">Actif</span></dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Progression :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1"></dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Actions stratégiques :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ axe.actionstrats|length| default("0") }}</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Actions portfolio : </dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+                                    0
+                                    
+                                    </dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Responsable :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ formAxe.vars.value.responsable.firstname | default("") }} {{ formAxe.vars.value.responsable.lastname | default("N/C") }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour:</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1"></dd>
+                                </div>
+                            </dl>
+                        </div>
+                        {% endif %}
+                    </div>
+<br><br>
+					
+					
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#tab-info"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-actionstrat"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-comment"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+		                            <div id="tab-info" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAxe.title, 'Titre') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAxe.title)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAxe.designation, 'Désignation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAxe.designation)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAxe.volet, 'Volet stratégique') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAxe.volet)}}</div>
+										    </div>
+										    
+										    
+											<div class="hr-line-dashed"></div>
+						    
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formAxe.responsable)}}</div>
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formAxe.suppleant)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAxe.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAxe.description)}}</div>
+										    </div>
+		                                </div>
+		                            </div>
+		                            <div id="tab-actionstrat" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Actions stratégiques</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        <div class="form-group  row">
+														<label class="col-sm-2 col-form-label">Actions stratégiques<br><button type='button' id="add-actionstrat" class="btn btn-primary btn-sm">+</button></label>
+														<div class="col-sm-10">{{ form_widget(formAxe.actionstrats)}}</div>
+												    </div>
+											        
+											        
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="tab-files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Axes', 'entryprefix': 'AX', 'entryid': axe.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="tab-comment" class="tab-pane">
+		                                <div class="panel-body">
+			                                
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formAxe.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+	            
+					<br><br>
+		            <div class="row">
+						<div class="col-12">
+		                    <span class="float-right">
+			                    <button type='button'  class="btn btn-white" data-target="{{path('axe_list')}}"  data-action="leave">Quitter</button>
+								{% if is_granted('ROLE_ADMIN') %}
+								<button type='submit' class="btn btn-primary">
+								{% if editMode %}
+								Enregistrer
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+								{% endif %}
+		                    </span>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formAxe) }}
+{% endblock %}
+
+
+{% block _axe_actionstrats_widget %}
+		{{ form_widget(form)}}
+{% endblock %}
+{% block _axe_actionstrats_entry_widget %}
+	<div class="row" id="block_{{id}}">
+		<div class="col-md-12">
+			<div id="{{ id }}" class="ibox border panel{{ id }} {% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}panel-success{% endif %} mb-0">
+				<div class="ibox-title">
+                	<a class="collapse-link"><h4> {{ form.code.vars.value| default("N/C") }} - {{ form.designation.vars.value|length > 40 ? form.designation.vars.value|slice(0, 50) ~ '...' : form.designation.vars.value | default("Nouveau") }} </h4>
+	                <div class="ibox-tools">
+                        <a class="collapse-link">
+                            <i class="fa fa-chevron-up"></i>
+                        </a>
+                        <button type="button" data-action="delete" data-target="#block_{{id}}" id="del-axe" class="btn btn{{ id }} btn-link btn-sm"><i class="fa fa-trash"></i></button>
+	                </div>
+	                </a>
+	            </div>
+	            <div class="ibox-content">
+	                <div class="row">
+			            <div class="col-md-12">
+						    <div class="row">
+						        <div class="col-md-2"><span class="form-text m-b-none text-navy">Code</span>{{ form_widget(form.code)}}</div>
+						        <div class="col-md-10"><span class="form-text m-b-none text-navy">Désignation</span>{{ form_widget(form.designation)}}</div>
+						    </div> 
+						    <br>
+						    <div class="row">
+							    <div class="col-md-12"><span class="form-text m-b-none text-navy">Actions portfolio associées</span>{{ form_widget(form.actions)}}</div>
+						    </div>
+					    </div>
+	            	</div>
+	            </div>
+			</div>
+        </div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+
+	<script>
+	$(document).ready(function() {
+		$('#axe_actions').select2();
+		$('#axe_responsable').select2();
+		$('#axe_suppleant').select2();
+		$('#axe_description').trumbowyg();
+		$('#axe_commentaire').trumbowyg();
+		$('.actfield').select2();
+		
+
+		});
+		
+	//Ajout des objectifs
+		$('#add-actionstrat').click(function(){
+			const index =$('#axe_actionstrats div.row').length;
+			const tmpl =$('#axe_actionstrats').data('prototype').replace(/__name__/g, index);
+		
+			$('#axe_actionstrats').append(tmpl);
+			$('.actfield').select2();
+			handleDeleteButtons();
+		});
+		
+		
+		function handleDeleteButtons (){
+				$('button[data-action="delete"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment supprimer cet élément ?',
+						    buttons: {
+						        supprimer: function () {
+						           $(target).remove();
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		handleDeleteButtons();
+		
+		function saveLeave (){
+		$('button[data-action="leave"]').click(function(){
+			const target = this.dataset.target;
+			$.confirm({
+			     title: 'Attention',
+				    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+				    buttons: {
+				        quitter: function () {
+				           $(location).attr('href', target);
+				        },
+				        annuler: function () {
+				        }    
+				    }
+			});
+		});
+	}
+		saveLeave();
+
+		
+		$('.actfield').select2();
+		
+				/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+
+	</script>
+	
+{% endblock %}
+
+

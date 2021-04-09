@@ -1,0 +1,169 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'processus' }) }}
+
+<div class="table-responsive">
+<table id="dataTables-processus" class="display table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th scope="col" class="export pdf" style="width:30px">Etat</th>
+            <th scope="col" class="export pdf">Désignation</th>
+            <th scope="col" class="export pdf">Type</th>
+            <th scope="col" class="export pdf">Managers</th>
+            <th scope="col" class="export pdf">Relations</th>
+            <th scope="col" class="export pdf">Comply</th>
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE') %}<th scope="col" class="no-sort"></th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for processus in processuses %}
+            <tr>
+                <td></td>
+                <td>
+                    <span class="badge">
+                        {% for place in workflow_marked_places(processus) %}
+                            <strong>{{ workflow_metadata(processus, 'title', place) ?: ''}}</strong>
+                        {% endfor %}
+                    </span>
+                </td>
+                    <td class="table-title" scope="row" data-order="{{ processus.designation }}">
+                    <a class="editprocessus" data-id = "{{ processus.id }}">{{ processus.code | default("N/C")  }}.{{ processus.designation  }}</a> <span class="badge badge-secondary">P-{{ processus.id }}</span>
+                    <br>
+                    <small>{{ processus.finalite|length > 150 ? processus.finalite|slice(0, 150) ~ '...' : processus.finalite }}</small>
+                    
+                    
+                </td>
+                <td><strong>{{ processus.typeprocessus.designation | default("N/C") }}</strong></td>
+                <td>
+                <strong>{{ processus.responsable.lastname | default("") }} {{ processus.responsable.firstname | default("") }}</strong><br>
+                    {{ processus.suppleant.lastname | default("") }} {{ processus.suppleant.firstname | default("") }}
+                </td>
+                
+                <td>
+                    <span class="badge badge-{% if processus.activites|length > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="proact{{ loop.index }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="Activites" 
+                            data-content="
+                            {% for act in processus.activites %}
+                                <a class='text-dark' href='{{path('activite_edit',{'id' : act.id} ) }}'><span class='small'><b>{{loop.index}}. {{ act.designation | default('N/C')  }}</span></a><br>	
+                                {% endfor %}">
+                                <i class="fa fa-sitemap"></i> {{ processus.activites | length  }}  
+                    </span>
+                    <span class="badge badge-{% if processus.actions|length > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="proaction{{ loop.index }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="Actions" 
+                            data-content="
+                            {% for action in processus.actions %}
+                                <a class='text-dark' href='{{path('action_edit',{'id' : action.id} ) }}'><span class='small'><b>{{loop.index}}. {{ action.designation | default('N/C')  }}</span></a><br>	
+                                {% endfor %}">
+                                <i class="fa fa-tasks"></i> {{ processus.actions | length  }}  
+                    </span>
+                    {% set nbflux = 0 %}
+                    {% for activite in processus.activites %}
+                        {% set nbflux = nbflux + activite.fluxConnectActivites|length %}
+                    {% endfor %}
+                    {% set dcp = "" %}
+                    <span class="badge badge-{% if nbflux > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="proflux{{ loop.index }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="Flux" 
+                            data-content="
+                            {% for activite in processus.activites %}
+                            {% for flux in activite.fluxConnectActivites %}
+                            {% set dcp = 'RGPD' %}
+                                <span class='small'><b>{{loop.index}}. {{ flux.flux.designation | default('N/C')  }}</span><br>	
+                            {% endfor %}
+                            {% endfor %}">
+                                <i class="fa fa-arrows"></i> {{ nbflux  }}  
+                                
+                    </span>
+                    <span class="badge badge-{% if processus.risques|length > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="prorisque{{ loop.index }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="Risques" 
+                            data-content="
+                            {% for risque in processus.risques %}
+                                <a class='text-dark' href='{{path('risque_edit',{'id' : risque.id} ) }}'><span class='small'><b>{{loop.index}}. {{ risque.designation | default('N/C')  }}</span></a><br>	
+                                {% endfor %}">
+                                <i class="fa fa-fire"></i> {{ processus.risques | length  }}  
+                    </span>
+                </td>
+                <td>
+                    <span class="badge badge-{% if dcp == 'RGPD' %}danger{% else %}gray{% endif %}">{{ dcp }}</span>
+                    {% set minDima = 1000 %}
+                    {% set desiDima = "NC" %}
+                    {% set colorDima = "NC" %}
+                    {% for activite in processus.activites %}
+                        {% if activite.dima1.dureeheure is defined %}
+                            {% set minDima = min(activite.dima1.dureeheure, minDima) %}
+                            {% if activite.dima1.dureeheure == minDima %}
+                                {% set desiDima = activite.dima1.designation %}
+                                {% set colorDima = activite.dima1.color %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if desiDima != "NC" %}
+                    <span class="badge {{colorDima}}">														
+                        PCA {{desiDima | default("")}}
+                    </span>
+                    {% endif %}
+                    
+                </td>
+                
+                <td>
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('processus_edit',{'slug' : processus.slug, 'id' : processus.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('processus_remove',{'slug' : processus.slug, 'id' : processus.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                        <a class="dropdown-item">
+                        <small>Modifié le {{ processus.PublishedAt | date("d M Y")}}</small>
+                        {% set today = "now"|date("Y/m/d") %}
+                        {% set difference = date(processus.PublishedAt).diff(date(today)) %}
+                        {% set leftDays = difference.days %}
+                        {% if leftDays >= 180 and leftDays < 360 %}
+                        <small class="text-warning">({{ leftDays }}j)</small>
+                        {% elseif leftDays >= 360 %}
+                            <small class="text-danger">({{ leftDays }}j)</small>
+                        {% else %}
+                            <small>({{ leftDays }}j)</small>
+                        {% endif %}
+                        <small><br> par {{ processus.publisher.firstname | default("") }} {{ processus.publisher.lastname | default("") }}</small>
+                        </a>
+                    </div>
+                </td>
+                
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+

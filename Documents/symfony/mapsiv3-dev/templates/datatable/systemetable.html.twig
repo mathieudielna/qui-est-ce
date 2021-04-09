@@ -1,0 +1,226 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'systeme' }) }}
+
+<table id="dataTables-systeme" class="table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th class="export pdf">Etat</th>
+            <th>Désignation</th>
+            <th class="export pdf">Srv Hote</th>
+            <th class="export pdf">Plate Forme</th>
+            <th class="export">Type</th>
+            <th class="export">Managers</th>
+            <th>Relations</th>
+            <th class="export pdf">Comply</th>
+            <th class="export">Localisation</th>
+            <th class="no-sort"></th>
+            <th class="no-show export">ID</th>
+            <th class="no-show export pdf">Désignation</th>
+            <th class="no-show export pdf">Rôle</th>
+            <th class="no-show export">Nb. connexes</th>
+            <th class="no-show export">Connexes</th>
+            <th class="no-show export">Nb. hosts</th>
+            <th class="no-show export">Hosts</th>
+            <th class="no-show export">Nb. stockages</th>
+            <th class="no-show export">Stockages</th>
+            <th class="no-show export">nb. applications</th>
+            <th class="no-show export">Applications</th>
+            <th class="no-show export">Maj</th>
+            <th class="no-show export">Editeur</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for systeme in systemes %}
+            <article>
+                <tr>
+                    <td></td>
+                    <td>
+                        <span class="badge">
+                            {% for place in workflow_marked_places(systeme) %}
+                                <strong>{{ workflow_metadata(systeme, 'title', place) ?: ''}}</strong>
+                            {% endfor %}
+                        </span>
+                    </td>
+                    <th class="table-title"  scope="row" data-order="{{ systeme.designation }}">
+                        <a href="{{path('systeme_edit',{'slug' : systeme.slug, 'id' : systeme.id, 'r' : 'si_list', 'rr' : 'SI'} ) }}">
+                        {{ systeme.designation | default("N/C") }}</a>
+                        <span class="badge badge-secondary small">SYS-{{ systeme.id }}</span> 
+                    </th>
+                    <td scope="row">{{ systeme.srvhote.designation | default("Non") }}</td>
+                    <td scope="row">{{ systeme.plateforme.designation | default("N/C") }}</td>
+                    <td scope="row">{{ systeme.typesysteme.designation | default("N/C") }}</td>
+                    <td>
+                        <strong>{{ systeme.responsable.firstname | default("") }} {{ systeme.responsable.lastname | default("") }}</strong>
+                            <br>
+                            {{ systeme.suppleant.firstname | default("") }} {{ systeme.suppleant.lastname | default("") }}
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if systeme.host|length > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="hos{{ systeme.id }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="{{ systeme.designation }}" 
+                            data-content="
+                            {% for hos in systeme.host %}
+                                <a class='text-dark' href='{{path('systeme_edit',{'id' : hos.id} ) }}'><span class='small'><b>{{loop.index}}. {{ hos.designation | default('N/C')  }}</span></a><br>	
+                                {% endfor %}">
+                                <i class="fa fa-cubes"></i> {{ systeme.host | length  }}  
+                        </span>
+                        <span class="badge badge-{% if systeme.systemeconnexes|length > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="systemeconnexes{{ systeme.id }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="{{ systeme.designation }}" 
+                            data-content="
+                            {% for systemeconnexe in systeme.systemeconnexes %}
+                                <a class='text-dark' href='{{path('systeme_edit',{'id' : systemeconnexe.id} ) }}'><span class='small'><b>{{loop.index}}. {{ systemeconnexe.designation | default('N/C')  }}</span></a><br>	
+                                {% endfor %}">
+                                <i class="fa fa-link"></i> {{ systeme.systemeconnexes | length  }}  
+                        </span>
+                        <span class="badge badge-{% if systeme.storages|length > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="storages{{ systeme.id }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="{{ systeme.designation }}" 
+                            data-content="
+                            {% for storage in systeme.storages %}
+                                <a class='text-dark' href='{{path('systeme_edit',{'id' : storage.id} ) }}'><span class='small'><b>{{loop.index}}. {{ storage.designation | default('N/C')  }}</span></a><br>	
+                                {% endfor %}">
+                                <i class="fa fa-hdd-o" class="text-white"></i> {{ systeme.storages | length  }}  
+                        </span>
+                        {% set dcp = "" %}
+                        <span class="badge badge-{% if systeme.applications|length > 0 %}primary{% else %}gray{% endif %}"
+                        tabindex="0"
+                            role="button" 
+                            id="application{{ systeme.id }}"
+                            data-container="body" 
+                            data-toggle="popover"
+                            data-placement="bottom" 
+                            data-html="true"
+                            data-trigger="focus"
+                            data-title="{{ systeme.designation }}" 
+                            data-content="
+                                {% for application in systeme.applications %}
+                                {% if application.objetmetiers|length > 0 %}{% set dcp = 'RGPD' %}{% endif %}
+                                
+                                    <a class='text-dark' href='{{path('appli_edit',{'id' : application.id} ) }}'><span class='small'><b>{{loop.index}}. {{ application.designation | default('N/C')  }}</span></a><br>								
+                                    {% endfor %}">
+                                <i class="fa fa-laptop"></i> {{ systeme.applications | length  }}  
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if dcp == 'RGPD' %}warning{% else %}gray{% endif %}">{{ dcp }}</span>
+                        
+
+
+                    {% set minDima = 1000 %}
+                    {% set desiDima = "N/C" %}
+                    {% set colorDima = "N/C" %}
+                    {% for application in systeme.applications %}
+                    {% for activite in application.appConnectActivites %}
+                    {% if activite.dima.dureeheure is not defined %}
+                        {% else %}
+                        {% set minDima = min(activite.dima.dureeheure, minDima) %}
+                        {% if activite.dima.dureeheure == minDima %}
+                            {% set desiDima = activite.dima.designation %}
+                            {% set colorDima = activite.dima.color %}
+                        {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                    {% if desiDima != "N/C" %}	
+                        <span class="badge {{colorDima}}">
+                            PCA {{desiDima | default("")}}
+                        </span>
+                    {% endif %}
+
+                    </td>
+                    
+                    <td scope="row">{{ systeme.localisation.designation | default("N/C") }}</td>
+                    </td>
+                    
+                    <td data-order="{{ systeme.PublishedAt | date("Ymd")}}">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('systeme_edit',{'slug' : systeme.slug, 'id' : systeme.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('systeme_remove',{'slug' : systeme.slug, 'id' : systeme.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ systeme.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(systeme.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{systeme.publisher.firstname | default("") }} {{ systeme.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        SYS-{{ systeme.id }}
+                    </td>
+                    <td>
+                        {{ systeme.designation | default("N/C") }}
+                    </td>
+                    <td>
+                        {{ systeme.role | default("N/C") }}
+                    </td>
+                    <td>
+                        {{ systeme.systemeconnexes | length  }}
+                    </td>
+                    <td>
+                        {% for systemeconnexe in systeme.systemeconnexes %}{{ systemeconnexe.designation | default('N/C')  }}, {% endfor %}
+                    </td>
+                    <td>
+                        {{ systeme.host | length  }}
+                    </td>
+                    <td>
+                        {% for hos in systeme.host %}{{ hos.designation | default('N/C')  }}, {% endfor %}
+                    </td>
+                    <td>
+                        {{ systeme.storages | length  }}
+                    </td>
+                    <td>
+                        {% for storage in systeme.storages %}{{ storage.designation | default('N/C')  }}, {% endfor %}
+                    </td>
+                    <td>
+                        {{ systeme.applications | length  }}
+                    </td>
+                    <td>
+                        {% for application in systeme.applications %}{{ application.designation | default('N/C')  }}, {% endfor %}
+                    </td>
+                    <td>
+                        {{ systeme.publishedat | date("d/m/Y")  }}
+                    </td>
+                    <td>
+                        {{systeme.publisher.firstname | default("") }} {{ systeme.publisher.lastname | default("") }}
+                    </td>
+                    
+                </tr>	
+            </article>
+        {% endfor %}
+    </tbody>
+</table>

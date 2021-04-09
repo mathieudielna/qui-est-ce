@@ -1,0 +1,91 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'visite' }) }}
+
+<table id="dataTables-visite" class="table table-bordered select table-hover" >
+    <thead>
+            <tr>
+                <th style="width:15px"></th>
+                <th class="no-show export">ID</th>
+                <th class="export" style="width:80px">Etat</th>
+                <th class="export pdf">Désignation</th>
+                <th class="export pdf">Managers</th>
+                <th class="export pdf">Sites</th>
+                <th class="export pdf">Dates</th>
+                <th class="export pdf">Comply</th>
+                <th class="no-sort" style="width:60px"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visite in visites %}
+                <tr>
+                    <td></td>
+                    <th data-order="{{visite.id}}" class="text-center">
+                    
+                        T-{{visite.id}} 
+                    </th>
+                    <td>
+                        <span class="badge badge-secondary" style="background-color:{{ dysfonctionnement.statut.color | default("")}}" class="text-center">
+                        {{ visite.statut| default("Brouillon")|capitalize  }}
+                        </span>
+
+                    </td>
+                    
+                    
+                    <td class="table-title" data-order="{{ visite.id }}">
+                        <a class="" href="{{path('visite_edit',{'slug' : visite.slug, 'id' : visite.id, 'r' : r, 'rr' : rr} ) }}">{{ visite.designation }}</a><br>
+                        <small><span class="badge badge-secondary">DYS-{{ visite.id }}</span></small>
+                    </td>
+                    
+                    <td>
+                        <strong>{{ visite.responsable.firstname | default("")  }} {{ visite.responsable.lastname | default("")  }}</strong><br>
+                        {{ visite.suppleant.firstname | default("")  }} {{ visite.suppleant.lastname | default("")  }}
+                      
+                    </td>
+                     <td>
+                        {% for site in visite.sites %}
+                            <small><span class="label label-primary">{{ site.designation | default("") }}</span></small>
+                            
+                        {% endfor %}
+                    </td>
+                     <td>
+                       
+                        {{ siteVisitedAt | default("")  | date("d M Y")  }}
+                        
+                    </td>
+                     <td>
+                        {% for conf in visite.typeconformite %}
+                            <small><span class="label label-primary">{{ conf.designation | default("") }}</span></small>
+                            
+                        {% endfor %}
+                    </td>
+                    
+                  
+                    
+                    <td data-order="{{ visite.PublishedAt | date("Ymd")}}" class="text-center">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('visite_edit',{'slug' : visite.slug, 'id' : visite.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                            {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                            <a class="dropdown-item del" href="{{path('tache_remove',{'slug' : visite.slug, 'id' : visite.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                            {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ visite.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(visite.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{visite.publisher.firstname | default("") }} {{ visite.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+</table>

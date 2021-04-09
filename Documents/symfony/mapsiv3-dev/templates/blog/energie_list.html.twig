@@ -1,0 +1,147 @@
+{% extends 'basev2.html.twig' %}
+
+{% block stylesheets %}
+	<style type="text/css">
+    </style>
+{% endblock %}
+
+{% block headertitle %}
+   Energie
+{% endblock %}	
+{% block headercreate %}
+{% endblock %}
+
+
+
+
+{% block body %}
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+		                <li><a class="nav-link active show" data-toggle="tab" href="#dashboard"> Dashboard</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#objectifs"> Objectifs</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#incidents"> Incidents</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#reclamations"> Réclamations</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#audits"> Audits</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#risques"> Risques</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#portfolio"> Plan d'actions</a></li>
+	                </ul>
+	                <div class="tab-content">
+	                    <div role="tabpanel" id="IT Dashboard" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="objectifs" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="incidents" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="reclamations" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="audits" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="risques" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="actions" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+	                </div>
+				</div>
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+<script>
+	$(document).ready(function(){
+
+        });
+
+        /// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+</script>
+
+    
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formMapsiCustomer  'bootstrap_4_layout.html.twig' %}
+{% block stylesheets %}
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+	    <div class="col-sm-8">
+			<h2>Fiche {{ app.user.customer.designation }}</h2>
+	
+	        <ol class="breadcrumb">
+	            <li class="breadcrumb-item">
+	                <a href="{{path('start')}}">Mapsi</a>
+	            </li>
+	            <li class="breadcrumb-item active">
+	                <strong><a>{{ app.user.customer.designation }}</a></strong>
+	            </li>
+	        </ol>
+	    </div>
+	    <div class="col-sm-4">
+	        <div class="title-action">
+	           
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+
+{% block body %}
+	<div class="row">
+	    <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-title">
+	                <h5>
+	                    {{ app.user.customer.designation }}
+	                </h5>
+	                <div class="ibox-tools">
+						<a class="" href="{{path('start')}}">
+					        <i class="fa fa-times"></i>
+					    </a>
+	                </div>
+	            </div>
+	            <div class="ibox-content">
+		            {{ form_start(formMapsiCustomer) }}
+		            	<div class="form-group  row">
+							<label class="col-sm-2 col-form-label">{{ form_label(formMapsiCustomer.designation, 'Désignation') }}</label>
+							<div class="col-sm-10">{{ form_widget(formMapsiCustomer.designation)}}</div>
+					    </div>
+					    
+					    <div class="hr-line-dashed"></div>
+					    
+					    <div class="form-group  row">
+							<label class="col-sm-2 col-form-label">{{ form_label(formMapsiCustomer.description, 'Description') }}</label>
+							<div class="col-sm-10">{{ form_widget(formMapsiCustomer.description)}}</div>
+					    </div>
+					    
+					    <div class="hr-line-dashed"></div>
+					    
+					    <div class="form-group  row">
+							<label class="col-sm-2 col-form-label">{{ form_label(formMapsiCustomer.www, 'www') }}</label>
+							<div class="col-sm-10">{{ form_widget(formMapsiCustomer.www)}}</div>
+					    </div>
+					    
+					    <div class="hr-line-dashed"></div>
+					    
+					    <div class="form-group  row">
+							<label class="col-sm-2 col-form-label">{{ form_label(formMapsiCustomer.Messagestart, 'Message page de démarrage') }}</label>
+							<div class="col-sm-10">{{ form_widget(formMapsiCustomer.Messagestart)}}</div>
+					    </div>
+					    
+					    <div class="hr-line-dashed"></div>
+
+						<div class="form-group row">
+							<label class="col-sm-2 col-form-label">Responsabilités</label>
+							<div class="col-sm-3"><span class="form-text m-b-none text-navy">Délégué à la protection des données</span>{{ form_widget(formMapsiCustomer.dpo)}}</div>
+							<div class="col-sm-3"><span class="form-text m-b-none text-navy">Délégué du personnel</span>{{ form_widget(formMapsiCustomer.rse)}}</div>
+							<div class="col-sm-3"><span class="form-text m-b-none text-navy">Représentant légal</span>{{ form_widget(formMapsiCustomer.responsable)}}</div>
+					    </div>
+					    
+					    <div class="hr-line-dashed"></div>
+					    
+					    <div class="form-group  row">
+							<label class="col-sm-2 col-form-label">{{ form_label(formMapsiCustomer.imageFile, 'Logo') }}</label>
+							<div class="col-sm-5">{{ form_widget(formMapsiCustomer.imageFile) }}</div>
+							
+								
+					    </div>
+					    
+					    <div class="hr-line-dashed"></div>
+					    
+					    <div class="form-group  row">
+							<label class="col-sm-2 col-form-label"></label>
+							<div class="col-sm-10">
+								<a class="btn btn-white btn-sm" href="{{path('start')}}">Annuler</a>
+								<button type='submit' class="btn btn-primary btn-sm">
+								{% if editMode %}
+								Enregistrer les modifications
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+							</div>
+					    </div>
+					{{ form_end(formMapsiCustomer) }}
+				</div>
+	    	</div>
+	    </div>
+	</div>	
+{% endblock %}
+
+{% block javascripts %}
+	<script>
+		$('.select2').select2();
+		CKEDITOR.replace( 'mapsi_customer_Messagestart' );
+	</script>	
+{% endblock %}
+
+

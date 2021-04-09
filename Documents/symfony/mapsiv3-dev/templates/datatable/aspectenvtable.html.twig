@@ -1,0 +1,72 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'aes' }) }}
+
+<table id="dataTables-aes" class="table table-bordered select table-hover" >
+
+    <thead>
+    <tr>
+        <th style="width:15px"></th>
+        <th scope="col" style="width:  80px">Etat</th>
+        <th scope="col">Désignation</th>
+        <th scope="col">Type</th>
+        <th scope="col">Managers</th>
+        <th scope="col">Résultat</th>								   		
+        <th scope="col" class="no-sort" style="width:60px"></th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for aspectenv in aspectenvs %}
+                <tr>
+                    <td>
+                    </td>
+                    <th class="text-center"><span class="badge badge-secondary text-center" style="background-color:{{ aspectenv.statut.color | default("N/C")}}">
+                            {{ aspectenv.statut | default("Brouillon")|capitalize  }}
+                        </span>
+                    </th>
+                    <td class="table-title" data-order="{{ aspectenv.id }}"><a class="" href="{{path('aspectenv_edit',{'slug' : aspectenv.slug, 'id' : aspectenv.id, 'r' : r, 'rr' : rr} ) }}">{{ aspectenv.designation }}</a> 
+                    <small><span class="badge badge-secondary small">AES-{{ aspectenv.id }}</span></small>
+                    </td>
+                    <td>
+                        <strong>
+                            {{ aspectenv.typeaspectenv.designation | default("")  }}
+                         
+                        </strong>
+                    </td>
+                    
+                    <td>
+                        <strong>{{ aspectenv.responsable.firstname | default("")  }} {{ aspectenv.responsable.lastname | default("")  }}</strong><br>
+                        {{ aspectenv.suppleant.firstname | default("")  }} {{ aspectenv.suppleant.lastname | default("")  }}
+                    </td>
+                    <td class="text-center">
+                        <strong><span class="badge scoreaes" style="font-size:16px;">{{ aspectenv.criticite | default("")  }}</span></strong>
+                    </td>
+                    
+                    <td data-order=""  class="text-center">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('aspectenv_edit',{'slug' : aspectenv.slug, 'id' : aspectenv.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                            {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                            <a class="dropdown-item del" href="{{path('aspectenv_remove',{'slug' : aspectenv.slug, 'id' : aspectenv.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                            {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ aspectenv.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(aspectenv.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{aspectenv.publisher.firstname | default("") }} {{ aspectenv.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                    
+                </tr>
+        {% endfor %}
+    </tbody>
+</table>

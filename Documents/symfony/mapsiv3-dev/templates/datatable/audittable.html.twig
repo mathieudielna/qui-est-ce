@@ -1,0 +1,79 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'audit' }) }}
+
+<table id="dataTables-audit" class="table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th scope="col" class="export pdf" style="width:80px">Etat</th>
+            <th scope="col" class="export pdf">Désignation</th>
+            <th scope="col" class="export pdf">Type</th>
+            <th scope="col" class="export pdf">Managers</th>
+            <th scope="col" class="export pdf">Résultat</th>
+            <th scope="col" class="export pdf">Date audit</th>									   		
+            <th scope="col" class="no-sort" style="width:60px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for audit in audits %}
+            <article>
+                <tr>
+                    <td></td>
+                    <th class="text-center"><span class="badge badge-secondary" style="background-color:{{ audit.statut.color | default("N/C")}}">
+                            {{ audit.statut | default("Brouillon") | capitalize }}
+                        </span>
+                    </th>
+                    <td class="table-title" data-order="{{ audit.id }}"><a class="" href="{{path('audit_edit',{'slug' : audit.slug, 'id' : audit.id, 'r' : r, 'rr' : rr} ) }}">{{ audit.designation }}</a> 
+                    <small><span class="badge badge-secondary small">AU-{{ audit.id }}</span></small>
+                    </td>
+                    <td>
+                        <strong>
+                            {{ audit.typeaudit.designation | default("")  }}
+                        </strong>
+                    </td>
+                    
+                    <td>
+                        <strong>{{ audit.responsable.firstname | default("")  }} {{ audit.responsable.lastname | default("")  }}</strong><br>
+                        {{ audit.suppleant.firstname | default("")  }} {{ audit.suppleant.lastname | default("")  }}
+                    </td>
+                    <td>
+                        {% if audit.nonconformites|length == 0 and audit.resultatlight is null or audit.resultatlight is not defined %} Audit non démarré
+                        {% else %} 
+                        {{ audit.nonconformites|length | default("")  }} non conformité{% if audit.nonconformites|length > 1 %}s{% endif %}.<br>
+                        {{ audit.resultatlight | default("")  }}
+                        {% endif %}
+                    </td>
+                    <td data-order="{{ audit.StartedAt | date("Ymd")}}">
+                        {{ audit.StartedAt | date("d M Y")  | default("")  }}
+                    </td>
+                    
+                     <td data-order="{{ audit.PublishedAt | date("Ymd")}}" class="text-center">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('audit_edit',{'slug' : audit.slug, 'id' : audit.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                            {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                            <a class="dropdown-item del" href="{{path('tache_remove',{'slug' : audit.slug, 'id' : audit.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                            {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ audit.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(audit.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{audit.publisher.firstname | default("") }} {{ audit.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                    
+                </tr>
+            </article>
+        {% endfor %}
+    </tbody>
+</table>

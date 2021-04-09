@@ -1,0 +1,1423 @@
+
+	<style type="text/css">
+        .carto {
+            width: 100%;
+            height: 500px;
+            border: 0px solid lightgray;
+        }
+        
+        .vis-item {
+    border:0;
+    background-color: #17a2b8;
+	color:#000;
+	font-size: 10px;
+	padding: 0px;
+  }
+.vis-item-content {
+	padding: 0px;
+  }
+  
+  .vis-label {
+	font-weight: bold;
+  }
+  
+    .vis-left {
+	width:160px;
+  }
+  
+  #visualization {
+      width: 100%;
+      min-height: 100%;
+    height: 100%;
+    }
+    
+.vis-item.orange {
+  background-color: gold;
+  border-color: orange;
+}
+.vis-item.vis-selected.orange {
+  /* custom colors for selected orange items */
+  background-color: orange;
+  border-color: orangered;
+}
+
+.vis-item.projet {
+  background-color: #0093DC;
+  border-color: #000;
+  font-size: 16px;
+}
+.vis-item.vis-selected.projet {
+  /* custom colors for selected orange items */
+  background-color: orange;
+  border-color: orangered;
+}
+.card-columns2 {
+    column-count: 1;
+      }
+
+
+    </style>
+	
+
+
+
+	{% if is_granted('ROLE_ADMIN') %}
+		<div class="row white-bg kpi">
+			<div class="col-lg-12">
+				<div class="row border-bottom white-bg">
+					<div class="col-lg-4">
+						<div class="profile-image">
+							<i class="fa fa-user-circle-o fa-5x" aria-hidden="true"></i>
+						</div>
+						<div class="col-lg-12">{{ include('blog/myactions.html.twig') }}</div>
+
+					</div>
+					<div class="col-lg-8">
+						<div id='calendar'></div>
+					</div>
+				</div>
+				<div class="row mt-4">
+					<div class="col-lg-4">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">CARTOGRAPHIE DES PROCESSUS</h4>
+								<h6 class="card-subtitle mb-2 text-muted">Tracking des événements</h6>
+								<div class="card-text">
+									<ul class="list-group">
+										{% for processus in allprocessuses %}
+											<li class="list-group-item">
+												<a onclick="crossEntity({{ processus.id}}	,'processus')" class=" 
+												{% if processus.typeprocessus.code is defined and processus.typeprocessus.code == "MAN" %}
+												text-glaucous
+												{% elseif processus.typeprocessus.code is defined and processus.typeprocessus.code == "REA" %}
+												text-midnight
+												{% elseif processus.typeprocessus.code is defined and processus.typeprocessus.code == "SUP" %}
+												text-flirt
+												{% endif %}"><strong>{{ processus.code| default("N/C") }}</strong> {{ processus.designation | default("N/C") }}	
+												</a>
+											</li>
+										{% endfor %}
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-4">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">CARTOGRAPHIE DU SI</h4>
+								
+								<div class="card-text">
+									<div id="mynetworksi" class="carto"></div>
+									
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-4">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">ARCHITECTURE DES SYSTEMES</h4>
+								
+								<div class="card-text">
+									<div id="mynetworksys" class="carto"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row mt-4">
+					<div class="col-lg-4">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">PORTFOLIO PROJETS</h4>
+								<h6 class="card-subtitle mb-2 text-muted">Tracking des événements</h6>
+								<div class="card-text">
+									<span><small><strong>{{ "now"|date("D d M Y")}}</strong></small></span>
+									<h2 class="font-bold">{% set sumratings = 0 %}
+									{% for action in allactions %}																			
+									{% set sumratings = sumratings + action.progression %}
+									{% endfor %}
+									{% if allactions|length > 0 %}
+									{% set sumratings = sumratings / allactions|length %}
+									{% endif %}
+									{{  sumratings | number_format(0, '.', ' ') }} %</h2>
+									<div class="progress progress-small">
+										<div style="width: 34%;" class="progress-bar"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-8">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">PORTFOLIO PROJETS</h4>
+								<ul id="myTab" role="tablist" class="nav nav-tabs nav-pills flex-column flex-sm-row text-center bg-light border-0 rounded-nav">
+									<li class="nav-item flex-sm-fill">
+										<a id="home-tab" data-toggle="tab" href="#plan" role="tab" aria-controls="plan" aria-selected="false" class="nav-link border-0 text-uppercase active">Progression du plan</a>
+									</li>
+									<li class="nav-item flex-sm-fill">
+										<a id="profile-tab" data-toggle="tab" href="#planning" role="tab" aria-controls="planning" aria-selected="false" class="nav-link border-0 text-uppercase">Macro planning</a>
+									</li>
+									<li class="nav-item flex-sm-fill">
+										<a id="contact-tab" data-toggle="tab" href="#projet" role="tab" aria-controls="projet" aria-selected="false" class="nav-link border-0 text-uppercase">Projets</a>
+									</li>
+									<li class="nav-item flex-sm-fill">
+										<a id="contact-tab" data-toggle="tab" href="#action" role="tab" aria-controls="action" aria-selected="false" class="nav-link border-0 text-uppercase">Actions</a>
+									</li>
+									<li class="nav-item flex-sm-fill">
+										<a id="contact-tab" data-toggle="tab" href="#kpi" role="tab" aria-controls="kpi" aria-selected="false" class="nav-link border-0 text-uppercase">KPI Portfolio</a>
+									</li>
+								</ul>
+								<div class="card-text text-center">
+									<div id="myTabContent" class="tab-content">
+										<div id="plan" role="tabpanel" aria-labelledby="plan" class="tab-pane fade px-4 py-5 active show">
+											<canvas id="TrackingChart" height="120px"></canvas>
+										</div>
+										<div id="planning" role="tabpanel" aria-labelledby="planning" class="tab-pane fade px-4 py-5">
+											<div id="visualization"></div>
+										</div>
+										<div id="projet" role="tabpanel" aria-labelledby="projet" class="tab-pane fade px-4 py-5">
+											<table class="table table-hover no-margins">
+												<thead>
+												<tr>
+													<th>Projet</th>
+													<th>Outlook</th>
+													<th>Pilote</th>
+													<th>Progression</th>
+												</tr>
+												</thead>
+												<tbody>
+												{% for projet in allprojets %}    
+												<tr>
+													<td><strong>{{ projet.code | default("") }}</strong><br>{{ projet.designation | default("N/C") }}</td>
+													<td><i class="fa fa-clock-o"></i> 
+														{% set maxValue3 = 0 %}
+														{% for action in actions %}
+															{%if action.projet == projet %}
+																{% if action.datefinrevue is defined and action.datefinrevue is not null  %}
+																		{% set maxValue3 = max(action.datefinrevue|date("Y-m-d"), maxValue3) %}
+																{% endif %}
+															{% endif %}
+														{% endfor %}
+														{{ maxValue3 }}
+													</td>
+													<td>{{ projet.pilote.firstname | default("")  }} {{ projet.pilote.lastname | default("")  }} ({{ projet.metier.code | default("N/C") }})</td>
+													<td class="text-navy"> <i class="fa fa-level-up"></i>{% set sumratings = 0 %}
+														{% for action in projet.actions if action.id is defined %}																			
+															{% set sumratings = sumratings + action.progression %}
+														{% endfor %}
+														{% if projet.actions|length >0  %}
+														{% set sumratings = sumratings / projet.actions|length %}
+														{% endif  %}
+														<strong>{{  sumratings | number_format(0, '.', ' ') }}%</strong>
+													</td>
+												</tr>
+												{% endfor %} 
+												</tbody>
+											</table>
+										</div>
+										<div id="action" role="tabpanel" aria-labelledby="action" class="tab-pane fade px-4 py-5">
+											<table class="table table-hover no-margins">
+												<thead>
+												<tr>
+													<th>Action</th>
+													<th>Outlook</th>
+													<th>Pilote</th>
+													<th>Progression</th>
+												</tr>
+												</thead>
+												<tbody>
+												
+												{% for action in actions %}    
+												<tr>
+													<td><strong>{{ action.designation | default("N/C") }}</strong></td>
+													<td><i class="fa fa-clock-o"></i> 
+														{{ action.datefinrevue|date("d m Y") }}
+													</td>
+													<td>{{ action.responsable.firstname | default("N/C")  }} {{ action.responsable.lastname | default("N/C")  }}</td>
+													<td class="text-navy"> <i class="fa fa-level-up"></i>
+														<strong>{{ action.progression | default("0") }}%</strong>
+													</td>
+												</tr>
+												{% endfor %} 
+												</tbody>
+											</table>
+											{% if actions|length == 0 %}
+											<small>Pas de données</small>    
+											{% endif %} 
+										</div>
+										<div id="kpi" role="tabpanel" aria-labelledby="kpi" class="tab-pane fade px-4 py-5">
+											<table class="table table-stripped small">
+												<tbody>
+													<tr>
+														<td class="no-borders">
+															<i class="fa fa-eercast text-success"></i>
+														</td>
+														<td class="no-borders">
+														<strong>1 programme 
+														{% set sumratings = 0 %}
+															{% for action in actions %}
+															{% set sumratings = sumratings + action.progression %}
+															{% endfor %}
+														</strong>
+														</td>
+													</tr>
+													<tr>
+														<td class="">
+															<i class="fa fa-eercast text-success"></i>
+														</td>
+														<td class="">
+														<strong>
+														{% set sumratings = 0 %}
+															{% for action in actions %}																			
+															{% set sumratings = sumratings + action.progression %}
+															{% endfor %}
+															{%if actions|length > 0 %}
+															{% set sumratings = sumratings / actions|length %}
+															{% endif %}
+															{{  sumratings | number_format(0, '.', ' ') }} % de progression estimée
+														</strong>
+														</td>
+													</tr>
+													<tr>
+														<td class="">
+															<i class="fa fa-eercast text-success"></i>
+														</td>
+														<td class="">
+															{% set sum = 0 %}
+															{% set complet = "" %}
+																{% for action in actions %}
+																	{%if action.budget is not null %}
+																		{% set sum = action.budget + sum ?? 0 %}
+																	{% else %} 
+																		{% set complet = "Incomplet" %}
+																	{% endif %}
+																{% endfor %}
+																{% set suma = 0 %}
+																{% for jalon in jalons %}
+																	{%if jalon.budget is not null and jalon.fini ==1 %}
+																		{% set suma = jalon.budget + suma ?? 0 %}
+																	{% endif %}
+																{% endfor %}
+																
+																<strong>(P) {{ sum | number_format(0, '.', ' ') }} € <i>{{ complet }}</i> - (C) {{ suma | number_format(0, '.', ' ') }} €</strong>
+																
+														</td>
+													</tr>
+													<tr>
+														<td class="">
+															<i class="fa fa-eercast text-success"></i>
+														</td>
+														<td class="">
+														{% set sumj = 0 %}
+														{% for action in actions %}
+															{%if action.etp is not null %}
+																{% set sumj = action.etp + sumj ?? 0 %}
+															{% endif %}
+														{% endfor %}
+														{% set suma = 0 %}
+																{% for jalon in jalons %}
+																	{%if jalon.etp is not null and jalon.fini ==1 %}
+																		{% set suma = jalon.etp + suma ?? 0 %}
+																	{% endif %}
+																{% endfor %}
+														<strong>(P) {{ sumj | number_format(0, '.', ' ') }} j/h - (C) {{ suma | number_format(0, '.', ' ') }} j/h</strong>
+														</td>
+													</tr>
+													<tr>
+														<td class="">
+															<i class="fa fa-eercast text-success"></i>
+														</td>
+														<td class="">
+														<strong>{{ projets|length }} projets</strong>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<i class="fa fa-eercast text-success"></i>
+														</td>
+														<td>
+														<strong>{{ actions|length }} actions</strong>
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<i class="fa fa-eercast text-success"></i>
+														</td>
+														<td>
+															{% set count = 0 %}
+															{% for action in actions %}
+																{% for jalon in jalons if jalon.action == action  %}
+																	{% set count = count + 1 %}
+																{% endfor %}
+															{% endfor %}
+														<strong>{{ count }} jalons / livrables</strong>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+				<div class="row mt-4">
+					<div class="col-lg-8">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">CARTE DES SITES</h4>
+								<h6 class="card-subtitle mb-2 text-muted">Liste des sites</h6>
+								<div class="card-text">
+									<div id="mapid" style="height: 200px"></div>
+								</div>
+							</div>
+						</div>	
+					</div>
+				</div>
+				
+				<div class="row mt-4">
+					<div class="col-lg-3">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">REGLEMENT GENERAL SUR LA PROTECTION DES DONNEES</h4>
+								<h6 class="card-subtitle mb-2 text-muted">Liste des sites</h6>
+								<div class="card-text">
+									<div class="row">
+										<div class="col-6">
+											<span> Mise en conformité </span>
+											<h2 class="font-bold">74 %</h2>
+											<div class="progress progress-small">
+													<div style="width: 74%;" class="progress-bar"></div>
+											</div>
+										</div>
+										<div class="col-6">
+											<span> Diagnostic </span>
+											{% set scoretot = "0" %}
+											{% for flux in fluxes %}
+												{% set score = "0" %}
+												{% if flux.objetmetiers | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+												{% if flux.responsable is defined %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+												{% if flux.finalite is defined %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+												{% if flux.expin | length > 0 or flux.expout | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+												{% if flux.destin | length > 0 or flux.destext | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+												{% if flux.fluxConnectActivites | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+												{% if flux.applications | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+												{% if flux.periodicites | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+												{% if flux.supports | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+												{% if flux.dureeconservation is defined %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+												{% if flux.dcpjuridique | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+												{% if flux.personneconcerne | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+												{% if flux.typetraitementrgpds | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+											{% endfor %}
+											
+											{% set scoretotfull = "0" %}
+											{% for allflux in allfluxes %}
+												{% set scorefull = "0" %}
+												{% if allflux.objetmetiers | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+												{% if allflux.responsable is defined %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+												{% if allflux.finalite is defined %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+												{% if allflux.expin | length > 0 or allflux.expout | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+												{% if allflux.destin | length > 0 or allflux.destext | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+												{% if allflux.fluxConnectActivites | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+												{% if allflux.applications | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+												{% if allflux.periodicites | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+												{% if allflux.supports | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+												{% if allflux.dureeconservation is defined %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+												{% if allflux.dcpjuridique | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+												{% if allflux.personneconcerne | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+												{% if allflux.typetraitementrgpds | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+											{% endfor %}
+											
+											<h2 class="font-bold">{% if fluxes | length > 0 %}{% set scoretotgal = scoretot / fluxes | length %}{{ scoretotgal| round | default("0")  }} % {% else %}{% set scoretotgal = 0 %}Pas de données{% endif %}
+												{% if is_granted('ROLE_ADMIN') == false %}<small>({% set scoretotgalfull = scoretotfull / allfluxes | length %}{{ scoretotgalfull| round | default("0") }} %)</small>{% endif %}</h2>
+											<div class="progress progress-small">
+													<div style="width: {{ scoretotgal| round | default('0')  }}%;" class="progress-bar"></div>
+											</div>
+										</div>
+									</div>
+
+									<div class="hr-line-dashed"></div>
+
+									<div class="text-center">
+									<canvas id="myTracking" height="130"></canvas>
+									</div>
+
+									<div class="hr-line-dashed"></div>
+
+									<h5>Traitements sensibles</h5>
+									{% set handle = [] %}{% set count = 0 %}
+									{% for flux in allfluxes if flux not in handle %}
+										{% set dcpsensible = "Non" %}
+										{% for om in flux.objetmetiers if om.dcpsensible.code is defined and om.dcpsensible.code==1 and flux not in handle %}
+											{% set handle = handle|merge([flux]) %}
+											{% set dcpsensible = "Oui" %}
+											{% set count = count + 1 %}
+											{% if count == 0 %}Il n'y a pas de traitement sensible{% endif %}
+											<span class="btn btn-sm btn-warning" style="margin-bottom:5px;">{{ flux.designation }}</span>
+										{% endfor %}
+									{% endfor %}									
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-3">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">MANAGEMENT DE LA QUALITE</h4>
+								<h6 class="card-subtitle mb-2 text-muted"></h6>
+								<div class="card-text">
+									<div class="row">
+									<div class="col-6">
+										<span> Mise en conformité </span>
+										<h2 class="font-bold">12 %</h2>
+										<div class="progress progress-small">
+											<div style="width: 12%;" class="progress-bar"></div>
+										</div>
+									</div>
+									<div class="col-6">
+									</div>
+								</div>
+								</div>
+							</div>
+						</div>	
+					</div>
+					<div class="col-lg-3">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">MANAGEMENT ENVIRONNEMENTAL</h4>
+								<h6 class="card-subtitle mb-2 text-muted"></h6>
+								<div class="card-text">
+									<div class="row">
+										<div class="col-6">
+											<span> Mise en conformité </span>
+											<h2 class="font-bold">34 %</h2>
+											<div class="progress progress-small">
+													<div style="width: 34%;" class="progress-bar"></div>
+											</div>
+										</div>
+										<div class="col-6">
+									
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>	
+					</div>
+					<div class="col-lg-3">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">MANAGEMENT DE L'ENERGIE</h4>
+								<h6 class="card-subtitle mb-2 text-muted"></h6>
+								<div class="card-text">
+									<div class="row">
+										<div class="col-6">
+											<span> Mise en conformité </span>
+											<h2 class="font-bold">7 %</h2>
+											<div class="progress progress-small">
+													<div style="width: 7%;" class="progress-bar"></div>
+											</div>
+										</div>
+										<div class="col-6">
+									
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>	
+					</div>
+				</div>
+				<div class="row mt-4">
+					<div class="col-lg-3">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">EVALUTATION DES RISQUES</h4>
+								<h6 class="card-subtitle mb-2 text-muted"></h6>
+								<div class="card-text">
+									<div style="row">
+										<div class="col-6">
+											<span><small><strong>Indice général de risque</strong></small></span>
+											<h2 class="font-bold">{% set sumratings = 0 %}
+										{% for risque in allrisques %}																			
+											{% set sumratings = sumratings + risque.impact * risque.probabilite %}
+										{% endfor %}
+										{% if risques|length > 0 %}
+											{% set sumratings = sumratings / allrisques|length %}
+										{% endif %}
+										{{ sumratings | round(2) }} <small><small><small>/ 100</small></small></small></h2>
+											<div class="progress progress-small">
+													<div style="width: {{  (sumratings / 16) * 100 | number_format }}%;" class="progress-bar" aria-valuenow="{{  (sumratings / 16) * 100 | number_format }}" aria-valuemin="0" aria-valuemax="100"></div>
+											</div>
+										</div>
+									</div>
+									<div class="text-center">
+										<canvas id="myRisk" height="280"></canvas>
+									</div>
+									<div class="hr-line-dashed"></div>
+									<div class="text-center">
+										<canvas id="trackingrisque" height="280"></canvas>
+									</div>
+									<div class="hr-line-dashed"></div>
+									<div class="text-center">
+										<canvas id="risquecrea" height="280"></canvas>
+									</div>
+									<div class="hr-line-dashed"></div>
+									<div class="text-center">						
+										<canvas id="statutrisque" height="280"></canvas>
+									</div>
+								</div>
+							</div>
+						</div>	
+					</div>
+					<div class="col-lg-6">
+						<div class="card">
+							<div class="card-body">
+								<h4 class="card-title">CONTINUITE DES ACTIVITES</h4>
+								<h6 class="card-subtitle mb-2 text-muted"></h6>
+								<div class="card-text">
+									<table class="table table-hover dataTables-pca-met display" style="width:100%">
+										<thead>
+											<tr>
+												<th scope="col">Métiers / Fonctions</th>
+												<th scope="col"><small>4 heures</small></th>
+												<th scope="col"><small>1 jour</small></th>
+												<th scope="col"><small>3 jours</small></th>
+												<th scope="col"><small>1 semaine</small></th>
+												<th scope="col"><small>2 semaines</small></th>
+												<th scope="col"><small>1 mois</small></th>
+											</tr>
+										</thead>
+										<tbody>
+											{% for metier in metiers %}
+											<article>
+												<tr>
+													<th>
+														<a class="" href="{{path('metier_edit',{'id' : metier.id} ) }}">{{ metier.code | default("") }}</a>
+													</th>
+													{% set minimpact = "" %}{% set colorimpact = "" %}
+													{% for processus in metier.processuses %}
+														{% for activite in processus.activites if activite.impact4h is not null %}
+															{% set minimpact = activite.impact4h.code %}{% set minimpact = min(activite.impact4h.code, minimpact) %}
+															{% if activite.impact4h.code == minimpact %}{% set colorimpact = activite.impact4h.color %}
+															{% endif %}
+														{% endfor %}
+													{% endfor %}
+													<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact| default("")}}"></td>
+													{% set minimpact = "" %}{% set colorimpact = "" %}
+													{% for processus in metier.processuses %}
+														{% for activite in processus.activites if activite.impact1j is not null %}
+															{% set minimpact = activite.impact1J.code %}{% set minimpact = min(activite.impact1j.code, minimpact) %}
+															{% if activite.impact1j.code == minimpact %}{% set colorimpact = activite.impact1j.color %}
+															{% endif %}
+														{% endfor %}
+													{% endfor %}
+													<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+													{% set minimpact = "" %}{% set colorimpact = "" %}
+													{% for processus in metier.processuses %}
+														{% for activite in processus.activites if activite.impact3j is not null %}
+															{% set minimpact = activite.impact3j.code %}{% set minimpact = min(activite.impact3j.code, minimpact) %}
+															{% if activite.impact3j.code == minimpact %}{% set colorimpact = activite.impact3j.color %}
+															{% endif %}
+														{% endfor %}
+													{% endfor %}
+													<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+													{% set minimpact = "" %}{% set colorimpact = "" %}
+													{% for processus in metier.processuses %}
+														{% for activite in processus.activites if activite.impact1s is not null %}
+															{% set minimpact = activite.impact1s.code %}{% set minimpact = min(activite.impact1s.code, minimpact) %}
+															{% if activite.impact1s.code == minimpact %}{% set colorimpact = activite.impact1s.color %}
+															{% endif %}
+														{% endfor %}
+													{% endfor %}
+													<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+													{% set minimpact = "" %}{% set colorimpact = "" %}
+													{% for processus in metier.processuses %}
+														{% for activite in processus.activites if activite.impact2s is not null %}
+															{% set minimpact = activite.impact2s.code %}{% set minimpact = min(activite.impact2s.code, minimpact) %}
+															{% if activite.impact2s.code == minimpact %}{% set colorimpact = activite.impact2s.color %}
+															{% endif %}
+														{% endfor %}
+													{% endfor %}
+													<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+													{% set minimpact = "" %}{% set colorimpact = "" %}
+													{% for processus in metier.processuses %}
+														{% for activite in processus.activites if activite.impact1m is not null %}
+															{% set minimpact = activite.impact1m.code %}{% set minimpact = min(activite.impact1m.code, minimpact) %}
+															{% if activite.impact1m.code == minimpact %}{% set colorimpact = activite.impact1m.color %}
+															{% endif %}
+														{% endfor %}
+													{% endfor %}
+													<td bgcolor="{{colorimpact | default("")}}" data-order="{{colorimpact | default("")}}"></td>
+												</tr>	
+											</article>
+											{% endfor %}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>	
+					</div>
+				</div>
+			</div>
+		</div>
+	
+	
+	{% endif %}
+
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function()
+		{
+
+			///////////// Carte des sites
+			var satellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {id: mymap, tileSize: 512, subdomains:['mt0','mt1','mt2','mt3'], zoomOffset: -1, attribution: '© OpenStreetMap'}),	
+					rues = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {id: mymap, tileSize: 512, subdomains:['mt0','mt1','mt2','mt3'], zoomOffset: -1, attribution: '© OpenStreetMap'});
+
+				var mymap = L.map('mapid',{
+					layers: [rues]
+				}).fitBounds([{% for site in allsites %}{% if loop.first == false %},{% endif%}[{{ site.latlng | raw }}]{% endfor %}]);
+
+				{% for site in allsites %}
+					L.marker([{{ site.latlng | raw }}])
+						.bindTooltip('<h5>{{ site.designation | raw }}</h5>')
+						.addTo(mymap)
+						.on('click', function(e) {
+							window.location.href = "{{path('site_edit',{'id' : site.id} ) }}";
+						});
+				{% endfor %}
+
+				var baseMaps = {
+						"Satellite": satellite,
+						"Rues": rues
+					};
+
+				L.control.layers(baseMaps).addTo(mymap);
+
+				///////////// 
+
+			{# $(".sortable").sortable({
+				connectWith: 'div'
+				}); #}
+
+			{% if is_granted('ROLE_ADMIN') %}
+			///////////// CARTO SI
+		    var nodes = [
+			   	{% for processus in processuses %}
+					{id: {{ processus.id }}666, label: '{{ processus.designation }}', shape: 'dot'},
+				{% endfor %}
+			    {% for application in applications %}
+				    {id: {{ application.id }}, label: '{{ application.designation }}', shape: 'box', {% if application.typeappli.designation is defined and application.typeappli.designation == 'Infrastructure' %}color: {background:'yellow', border:'gray'}{% elseif application.typeappli.designation is defined and application.typeappli.designation == 'Support' %}color: {background:'pink', border:'gray'}{% else %}color: {background:'#F5FCFF', border:'gray'}{% endif %}, url: '{{path('appli_edit',{'id' : application.id} ) }}'},
+		        {% endfor %}
+		    ];
+		
+		    // create an array with edges
+		    var edges = [
+			    {% for application in applications %}
+			    	{% for app in application.appConnectActivites if app.activite.processus.id is defined %}
+				    	
+				    			{from: {{ application.id }}, to: {{ app.activite.processus.id }}666, dashes:true},
+						
+			    	{% endfor %}
+			    	{% for applicationlin in application.applicationlink %}
+			        	{from: {{ application.id }}, to: {{ applicationlin.id }}},
+			        {% endfor %}
+		        {% endfor %}
+		    ];
+		
+		    // create a network
+		    var container = document.getElementById('mynetworksi');
+		
+		    // provide the data in the vis format
+		    var data = {
+		        nodes: nodes,
+		        edges: edges
+		    };
+		   var options = {
+			  "edges": {
+			    "smooth": {
+			      "forceDirection": "none",
+			      "roundness": 0.2
+			    }
+			  },
+			  "physics": {
+			    "forceAtlas2Based": {
+			      "springLength": 100
+			    },
+			    "maxVelocity": 40,
+			    "minVelocity": 0.3,
+			    "solver": "forceAtlas2Based",
+			    "timestep": 0.47
+			  }
+			}
+		    // initialize your network!
+		    var network = new vis.Network(container, data, options);
+			        
+	        network.on("selectNode", function (params) {
+			if (params.nodes.length === 1) {
+            var node = nodes.get(params.nodes[0]);
+            window.open(node.url, '_self');
+		        }
+		    });
+			
+		    
+		    
+		    	///////////// GANTT
+			var groups = new vis.DataSet([
+			{% for program in allprograms %}
+				{ 
+				id: {{ program.id }}, content: "{{ program.designation }}", value: {{ program.id }},
+				subgroupOrder: function(a, b) {return a.subgroupOrder - b.subgroupOrder;},
+				subgroupStack: { {% for projet in program.projets %}proj_{{ projet.id }}: true,{% endfor %} } 
+				},
+			{% endfor %}
+			]);
+
+			// create a dataset with items
+			// note that months are zero-based in the JavaScript Date object, so month 3 is April
+			var items = new vis.DataSet([
+			{% for projet in allprojets if projet.program is not null %}
+				{% set order = loop.index %}
+				 {
+				    id: {{ projet.id }},
+				    group: {{ projet.program.id }},
+				    subgroup: "proj_{{ projet.id }}",
+				    subgroupOrder: {{ order }},
+				    content: "{{ projet.code }} - {{ projet.designation }}",
+				    start: new Date(
+				    	{% set minValuegantt = "now"|date("Y, m, d") %}
+						{% for action in projet.actions %}
+							{% set minValuegantt = min(action.datedebut|date_modify("-1 month")|date("Y, m, d"), minValuegantt) %}
+						{% endfor %}
+						{{ minValuegantt }}
+					),
+				    end: new Date(
+					    {% set maxValue2 = 0 %}
+		                {% for action in projet.actions if action.datefin is defined and action.datefin is not null %}
+		                   	{% set maxValue2 = max(action.datefin|date_modify("-1 month")|date("Y,m,d"), maxValue2) %}
+		                {% endfor %}
+		                {{ maxValue2 }}
+				    ),
+					className: "projet text-white"
+				 },
+				{% for action in projet.actions %}
+					{% for jalon in action.jalonconnectactions if jalon.topjalon == 1  %}
+					  {
+					    id: 'jal{{ jalon.id }}',
+					    group: {{ projet.program.id }},
+					    subgroup: "proj_{{ projet.id }}",
+					    content: "{{ jalon.jalon }}",
+					    start: new Date({{jalon.daterevue|date_modify("-1 month")|date("Y, m, d")}}),
+						type: "box",
+						className: "orange",
+						subgroupOrder: {{ order }},
+					  },
+					{% endfor %}
+				{% endfor %}
+			{% endfor %}
+			]);
+			
+			// create visualization
+			var container = document.getElementById("visualization");
+			var options = {
+			  // option groupOrder can be a property name or a sort function
+			  // the sort function must compare two groups and return a value
+			  //     > 0 when a > b
+			  //     < 0 when a < b
+			  //       0 when a == b
+			  groupOrder: function(a, b) {
+			    return a.value - b.value;
+			  },
+			  editable: false,
+			  stack: true,
+			  stackSubgroups: true
+			  
+			};
+			var timeline = new vis.Timeline(container);
+			timeline.setOptions(options);
+			timeline.setGroups(groups);
+			timeline.setItems(items);
+
+			{% endif %}
+		    
+        });
+        
+		{% if is_granted('ROLE_ADMIN') %}
+        ///////////// CARTO SYSTEMES
+         var nodes = [
+			    {% for systeme in allsystemes %}
+					    {id: {{ systeme.id }}, label: '{{ systeme.designation }}', shape: 'icon',
+					    {% if systeme.typesysteme.code is defined and systeme.typesysteme.code == 'ROUT' %}icon: {face: 'FontAwesome', code: '\uf0b2', size: 50, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'PCUT' %}icon: {face: 'FontAwesome', code: '\uf108', size: 20, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'FIRE' %}icon: {face: 'FontAwesome', code: '\uf06d', size: 50, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVS' %}icon: {face: 'FontAwesome', code: '\uf0a0', size: 40, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'TELE' %}icon: {face: 'FontAwesome', code: '\uf098', size: 30, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'CLOU' %}icon: {face: 'FontAwesome', code: '\uf0c2', size: 80, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVI' %}icon: {face: 'FontAwesome', code: '\uf233', size: 50, color: '#57169a'},
+					    {% else %}icon: {face: 'FontAwesome', code: '\uf233', size: 20, color: '#57169a'},{% endif %}  
+					    url: '{{path('systeme_edit',{'id' : systeme.id} ) }}'}, 
+		        {% endfor %}
+		    ];
+		
+		    // create an array with edges
+		    var edges = [
+			    {% for systeme in allsystemes %}
+			    	{% for systemeconnexe in systeme.systemeconnexes %}
+			        		{from: {{ systeme.id }}, to: {{ systemeconnexe.id }}},
+			        {% endfor %}
+		        {% endfor %}
+		    ];
+		
+		    // create a network
+		    var container = document.getElementById('mynetworksys');
+		
+		    // provide the data in the vis format
+		    var data = {
+		        nodes: nodes,
+		        edges: edges
+		    };
+		   var options = {
+			  "edges": {
+			    "smooth": {
+			      "forceDirection": "none",
+			      "roundness": 0.2
+			    }
+			  },
+			  "physics": {
+			    "forceAtlas2Based": {
+			      "springLength": 100
+			    },
+			    "maxVelocity": 40,
+			    "minVelocity": 0.3,
+			    "solver": "forceAtlas2Based",
+			    "timestep": 0.40
+			  }
+			}
+
+		    var network = new vis.Network(container, data, options);
+			        
+	        network.on("selectNode", function (params) {
+			if (params.nodes.length === 1) {
+            var node = nodes.get(params.nodes[0]);
+            window.open(node.url, '_self');
+		        }
+		    });
+			{% endif %}
+        
+        
+         	///////////// FULLCALENDAR
+            	var calendarEl = document.getElementById('calendar');
+		
+		       var calendar = new FullCalendar.Calendar(calendarEl, {
+			        height: 230,
+			        locale: 'fr',
+		          	plugins: [ 'dayGrid', 'list', 'bootstrap' ],
+		          	themeSystem: 'bootstrap',
+				  	editable: false,
+				  	droppable: false,
+				  	weekNumbers: true,
+				  	header: {left:   'title', center: 'today', right:  'prev,next' }, // buttons for switching between views
+					defaultView: 'listMonth',
+					eventLimit: true,
+					views: {
+					    dayGridMonth: { // name of view
+					      titleFormat: { year: 'numeric', month: 'long' }
+					      // other view-specific options here
+					    },
+					    dayGridWeek: { // name of view
+					      titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+					      // other view-specific options here
+					    },
+					    listMonth: { // name of view
+					      titleFormat: { year: 'numeric', month: 'long' },
+					      buttonText: 'Planning'
+					    }
+					},
+					events: [
+						  {% for jalon in jalons %}
+						  {% set desi = jalon.action.designation|replace({"'" : "`"}) %}
+						  {% set jal = jalon.jalon|replace({"'" : "`"}) %}
+						    { 
+						      title: "{{ jal }} -> ACT-{{ jalon.action.id }} {{ desi }}",
+						      start: "{{ jalon.daterevue | date("Y-m-d")  }}",
+						      url: "{{path('tache_edit',{'id':jalon.action.id,'r':'start','rr':'Dashboard'} ) }}"
+						    },
+						  {% endfor %}
+						  ],
+					eventClick: function(info) {
+					    info.jsEvent.preventDefault(); // don't let the browser navigate
+
+						    if (info.event.url) {
+						      window.open(info.event.url);
+						    }
+						  },
+					businessHours: {
+					  daysOfWeek: [ 1, 2, 3, 4, 5 ]
+					}
+										
+				});
+				calendar.render();
+				 
+        
+			{% if is_granted('ROLE_ADMIN') %}
+			
+			///////////// COURBE PROJET
+			
+			var timeParser = 'DD/MM/YYYY';	    
+			new Chart(document.getElementById("TrackingChart"), {
+				type: 'line',
+				data:    {
+				datasets: [
+                {
+                    fill: false,
+                    backgroundColor : 'rgba(26,179,148,0.5)',
+                    borderColor: 'rgba(26,179,148,0.5)',
+                    label: "Prévisionnel",
+                    data: [
+	                    {% for jalon in alljalons | sortbyfield('date') if jalon.date is not null %}
+						{
+							x: "{{ jalon.date | date("d/m/Y")  }}", y: {{ loop.index}}
+						},
+						{% endfor %}
+                     ]
+                },{
+                    label: "Outlook",
+                    data: [
+                    {% set maxValue = 0 %}
+                    {% set loopi = 0 %}
+                   {% for jalon in alljalons | sortbyfield('datereelle') if date(jalon.datereelle) < date() and jalon.datereelle is not null %}
+                   {% set maxValue = max(jalon.datereelle|date("Y-m-d"), maxValue) %}
+                    {% set loopi = loop.index %}
+                   {% endfor %}
+					{
+						x: "{{maxValue|date("d/m/Y")}}", y:	{{ loopi}}
+					},
+	                    
+	                    {% for jalon in alljalons | sortbyfield('daterevue') if jalon.daterevue is not null  %}
+	                    {% if date(jalon.daterevue) >= date() %}
+						{
+							x: "{{ jalon.daterevue | date("d/m/Y")  }}", y: 
+							{{ loop.index}}
+						},
+						{% endif %}
+						{% endfor %}
+                     ],
+                    
+                    fill: false,
+                    backgroundColor : '#C8C2AE',
+                    borderColor: '#C8C2AE',
+                    borderDash: [5, 5]
+                },{
+                    label: "Réelle",
+                    data: [
+	                    {% for jalon in alljalons | sortbyfield('datereelle') if date(jalon.datereelle) < date() and jalon.datereelle is not null %}
+	                   
+						{
+							x: "{{ jalon.datereelle | date("d/m/Y")  }}", y: 
+							{{ loop.index}}
+							
+						},
+						{% endfor %}
+                     ],
+                    
+                    fill: true,
+                    backgroundColor : 'rgba(0,147,226,0.5)',
+                    borderColor: 'rgba(0,147,226,0.8)'
+                }
+               
+            ]
+        },
+		options: {
+            responsive: true,
+            title:      {
+                display: false,
+                text:    "Progression des livrables projets"
+                },
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    time:       {
+                        parser: timeParser,
+                        tooltipFormat: 'll',
+                        unit: 'year'
+                    },
+                    scaleLabel: {
+                        display:     false,
+                        labelString: 'Date'
+                    },
+                    gridLines: {
+		                display:false
+		            }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'Livrables'
+                    },
+                    ticks: {
+                                beginAtZero: true,
+                                steps: 10
+                            },
+                    gridLines: {
+		                display:false
+		            }
+                }]
+            }
+        }					  
+	});
+
+	///////////// TRACKING RGPD
+	var ctxi = document.getElementById('myTracking').getContext('2d');
+	var myChart = new Chart(ctxi, {
+	    type: 'horizontalBar',
+	    data: {
+	        labels: ['Demandes d\'accès', 'Anomalies/réclamations', 'Actions conformité'],
+	        datasets: [{
+				label: 'En cours',
+				data: [
+					{% set accesscount = 0 %}{% for access in accesses if access.statut is not null and access.statut.code is defined and access.statut.code!=1 %}{% set accesscount = accesscount + 1 %}{% endfor %}{{accesscount}},
+					{% set violationcount = 0 %}{% for violation in violations if violation.statut is not null and violation.statut.code is defined and violation.statut.code!=1 %}{% set violationcount = violationcount + 1 %}{% endfor %}{{violationcount}},
+					{% set count = 0 %}{% for action in actions if action.statut is not null and action.statut.code is defined and action.statut.code!=1 %}{% for typeconformit in action.typeconformite if typeconformit.designation == "RGPD" %}{% set count = count + 1 %}{% endfor %}{% endfor %}{{ count }}
+				]
+			}, {
+				label: 'Terminé',
+				data: [
+					{% set accesscount = 0 %}{% for access in accesses if access.statut is not null and  access.statut is defined and access.statut.code==1 %}{% set accesscount = accesscount + 1 %}{% endfor %}{{accesscount}},
+					{% set violationcount = 0 %}{% for violation in violations if violation.statut is not null and violation.statut is defined and violation.statut.code==1 %}{% set violationcount = violationcount + 1 %}{% endfor %}{{violationcount}},
+					{% set count = 0 %}{% for action in actions if action.statut is not null and action.statut.code is defined and action.statut.code==1 %}{% for typeconformit in action.typeconformite if typeconformit.designation == "RGPD" %}{% set count = count + 1 %}{% endfor %}{% endfor %}{{ count }}
+				]
+			}]
+	    },
+	    options: {
+			tooltips: {
+            callbacks: {
+                labelTextColor:function(tooltipItem, chart){
+                    return '#ffffff';
+                }
+            }
+        	},
+		    scales: {
+	            xAxes: [{
+	                stacked: true,
+	                ticks: {
+		                beginAtZero: true,
+		                min: 0,					
+					      // forces step size to be 5 units
+					    stepSize: 1 // <----- This prop sets the stepSize
+						
+		            },
+		            scaleLabel: {
+                                display: true,
+                                labelString: 'Nb.'
+                            },
+					gridLines: {
+						display:false
+                				}
+	            }],
+	            yAxes: [{
+	                stacked: true, 
+				    gridLines: {
+					display:false
+                				}
+	            }]
+	        },	
+		    plugins: {
+			        labels: [
+					    {
+					      render: 'value'
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    },
+					legend: {
+			            display: true,
+			            position:'bottom'
+			}
+	    }
+	});
+
+	///////////// TRACKING RISQUES statut
+	var ctxo = document.getElementById('statutrisque').getContext('2d');
+	var myChart = new Chart(ctxo, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [
+						{% for statutrisque in statutrisques if statutrisque.risques|length > 0  %}"{{ statutrisque.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: 
+						[{% for statutrisque in statutrisques if statutrisque.risques|length > 0  %}{{ statutrisque.risques|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+			title:      {
+                display: true,
+                text:    "Risques par statut",
+                },
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+
+	///////////// COURBE créa risque
+		var timeParser = 'DD/MM/YYYY';	    
+		new Chart(document.getElementById("risquecrea"), {
+			  type: 'line',
+			   data:    {
+				   labels: [
+					{% for risque in allrisques | sortbyfield('PublishedAt') if risque.PublishedAt is not null %}
+								
+								 "{{ risque.PublishedAt | date("d/m/Y")  }}",
+					
+								{% endfor %}
+				],
+					datasets: [
+						{
+							type: 'line',
+							fill: false,
+							backgroundColor : 'rgba(26,179,148,0.5)',
+							borderColor: 'rgba(26,179,148,0.5)',
+							label: "Nb. de risques",
+							data: [
+								{% for risque in allrisques | sortbyfield('PublishedAt') if risque.PublishedAt is not null %}
+								{{ loop.index}},
+								{% endfor %}
+							]
+						}, 
+						{
+							type: 'bar',
+							label: 'Nouveaux risques',
+							data: [{% for risque in allrisques | sortbyfield('PublishedAt') if risque.PublishedAt is not null %}
+								{{ loop.index}},
+								{% endfor %}]
+							
+						}
+					]
+        },
+		options: {
+            responsive: true,
+            title:      {
+                display: true,
+                text:    "Risques actifs",
+                },
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    time:       {
+                        parser: timeParser,
+                        tooltipFormat: 'll',
+                        unit: 'month'
+                    },
+                    gridLines: {
+		                display:true
+		            }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     false,
+                        labelString: 'Nb. de risques'
+                    },
+                    ticks: {
+                                beginAtZero: true,
+                                steps: 50
+                            },
+                    gridLines: {
+		                display:false
+		            }
+                }]
+            }
+        }					  
+	});
+
+
+
+
+	///////////// TRACKING RISQUES processus
+
+
+	var ctxi = document.getElementById('trackingrisque').getContext('2d');
+	var myChart = new Chart(ctxi, {
+	    type: 'horizontalBar',
+	    data: {
+	        labels: [
+				{% for processus in allprocessuses %}
+					'{{ processus.code }}',
+				{% endfor %}
+			],
+	        datasets: [
+			{
+				barThickness: 20,
+				label: 'Nb. de risques',
+				data: [
+					{% for processus in allprocessuses %}
+						{% set rcount = 0 %}
+						{% for risque in allrisques%}
+							{% for rpro in risque.processuses if rpro is not null and rpro is defined and rpro == processus %}
+								{% set rcount = rcount + 1 %}
+							{% endfor %}
+						{% endfor %}
+						{{ rcount }},
+					{% endfor %}
+				]
+			}]
+	    },
+	    options: {
+			title: {
+				display: true,
+				text: 'Risques par processus'
+			},
+			tooltips: {
+				callbacks: {
+					labelTextColor:function(tooltipItem, chart){
+						return '#ffffff';
+					}
+            	}
+        	},
+		    scales: {
+	            xAxes: [{
+					scaleLabel: {
+                    display: true,
+                    labelString: 'Nb. de risques'
+                            },
+	                stacked: false,
+	                ticks: {
+		                beginAtZero: true,
+		                min: 0,					
+					      // forces step size to be 5 units
+					    stepSize: 1 // <----- This prop sets the stepSize
+						
+		            },
+		            
+					gridLines: {
+						display:false
+                				}
+	            }],
+	            yAxes: [{
+					scaleLabel: {
+                    display: true,
+                    labelString: 'Processus'
+                            },
+	                stacked: false, 
+				    gridLines: {
+					display:false
+                				}
+	            }]
+	        },	
+		    plugins: {
+			        labels: [
+					    {
+					      render: 'value'
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			}
+	    }
+	});
+
+	///////////// NUAGE RISQUE
+	var ctxa = document.getElementById('myRisk').getContext('2d');
+	var scatterChart = new Chart(ctxa, {
+    type: 'bubble',
+    data: {
+        datasets: [
+			 {% for risque in allrisques %}
+			 	{
+            	label: ['R{{ risque.id }} {{ risque.designation|striptags|slice(0, 50) }}'],
+				backgroundColor: "{% if risque.score < 15 %}rgba(27, 153, 139,0.2){% elseif risque.score >= 15 and risque.score < 40 %}rgba(255, 225, 86,0.8){% elseif risque.score >= 40 and risque.score < 60 %}#F69D5C{% elseif risque.score >= 60 and risque.score < 80 %}#ed5861{% elseif risque.score >= 80 and risque.score <= 100 %}#683B5A{% endif %}",
+            	data: [{
+		            x:{{ risque.probabilite }},
+		            y:{{ risque.impact }},
+		            r:6,
+		            }]
+				},
+			{% endfor %}
+		],
+    },
+    options: {
+		title: {
+				display: true,
+				text: 'Scoring des risques'
+			},
+
+        scales: {
+            xAxes: [{
+				scaleLabel: {
+                    display: true,
+                    labelString: 'Probabilité'
+                            },
+                 ticks: {
+	                beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                },
+
+            }],
+            yAxes: [{
+				scaleLabel: {
+                                display: true,
+                                labelString: 'Impact'
+                            },
+                ticks: {
+                    beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                }
+            }]
+        },
+        plugins: {
+			        labels: [
+					    {
+					      render: 'value',
+					      fontSize: '20',
+					    }
+					]
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+    }
+    
+	});
+	{% endif %}
+
+
+	
+
+    </script>
+
+

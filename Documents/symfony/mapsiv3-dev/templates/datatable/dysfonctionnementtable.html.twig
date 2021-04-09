@@ -1,0 +1,118 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'dysfonctionnement' }) }}
+
+<table id="dataTables-dysfonctionnement" class="table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th scope="col" class="export pdf" style="width:80px">Etat</th>
+            <th scope="col" class="export pdf">Désignation</th>
+            <th scope="col" class="export pdf">Managers</th>
+            <th scope="col" class="export">Contributeurs</th>
+            <th scope="col" class="export pdf">Date de notification</th>
+            <th scope="col" class="export">Traitements</th>
+            <th scope="col" class="export">Tiers</th>
+            
+            <th scope="col" class="no-sort" style="width:60px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dysfonctionnement in dysfonctionnements %}
+            <article>
+                <tr>
+                    <td></td>
+                    <th><span class="badge badge-secondary text-center" style="background-color:{{ dysfonctionnement.statut.color | default("")}}">
+                        {{ dysfonctionnement.statut| default("Brouillon")|capitalize  }}
+                        </span>
+                    </th>
+                    <td class="table-title" data-order="{{ dysfonctionnement.id }}">
+                        <a class="" href="{{path('dysfonctionnement_edit',{'slug' : dysfonctionnement.slug, 'id' : dysfonctionnement.id, 'r' : r, 'rr' : rr} ) }}">{{ dysfonctionnement.designation }}</a><br>
+                        <small><span class="badge badge-secondary">DYS-{{ dysfonctionnement.id }}</span></small>
+                    </td>
+                     <td><strong>{{ dysfonctionnement.responsable.firstname | default("") }} {{ dysfonctionnement.responsable.lastname | default("") }}</strong><br>
+                        {{ dysfonctionnement.suppleant.firstname | default("") }} {{ dysfonctionnement.suppleant.lastname | default("") }}
+                    </td>
+                    <td scope="row" data-order="{{ dysfonctionnement.peoples | length  }}">
+
+                        {% if dysfonctionnement.peoples | length  > 0 %}
+                            <span class="dropdown tablerelation">
+                                <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="bi bi-people-fill" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ dysfonctionnement.peoples | length  }}   </strong> 
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <h4 class="tablerelation"> Contributeurs</h4>
+                                     {% for people in dysfonctionnement.peoples %}
+                                    <a class='dropdown-item'>{{loop.index}}. {{ people.firstname | default("")  }} {{ people.lastname | default("")  }}</a>
+                                    {% endfor %}
+                                </div>
+                            </span>
+                        {% endif %}
+
+                        </div>
+                    </td>
+                    <td>{{ dysfonctionnement.PublishedAt | date("d M Y")  }}</td>
+                    <td scope="row" data-order="{{ dysfonctionnement.traitements | length  }}">
+
+                        {% if dysfonctionnement.traitements | length  > 0 %}
+                            <span class="dropdown tablerelation">
+                                <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="bi bi-arrow-down-up" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ dysfonctionnement.traitements | length  }}   </strong> 
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <h4 class="tablerelation"> Traitements</h4>
+                                     {% for traitement in dysfonctionnement.traitements %}
+                                    <a class='dropdown-item'>{{loop.index}}. {{ traitement.designation | default('N/C')  }}</a>
+                                    {% endfor %}
+                                </div>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td scope="row" data-order="{{ dysfonctionnement.tiers | length  }}">
+
+                        {% if dysfonctionnement.tiers | length  > 0 %}
+                            <span class="dropdown tablerelation">
+                                <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="bi bi-app-indicator" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ dysfonctionnement.tiers | length  }}   </strong> 
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <h4 class="tablerelation"> Traitements</h4>
+                                     {% for tier in dysfonctionnement.tiers %}
+                                    <a class='dropdown-item'>{{loop.index}}. {{ tier.designation | default('N/C')  }}</a>
+                                    {% endfor %}
+                                </div>
+                            </span>
+                        {% endif %}
+
+                    </td>
+                   
+                
+                     <td data-order="{{ dysfonctionnement.PublishedAt | date("Ymd")}}" class="text-center">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('dysfonctionnement_edit',{'slug' : dysfonctionnement.slug, 'id' : dysfonctionnement.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                            {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                            <a class="dropdown-item del" href="{{path('tache_remove',{'slug' : dysfonctionnement.slug, 'id' : dysfonctionnement.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                            {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ dysfonctionnement.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(dysfonctionnement.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{dysfonctionnement.publisher.firstname | default("") }} {{ dysfonctionnement.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                    
+                </tr>
+            </article>
+        {% endfor %}
+    </tbody>
+</table>

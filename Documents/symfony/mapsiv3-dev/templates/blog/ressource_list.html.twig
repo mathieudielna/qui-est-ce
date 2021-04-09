@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    <h2>Ressources ({{ ressources|length }})</h2>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{path('start')}}">Mapsi</a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <strong><a>Ressources</a></strong>
+                        </li>
+                    </ol>
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-action">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a class="btn btn-primary" href="{{path('ressource_create')}}">+ Nouvelle ressource</a>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+{% block body %}
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="tabs-container">
+				<ul class="nav nav-tabs" role="tablist">
+					<li><a class="nav-link active show" data-toggle="tab" href="#tab-1"> Liste</a></li>
+				</ul>
+				<div class="tab-content">
+						<div role="tabpanel" id="tab-1" class="tab-pane active show">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<section class="ressource">
+										<div class="table-responsive">
+										<table class="table table table-hover dataTables-ressource">
+											<thead>
+											<tr>
+												<th scope="col">ID</th>
+												<th scope="col">Désignation</th>
+												<th scope="col">Site</th>
+												{% if is_granted('ROLE_ADMIN') %}<th scope="col" class="no-sort"></th>{% endif %}
+											
+											</tr>
+											</thead>
+											<tbody>
+												{% for ressource in ressources %}
+													<article>
+														<tr>
+															<th scope="row" data-order="{{ ressource.id }}"><span class="badge badge-secondary">A-{{ ressource.id }}</span></th>
+															<th scope="row"><a class="" href="{{path('ressource_edit',{'id' : ressource.id} ) }}">{{ ressource.designation | title }}</a></th>
+															<td scope="row">{{ ressource.site.designation | default("N/C") }}</td>
+															{% if is_granted('ROLE_ADMIN') %}
+														<td>
+															<button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																<i class="fa fa-info"></i>
+															</button>
+															<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+																<a class="dropdown-item" href="{{path('ressource_edit',{'id' : ressource.id} ) }}"> Afficher</a>
+																<a class="dropdown-item del" href="{{path('ressource_remove',{'id' : ressource.id} ) }}"> Supprimer</a>
+															</div>
+														</td>
+														{% endif %}
+															
+								
+														</tr>
+													</article>
+												{% endfor %}
+											</tbody>
+										</table>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+
+
+{% block javascripts %}
+
+    <script>
+        $(document).ready(function(){
+	        
+	        $('a.del').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous vraiment supprimer cette ressource ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});	        
+	        
+            $('.dataTables-ressource').DataTable({
+                pageLength: 50,
+                responsive: false,
+                stateSave: true,
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-action',visible: false, searchable: false	},
+	             ],
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'Ressources'},
+                    {extend: 'pdf', title: 'Ressources'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_",
+					    "infoEmpty":      "De 0 à 0 sur 0 activités",
+					    "infoFiltered":   "(filtrée sur _MAX_ au total)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "Rechercher :",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        }
+
+            });
+
+        });
+    </script>
+    
+{% endblock %}

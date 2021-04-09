@@ -1,0 +1,365 @@
+{% extends 'basev2.html.twig' %}
+{% block stylesheets %}
+	<style type="text/css">
+		
+    </style>
+{% endblock %}
+{% block title %} {% endblock %}
+
+{% block headertitle %}
+<span id="titledomaine"></span>
+
+{% endblock %}	
+{% block headercreate %}
+
+{% endblock %}
+
+{% block body %}
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+						<li><a class="nav-link tablist d-none panshowman switchy switch home" data-entite="start" data-tdb="oui" data-toggle="tab" id="startlink"> <strong>{{app.user.customer.designation}}</strong></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch risque" data-toggle="tab" id="tdb-risquelink"> Risques</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch qualite home" data-entite="tdb-qualite" data-tdb="oui" data-toggle="tab" id="tdb-qualitelink"> Qualité</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch rgpd home" data-entite="tdb-rgpd" data-tdb="oui" data-toggle="tab" id="tdb-rgpdlink"> RGPD</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch environnement home" data-entite="tdb-environnement" data-tdb="oui" data-toggle="tab" id="tdb-environnementlink"> Environnement</a></li>
+		                <li><a class="nav-link tablist d-none panshowman switchy switch process" data-entite="tdb-processcarto" data-tdb="oui" data-toggle="tab" id="tdb-processcartolink"> Cartographie des processus</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch asset" data-entite="tdb-organigramme" data-tdb="oui" data-toggle="tab" id="tdb-organigrammelink"> Organigramme</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch asset" data-entite="tdb-cartosite" data-tdb="oui" data-toggle="tab" id="tdb-cartositelink"> Carte des sites</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch si" data-entite="tdb-cartosysteme" data-tdb="oui" data-toggle="tab" id="tdb-cartosystemelink"> Cartographie Système</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch si process" data-entite="tdb-cartosi" data-tdb="oui" data-toggle="tab" id="tdb-cartosilink"> Cartographie SI</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio" data-entite="tdb-courbex" data-tdb="oui" data-toggle="tab" id="tdb-courbexlink"> Tracking</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio" data-entite="tdb-macroplanning" data-tdb="oui" data-toggle="tab" id="tdb-macroplanninglink"> Macro planning</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio" data-entite="tdb-agenda" data-tdb="oui" data-toggle="tab" id="tdb-agendalink"> Agenda</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio" data-entite="tdb-portfoliokpi" data-tdb="oui" data-toggle="tab" id="tdb-portfoliokpilink"> Kpi</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch mapsi_customer" data-entite="tdb-mapsicustomer" data-tdb="oui" data-toggle="tab" id="tdb-mapsicustomerlink"> Société {{app.user.customer.designation}}</a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch mapsi_customer" data-entite="user" data-toggle="tab" id="userlink"> Utilisateurs MAPSI</a></li>
+
+						<li><a class="nav-link tablist d-none panshowman switchy switch process si qualite environnement" data-entite="processus" data-toggle="tab" id="processuslink"> Processus <span class="badge badge-secondary">{{ processuses | length }}</span> <span onclick="crossEntity('undefined','processus')"></span></a></li>
+	                    <li><a class="nav-link tablist d-none panshowman switchy switch process pca" data-entite="activite" data-toggle="tab" id="activitelink"> Activités <span class="badge badge-secondary">{{ activites | length }}</span></a></li>
+	                    <li><a class="nav-link tablist d-none panshowman switchy switch process rgpd" data-entite="flux" data-toggle="tab" id="fluxlink"> Flux <span class="badge badge-secondary">{{ fluxs | length }}</span></a></li>
+	                    <li><a class="nav-link tablist d-none panshowman switchy switch process rgpd pca" data-entite="objet_metier" data-toggle="tab" id="objet_metierlink"> Objet métiers <span class="badge badge-secondary">{{ objetmetiers | length }}</span></a></li>
+						
+						<li><a class="nav-link tablist d-none panshowman switchy switch si rgpd itil pca" data-entite="application" data-toggle="tab" id="applicationlink"> Applications <span class="badge badge-secondary"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch si itil pca" data-entite="systeme" data-toggle="tab" id="systemelink"> Systèmes <span class="badge badge-light"></span></a></li>
+
+						<li><a class="nav-link tablist d-none panshowman switchy switch asset process" data-entite="metier" data-toggle="tab" id="metierlink"> Métier <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch asset" data-entite="people" data-toggle="tab" id="peoplelink"> Equipes <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch asset" data-entite="site" data-toggle="tab" id="sitelink"> Sites <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch asset" data-entite="tier" data-toggle="tab" id="tierlink"> Tiers <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch asset" data-entite="ressource" data-toggle="tab" id="ressourcelink"> Ressources <span class="badge badge-light"></span></a></li>
+	                    
+
+												
+						<li><a class="nav-link tablist d-none panshowman switchy switch axe" data-entite="axe" data-toggle="tab" id="axelink"> Axes stratégiques <span class="badge badge-light"></span></a></li>
+
+						<li><a class="nav-link tablist d-none panshowman switchy switch ctrlinterne risk rgpd pca qualite" data-entite="risque" data-toggle="tab"  data-trans="oui"  id="risquelink"> Risques <span class="badge badge-light"></span></a></li>
+						
+						<li><a class="nav-link tablist d-none panshowman switchy switch environnement qualite ctrlint process" data-entite="objectif" data-trans="oui" data-toggle="tab"  id="objectiflink"> Objectifs <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch environnement" data-entite="aspect_env" data-toggle="tab"  id="aspect_envlink"> AES <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch environnement" data-entite="visite_site" data-toggle="tab" data-trans="oui" id="visite_sitelink"> Visites de site <span class="badge badge-light"></span></a></li>
+
+
+						<li><a class="nav-link tablist d-none panshowman switchy switch ctrlinterne" data-entite="controle" data-toggle="tab" data-trans="oui" id="controlelink"> Contrôles <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch ctrlinterne environnement qualite" data-entite="dysfonctionnement" data-trans="oui" data-toggle="tab" id="dysfonctionementlink"> Dysfonctionnements <span class="badge badge-light"></span></a></li>
+	                	<li><a class="nav-link tablist d-none panshowman switchy switch ctrlinterne environnement rgpd pca energie" data-entite="audit" data-trans="oui"  data-toggle="tab"  id="auditlink"> Audits <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch rgpd" data-entite="rgpd_access" data-toggle="tab"  id="rgpd_accesslink"> Demandes d'accès <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch rgpd qualite environnement ctrlinterne" data-entite="reclamation"  data-trans="oui" data-toggle="tab"  id="reclamationlink"> Réclamations <span class="badge badge-light"></span></a></li>
+						
+						
+						<li><a class="nav-link tablist d-none panshowman switchy switch pca" data-entite="evenement" data-toggle="tab"  id="evenementlink"> Evenement <span class="badge badge-light"></span></a></li>
+
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio" data-entite="program" data-toggle="tab" id="programlink"> Programmes <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio" data-entite="projet" data-toggle="tab" id="projetlink"> Projets <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio rgpd environnement" data-entite="action" data-toggle="tab" id="actionlink"> Actions <span class="badge badge-light"></span></a></li>
+						<li><a class="nav-link tablist d-none panshowman switchy switch portfolio" data-entite="jalon_connect_action" data-toggle="tab"  id="jalon_connect_actionlink"> Tâches <span class="badge badge-light"></span></a></li>
+						
+						<li><a class="nav-link tablist d-none panshowman switchy switch process si asset environnement portfolio energie qualite pca" data-entite="tdb-document" data-tdb="oui" data-toggle="tab" id="tdb-documentlink"> Documents</a></li>
+
+					</ul>
+	                <div class="tab-content">
+						<div role="tabpanel" id="start" class="tab-pane panshowman">
+	                        <div class="panel-body page-start">
+		                        
+							</div>
+	                    </div>
+		                <div role="tabpanel" id="tdb-processcarto" class="tab-pane panshowman">
+	                        <div class="panel-body page-tdb-processcarto">
+		                        
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="processus" class="tab-pane panshowman">
+	                        <div class="panel-body">
+								{{ include('datatable/tableheader.html.twig', {dtname : 'processus' }) }}
+								<table id="dataTables-processus" class="table table-bordered select table-hover"></table>
+							</div>
+	                    </div>
+						<div role="tabpanel" id="activite" class="tab-pane panshowman">
+	                        <div class="panel-body">
+								{{ include('datatable/tableheader.html.twig', {dtname : 'activite' }) }}
+								<table id="dataTables-activite" class="table table-bordered select table-hover"></table>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="flux" class="tab-pane panshowman">
+                            <div class="panel-body">                            
+								{{ include('datatable/tableheader.html.twig', {dtname : 'flux' }) }}
+								<table id="dataTables-flux" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+                        <div role="tabpanel" id="objet_metier" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'objet_metier' }) }}
+								<table id="dataTables-objet_metier" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="application" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'application' }) }}
+								<table id="dataTables-application" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="systeme" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'systeme' }) }}
+								<table id="dataTables-systeme" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="metier" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'metier' }) }}
+								<table id="dataTables-metier" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="people" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'people' }) }}
+								<table id="dataTables-people" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="site" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'site' }) }}
+								<table id="dataTables-site" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tier" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'tier' }) }}
+								<table id="dataTables-tier" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="ressource" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'ressource' }) }}
+								<table id="dataTables-ressource" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-courbex" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-courbex">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-macroplanning" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-macroplanning">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-agenda" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-agenda">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-portfoliokpi" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-portfoliokpi">		                                
+								
+                            </div>
+                        </div>
+
+						<div role="tabpanel" id="program" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'program' }) }}
+								<table id="dataTables-program" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="projet" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'projet' }) }}
+								<table id="dataTables-projet" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="action" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'action' }) }}
+								<table id="dataTables-action" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+
+						<div role="tabpanel" id="jalon_connect_action" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'jalon_connect_action' }) }}
+								<table id="dataTables-jalon_connect_action" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="axe" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'axe' }) }}
+								<table id="dataTables-axe" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-risque" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								TDB Risques
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-environnement" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-environnement">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-rgpd" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-rgpd">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-qualite" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-qualite">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-organigramme" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-organigramme">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-cartosite" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-cartosite">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-cartosysteme" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-cartosysteme">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-cartosi" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-cartosi">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="risque" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'risque' }) }}
+								<table id="dataTables-risque" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="controle" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'controle' }) }}
+								<table id="dataTables-controle" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="dysfonctionnement" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'dysfonctionnement' }) }}
+								<table id="dataTables-dysfonctionnement" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="audit" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'audit' }) }}
+								<table id="dataTables-audit" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="rgpd_access" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'rgpd_access' }) }}
+								<table id="dataTables-rgpd_access" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="reclamation" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'reclamation' }) }}
+								<table id="dataTables-reclamation" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="objectif" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'objectif' }) }}
+								<table id="dataTables-objectif" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="aspect_env" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'aspect_env' }) }}
+								<table id="dataTables-aspect_env" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="visite_site" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'visite_site' }) }}
+								<table id="dataTables-visite_site" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="evenement" class="tab-pane panshowman">
+                            <div class="panel-body">		                                
+								{{ include('datatable/tableheader.html.twig', {dtname : 'evenement' }) }}
+								<table id="dataTables-evenement" class="table table-bordered select table-hover"></table>
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-document" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-document">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="tdb-mapsicustomer" class="tab-pane panshowman">
+                            <div class="panel-body page-tdb-mapsicustomer">		                                
+								
+                            </div>
+                        </div>
+						<div role="tabpanel" id="user" class="tab-pane panshowman">
+                            <div class="panel-body page-user">	
+								{{ include('datatable/tableheader.html.twig', {dtname : 'user' }) }}
+								<table id="dataTables-user" class="table table-bordered select table-hover"></table>	                                
+								
+                            </div>
+                        </div>
+
+
+	                    <div role="tabpanel" id="files" class="tab-pane panshowman">
+                            <div class="panel-body">
+							    <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entity', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'ProcessusActivites'}}) }}" width="100%" height="500" frameborder="0"></iframe>
+                            </div>
+                        </div>
+	                </div>
+				</div>
+				
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+
+
+{% block javascripts %}
+
+    <script>
+	
+	$(document).ready(function() {
+		$(function() {
+			$('.nav-tabs').responsiveTabs();
+		});
+
+		{# var id = {{ id }};
+		var entite = {{ entite|json_encode|raw }};
+			console.log('switcher'+id+entite);
+            editEntite(id, entite);		
+        #}
+
+	    });	 
+
+
+
+    </script>
+{% endblock %}

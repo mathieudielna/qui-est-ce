@@ -1,0 +1,263 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<style type="text/css">
+
+.mynode {
+  border: 0px;
+  background-color: #bfdbf7;
+}
+    </style>
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+		<div class="col-sm-8">
+			<h2>Collaborateurs ({{ peoples|length }})</h2>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="{{path('start')}}">Mapsi</a>
+				</li>
+				<li class="breadcrumb-item active">
+					<strong><a>Collaborateurs</a></strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-sm-4">
+			<div class="title-action">
+				{% if is_granted('ROLE_ADMIN') %}<a class="btn btn-primary" href="{{path('people_create')}}">+ Nouveau collaborateur</a>{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block body %}
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="tabs-container">
+				<ul class="nav nav-tabs" role="tablist">
+					<li><a class="nav-link active show" data-toggle="tab" href="#tab-1"> Organigramme</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#tab-2"> Liste</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#tab-files"> Documents</a></li>
+				</ul>
+				<div class="tab-content">
+					<div role="tabpanel" id="tab-1" class="tab-pane active show">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<div id="orgchart"></div>								
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="tabpanel" id="tab-2" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<section class="people">
+										<div class="table-responsive">
+											<table class="table table-hover dataTables-people" >
+												<thead>
+												<tr>
+													<th scope="col">ID</th>
+													<th scope="col">Nom</th>
+													<th scope="col">Fonction</th>
+													<th scope="col">Site</th>
+													<th scope="col">Métier</th>
+													<th scope="col">Utilisateur</th>
+													<th scope="col">Processus</th>
+													<th scope="col">Activités</th>
+													<th scope="col">Applications</th>
+													
+													<th scope="col">Flux</th>
+													<th scope="col">Actions</th>
+													{% if is_granted('ROLE_ADMIN') %}<th scope="col" class="no-sort"></th>{% endif %}
+												</tr>
+												</thead>
+												<tbody>
+												
+												{% for people in peoples %}
+													<article>
+														<tr>
+															<th scope="row" data-order="{{ people.id }}"><span class="badge badge-secondary">C-{{ people.id }}</span></th>
+															<th scope="row"><a class="" href="{{path('people_edit',{'id' : people.id} ) }}">{{ people.firstname }} {{ people.lastname }} {% if app.user.people.id == people.id %}(Moi) {% endif %}</a></th>
+															<td scope="row">{{ people.role | default("N/C") }}</td>
+															<td scope="row">{{ people.site.designation | default("N/C") }}</td>
+															<td scope="row">{{ people.metier.designation | default("N/C") }} ({{ people.metier.code| default("N/C") }})</td>
+															<td scope="row">{% if people.user is not null%}Oui{% endif %}</td>
+															<td scope="row"><button class="btn btn-primary btn-circle" type="button">{{ people.processusesresponsable|length }}</button></td>
+															<td scope="row"><button class="btn btn-primary btn-circle" type="button">{{ people.activites|length }}</button></td>
+															<td scope="row"><button class="btn btn-primary btn-circle" type="button">{{ people.applicationsresponsable|length }}</button></td>
+															<td scope="row"><button class="btn btn-primary btn-circle" type="button">{{ people.fluxsresponsable|length }}</button></td>
+															<td scope="row"><button class="btn btn-primary btn-circle" type="button">{{ people.actionsresponsable|length }}</button></td>
+															{% if is_granted('ROLE_ADMIN') %}
+														<td>
+															<button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																<i class="fa fa-info"></i>
+															</button>
+															<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+																<a class="dropdown-item" href="{{path('people_edit',{'id' : people.id} ) }}"> Afficher</a>
+																<a class="dropdown-item del" href="{{path('people_remove',{'id' : people.id} ) }}"> Supprimer</a>
+															</div>
+														</td>
+													{% endif %}
+															
+															
+														</tr>
+														
+													</article>
+												{% endfor %}
+												
+													</tbody>
+											</table>
+										</div>
+									</section>									
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="tab-files" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+							</div>
+							<br>			                                
+							<div class="form-group row">				
+								<div class="col-sm-12">
+									
+									<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entity', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Collaborateurs'}}) }}" width="100%" height="500" frameborder="0"></iframe>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+		        $('a.del').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous vraiment supprimer ce collaborateur ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+			
+	        
+            $('.dataTables-people').DataTable({
+                pageLength: 25,
+                responsive: false,
+                stateSave: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-metier',visible: false, searchable: false	},
+	             ],
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'Référentiel des collaborateurs'},
+                    {extend: 'pdf', title: 'Référentiel des collaborateurs'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_",
+					    "infoEmpty":      "De 0 à 0 sur 0 activités",
+					    "infoFiltered":   "(filtrée sur _MAX_ au total)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "Rechercher :",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        }
+
+            });
+
+        });
+
+		//////////////////////////orgchart
+		//////////////////////////
+
+			google.charts.load('current', {packages:["orgchart"]});
+				google.charts.setOnLoadCallback(drawChart);
+				function drawChart() {
+					var data = new google.visualization.DataTable();
+					data.addColumn('string', 'Name');
+					data.addColumn('string', 'Manager');
+					data.addColumn('string', 'ToolTip');
+
+					data.addRows([
+						{% for people in peoples %}
+						[{'v':'{{ people.id }}', 'f':'{{ people.firstname }} {{ people.lastname }}'}, '{% if people.n1.id is defined and people.n1.id is not null %}{{ people.n1.id }}{% endif %}', '{{ people.role }}'],
+						{% endfor %}
+					]);
+					
+					var chart = new google.visualization.OrgChart(document.getElementById('orgchart'));
+					chart.draw(data,  {'allowHtml':true, 'size':'medium', 'allowCollapse':true, 'nodeClass': 'mynode'});
+				}
+        
+        /// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+    </script>
+{% endblock %}

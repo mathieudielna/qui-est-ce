@@ -1,0 +1,685 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formFlux _self %}
+{% block stylesheets %}
+	<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+		
+		
+		@media print
+		{
+		.tab-pane {  display: block !important;  }
+		.noprint {  display: none !important;  }
+		.tab-pane { page-break-before: always; }
+		}
+
+		.change-message {
+				display: none;
+			}
+    </style>
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+			{% if editMode %}
+				<h2>Flux / traitement</h2>
+				{% else %}
+				<h2>Créer un nouveau flux / traitement</h2>
+			{% endif %}
+			<a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+				<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+				</svg> Retour vers {{ rr }}
+			</a> 
+           	
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+               
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+{{ form_start(formFlux) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+                              
+                                <a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+								{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+								<button type='submit' class="btn btn-primary btn-sm noprint disab">
+								{% if editMode %}
+								Enregistrer <span class="change-message">
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+								<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+								</svg>
+								</span>
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+								{% endif %}
+
+								{% if editMode %}&nbsp;&nbsp;&nbsp;<button type='button'  class="btn btn-white btn-sm" OnClick="javascript:window.print()"><i class="fa fa-external-link"></i></button>
+			                    
+								<a class="btn btn-white btn-sm" href="{{path('flux_json',{'id' : flux.id} ) }}">PIA</a>{% endif %}
+								</span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									FLU-{{ flux.id }} {{ flux.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+							<div class="hr-line-dashed"></div>
+                        </div>
+
+						
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Statut :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(flux) %}<strong>{{ workflow_metadata(flux, 'title', place) ?: ''}}</strong>{% endfor %}
+									
+									</dd>
+									
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if flux.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : flux.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ formFlux.vars.value.responsable.firstname | default("") }} {{ formFlux.vars.value.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if flux.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : flux.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ formFlux.vars.value.suppleant.firstname | default("") }} {{ formFlux.vars.value.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							{% if flux.redacteur is not null %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Rédacteur :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										<a shref="{{path('people_edit',{'id' : flux.redacteur.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ formFlux.vars.value.redacteur.firstname | default("") }} {{ formFlux.vars.value.redacteur.lastname | default("N/C") }}
+									</a>
+									</dd>
+								</div>
+                            </dl>
+							{% endif %}
+							{% if flux.peoples | length >0 %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in flux.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+							{% endif %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>DPO :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										<a shref="" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ app.user.customer.dpo.firstname }} {{ app.user.customer.dpo.lastname }}
+										</a>
+									</dd>
+								</div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ flux.publishedat | date("d M Y")  }} par {{ flux.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ flux.validatedat | date("d M Y")  }} par {{ flux.validator.firstname | default("n/c") }} </dd>
+
+									<div class="hr-line-dashed"></div>
+
+									<ul class="steps">
+										<li class="step {% if workflow_has_marked_place(flux, 'review') or workflow_has_marked_place(flux, 'validation') or workflow_has_marked_place(flux, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(flux, 'draft') %}step-active{% elseif workflow_has_marked_place(flux, 'rejected') %}step-error{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">1</span>
+											<span class="step-text">{% if workflow_has_marked_place(flux, 'draft') or workflow_has_marked_place(flux, 'rejected') %}Rédaction{% else %}Rédigé{% endif %}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(flux, 'validation') or workflow_has_marked_place(flux, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(flux, 'review') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">2</span>
+											<span class="step-text">{% if workflow_has_marked_place(flux, 'review') or workflow_has_marked_place(flux, 'draft') or workflow_has_marked_place(flux, 'rejected') %}Révision<br>(Resp.){% else %}Revu<br>(Resp.){% endif%}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(flux, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(flux, 'validation') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">3</span>
+											<span class="step-text">{% if workflow_has_marked_place(flux, 'validation_ok') %}Validé<br>(DPO){% else %}validation<br>(DPO){% endif%}</span>
+											</div>
+										</li>
+									</ul>
+
+									<div class="hr-line-dashed"></div>
+
+									{% set rolep = "" %}{% if flux.redacteur == app.user.people  %}{% set rolep = "redacteur" %}{% endif %}
+									{% set roles = "" %}{% if flux.responsable == app.user.people  %}{% set roles = "responsable" %}{% set rolep = "redacteur" %}{% endif %}
+									{% set roler = "" %}{% if app.user.customer.dpo == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "dpo" %}{% set roles = "responsable" %}{% set rolep = "redacteur" %}{% endif %}
+									{% for transition in workflow_transitions(flux) %}
+										{% if workflow_can(flux, transition.name) %}
+											{% if workflow_metadata(flux, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(flux, 'ambiance', transition)}} btn-xs adisab" href="{{path('flux_workflow', {
+												'id' : flux.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(flux, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No actions available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                        {% endif %}
+                    </div>
+					<br><br>
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs noprint">
+									{% if editMode %}
+									<li>
+										<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+				                            <span style="font-size: 18px;">
+												Synthèse
+											</span>
+										</a>
+									</li>
+									{% endif %}
+		                            <li>
+										<a class="nav-link {% if not editMode %}active show{% endif %}" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+		                            <li>
+										<a class="nav-link" data-toggle="tab" href="#rgpd"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-life-ring"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#comment"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+
+		                        <div class="tab-content">
+									{% if editMode %}
+									<div id="introduction" class="tab-pane active show">
+										<div class="panel-body">			                                
+											<div class="row">	
+												<div class="col-lg-8">
+													{% if flux.description=="" and flux.finalite=="" %}<img src="/bootstrap-icons-1/exclamation-triangle.svg" alt="" width="18" height="18" title="Bootstrap">Il n'y a pas assez de données pour afficher la synthèse. Veuillez renseigner la fiche flux.{% endif %}
+													<p class="small">
+														{{ flux.description | raw}}
+														{% if flux.finalite is not null and flux.finalite is defined %}
+															<h5>Finalité</h5>
+															{{ flux.finalite | raw}}
+														{% endif %}
+													</p>
+													{% if flux.fluxConnectActivites | length >1 %}
+										
+													{% endif %}
+												</div>
+												<div class="col-lg-4">
+													<div class="row">
+														<div class="col-lg-12">	
+															<h5>Comply</h5>
+															{% set dcp = "Non" %}{% for om in flux.objetmetiers if om.dcp.code is defined and om.dcp.code==1 %}{% set dcp = "RGPD" %}{% endfor %}
+															{% if dcp=="RGPD" %}{% set dcpsensible = "Non" %}
+															<span class="label label-danger" style="margin: 2px">RGPD
+															{% set dcpsensible = "Non" %}{% for om in flux.objetmetiers if  om.dcpsensible.code is defined and om.dcpsensible.code==1 %}{% set dcpsensible = "Oui" %}{% endfor %}
+															{% if dcpsensible=="Oui" %}Sensible{% endif %}
+															</span>{% endif %}
+															{% if flux.risques|length  >= 1 %}
+															<span class="label label-danger" style="margin: 2px">
+															RIA
+															</span>
+															{% endif %}
+															{% if dcp=="Non" %}
+															<img src="/bootstrap-icons-1/exclamation-triangle.svg" alt="" width="18" height="18" title="Bootstrap">
+															Aucun domaine de conformité n'est identifié
+															{% endif %}
+
+														</div>
+						
+														{% if flux.objetmetiers|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Données</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for om in flux.objetmetiers %}
+																<li><a href="{{path('objetmetier_edit',{'id' : om.id, 'r' : r, 'rr' : rr} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;{{ om.designation }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if flux.fluxConnectActivites|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Activités</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for actconnect in flux.fluxConnectActivites  %}
+																<li><a href="{{path('activite_edit',{'id' : actconnect.activite.id, 'r' : r, 'rr' : rr} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ actconnect.activite.designation|length > 50 ? actconnect.activite.designation|slice(0, 50) ~ '...' : actconnect.activite.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if flux.actions|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Actions</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for action in flux.actions %}
+																<li><a href="{{path('action_edit',{'id' : action.id, 'r' : r, 'rr' : rr} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ action.designation|length > 42 ? action.designation|slice(0, 42) ~ '...' : action.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if flux.risques|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Risques</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for risque in flux.risques %}
+																<li><a href="{{path('risque_edit',{'id' : risque.id, 'r' : 'risque_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ risque.designation|length > 42 ? risque.designation|slice(0, 42) ~ '...' : risque.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+													</div>	
+												</div>	
+											</div>
+										</div>
+									</div>
+									{% endif %}
+		                            <div id="information" class="tab-pane {% if not editMode %}active show{% endif %}">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.designation, 'Désignation') }}</strong></label>
+												<div class="col-sm-10">{{ form_widget(formFlux.designation)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.description, 'Description') }}</strong></label>
+												<div class="col-sm-10">{{ form_widget(formFlux.description)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+
+											
+										    <div class="form-group row"><label class="col-sm-2 col-form-label"><strong>Managers</strong></label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-4"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.responsable, 'Responsable') }}</span>{{ form_widget(formFlux.responsable)}}</div>
+										                <div class="col-md-4"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.suppleant, 'Suppléant') }}</span>{{ form_widget(formFlux.suppleant)}}</div>
+														<div class="col-md-4"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.redacteur, 'Rédacteur') }}</span>{{ form_widget(formFlux.redacteur)}}</div>
+										            </div>
+										        </div>
+										    </div>
+											<div class="form-group row"><label class="col-sm-2 col-form-label"></label>
+										        <div class="col-sm-10">
+										            <div class="row">
+														<div class="col-md-12"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.peoples, 'Contributeurs') }}</span>{{ form_widget(formFlux.peoples)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.actions, 'Actions') }}</strong><br>
+												<small>Rattacher ici les actions de mise en conformité ou de changement en lien avec ce traitement.</small></label>
+												<div class="col-sm-4 b-r">{{ form_widget(formFlux.actions)}}</div>
+
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.risques, 'Risques') }}</strong><br>
+												<small>Evaluation des risques</small>
+												<br></label>
+												<div class="col-sm-4">{{ form_widget(formFlux.risques)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.objetmetiers, 'Objets métier') }}</strong><br>
+												<small>Les objets métiers contenant l'information (document numérique, application, base de données, etc.).<br>
+												Sélectionner dans la liste le ou les objets métiers supporter par ce traitement.</small>
+												</label>
+												<div class="col-sm-4 b-r">{{ form_widget(formFlux.objetmetiers)}}</div>
+
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.applications, 'Applications') }}</strong><br>
+												<small>Identifier les applications utilisées lors du traitement des informations</small>
+												<br></label>
+												<div class="col-sm-4">{{ form_widget(formFlux.applications)}}</div>
+										    </div>
+										    											
+											<div class="hr-line-dashed"></div>
+
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label"><strong>Activités</strong> <button type='button' id="add-flux" class="btn btn-outline-success btn-xs">+</button><br>
+												<small>
+												Identifier toutes les activités sources ou cibles de ce traitement et renseigner la direction du flux pour l'activité.</small>
+												</label>
+													<div class="col-sm-10">{{ form_widget(formFlux.fluxConnectActivites) }}</div>
+										    </div>
+												
+		                                </div>
+		                            </div>
+
+		                            <div id="rgpd" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-10"><h3>Diagnostic RGPD</h3></div>
+											</div>
+											<br>	
+											
+											<div class="form-group row {% if app.user.customer.dpo == app.user.people or is_granted('ROLE_ADMIN')  %}{% else %}d-none{% endif %}">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.statutrgpd, 'Statut RGPD') }}</strong></label>
+												<div class="col-sm-4 b-r">{{ form_widget(formFlux.statutrgpd)}}</div>
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.dpia, "Analyse d'impact DPIA") }}</strong></label>
+												<div class="col-sm-4">{{ form_widget(formFlux.dpia)}}</div>
+										    </div>
+										    											
+											<div class="hr-line-dashed"></div>
+											
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.finalite, 'Finalité') }}</strong><br>
+												<small>Lister les finalités par grands thèmes, par exemple : gérer la paie, prospection parr emailing, livrer les clients, prévenir la fraude, etc.)</small>
+												</label>
+												
+												<div class="col-sm-10">{{ form_widget(formFlux.finalite)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.typetraitementrgpds, 'Type de traitement') }}</strong><br>
+												<small>Quels sont les traitements réalisés avec les informations collectées ?</small>
+												</label>
+												<div class="col-sm-4">{{ form_widget(formFlux.typetraitementrgpds)}}</div>
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.dcpjuridique, 'Fondement(s) Juridique(s)') }}</strong><br>
+												<small>Sur quels fondements juridiques vous appuyez vous pour justifier le traitement de ces données ?</small>
+												</label>
+												<div class="col-sm-4">{{ form_widget(formFlux.dcpjuridique)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.dcpsensible, 'Données sensibles') }}</strong><br>
+												<small>A votre connaissance, ce traitement contient il des informations dites sensibles au regard des exigences du RGPD ?</small>
+												</label>
+												<div class="col-sm-10">{{ form_widget(formFlux.dcpsensible)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										   
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.personneconcerne, 'Personnes concernées') }}</strong><br>
+												<small>Quels sont les profils des personnes concernées par le traitement de ces informations personnelles</small>
+												</label>
+												
+												<div class="col-sm-10">{{ form_widget(formFlux.personneconcerne)}}</div>
+										    </div>
+
+											<div class="hr-line-dashed"></div>
+					     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label"><strong>Expéditeurs</strong><br>
+											<small>Si les informations personnelles ne proviennent pas directement de la personne concernées, qui est à l'origine de leur envoi ?</small>
+											</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.expin, 'Interne') }}</span>{{ form_widget(formFlux.expin)}}</div>
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.expout, 'Externe') }}</span>{{ form_widget(formFlux.expout)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label"><strong>Destinataires</strong><br>
+											<small>Communiquez vous ces informations en toute ou partie à d'autres directions/services ou à des sous traitants / organismes extérieurs ?</small>
+											</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.destin, 'Interne') }}</span>{{ form_widget(formFlux.destin)}}</div>
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formFlux.destext, 'Externe') }}</span>{{ form_widget(formFlux.destext)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row"><label class="col-sm-2 col-form-label"><strong>Diagnostic</strong></label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                	<div class="col-md-3"><span class="form-text m-b-none text-navy">Transfert hors UE ?</span>{{ form_widget(formFlux.transferthorsue)}}</div>
+															<div class="col-md-3"><span class="form-text m-b-none text-navy">Recueil accord de collecte ?</span>{{ form_widget(formFlux.accordcollecte)}}</div>
+										                	<div class="col-md-3"><span class="form-text m-b-none text-navy">Recueil accord utilisation ?</span>{{ form_widget(formFlux.accordutilisation)}}</div>
+										                	<div class="col-md-3"><span class="form-text m-b-none text-navy">Engagement des sous traitants ?</span>{{ form_widget(formFlux.dcpsstraitant)}}</div>
+										            </div>
+										        </div>
+										    </div>
+
+											<div class="hr-line-dashed"></div>
+										   
+										    <div class="form-group row"><label class="col-sm-2 col-form-label"><strong>Conservation</strong></label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-4"><span class="form-text m-b-none text-navy">Support</span>{{ form_widget(formFlux.supports)}}</div>
+										           		<div class="col-sm-4"><span class="form-text m-b-none text-navy">Périodicité</span>{{ form_widget(formFlux.periodicites)}}</div>
+														<div class="col-md-4"><span class="form-text m-b-none text-navy">Durée de conservation</span>{{ form_widget(formFlux.dureeconservation)}}</div>
+												    </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formFlux.sstraitant, 'Identification élargie des sous traitants') }}</strong></label>
+												<div class="col-sm-10">{{ form_widget(formFlux.sstraitant)}}</div>
+										    </div>
+		                                </div>
+		                            </div>
+		                            <div id="files" class="tab-pane noprint">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'ProcessusActivites', 'entryprefix': 'FLU', 'entryid': flux.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="comment" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formFlux.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formFlux) }}
+{% endblock %}
+
+
+{% block _flux_fluxConnectActivites_widget %}
+		{{ form_widget(form)}}
+{% endblock %}
+
+{% block _flux_fluxConnectActivites_entry_widget %}     
+    <div class="row" id="block_{{id}}">
+		<div class="col-12">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-8"><span class="form-text m-b-none text-navy">Activité</span>{{ form_widget(form.activite)}}</div>
+						<div class="col-3"><span class="form-text m-b-none text-navy"><i class="fa fa-arrows-h"></i> Direction</span>{{ form_widget(form.direction)}}</div>
+						<div class="col-1 noprint"><span class="form-text m-b-none text-navy">.</span>{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-flux" class="btn btn-outline-secondary btn-xs"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+					</div>
+				</div>
+			</div> 
+		</div> 
+	</div>	
+{% endblock %}
+	
+	
+
+{% block javascripts %}
+
+	
+	<script>
+		$(document).ready(function() 
+		{
+			mermaid.initialize({startOnLoad:true});
+
+			CKEDITOR.replace('flux_description', {
+				uiColor: '#FFFFFF'
+			});
+			CKEDITOR.replace('flux_finalite', {
+				uiColor: '#FFFFFF'
+			});
+			CKEDITOR.replace('flux_commentaire', {
+				uiColor: '#FFFFFF'
+			});
+			
+
+			//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+		});
+		
+		//Ajout des flux
+		$('#add-flux').click(function(){
+			const index =$('#flux_fluxConnectActivites div.row').length;
+			const tmpl =$('#flux_fluxConnectActivites').data('prototype').replace(/__name__/g, index);
+			$('#flux_fluxConnectActivites').append(tmpl);
+			$('select').select2();
+			handleDeleteButtons();
+		});
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+		
+		
+		
+	</script>
+	
+{% endblock %}
+
+

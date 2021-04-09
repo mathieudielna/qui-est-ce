@@ -1,0 +1,312 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formRgpdAccess  'bootstrap_4_layout.html.twig' %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+            {% if editMode %}
+			<h2>Demande de droit d'accès</h2>
+			{% else %}
+			<h2>Créer une nouvelle demande</h2>
+			{% endif %} 
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{path('start')}}">Mapsi</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{path('rgpd_list')}}">RGPD droit d'accès
+                    </a>
+                </li>
+                {% if editMode %}
+                <li class="breadcrumb-item active">
+                    <strong><a>ACCES-{{ rgpdaccess.id }}</a></strong>
+                </li>
+                {% else %}
+                <li class="breadcrumb-item active">
+                    <strong><a>Nouvel demande</a></strong>
+                </li>
+				{% endif %}
+            </ol>
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+               
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+{{ form_start(formRgpdAccess) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+		            
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <button type='button'  class="btn btn-white" data-target="{{path('rgpd_list')}}"  data-action="leave">Quitter</button>
+				                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary">
+									{% if editMode %}
+									Enregistrer
+									{% else %}
+									Ajouter
+									{% endif %}
+									</button>
+									{% endif %}
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle demande
+									{% else %}
+									ACCES-{{ rgpdaccess.id }} {{ rgpdaccess.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Status :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+                                    	<span class="badge badge-secondary" style="background-color:{{ rgpdaccess.statut.color | default("N/C")}}">
+										{{ rgpdaccess.statut.designation | default("N/C")  }}
+										</span>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Demande:</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ rgpdaccess.CreatedAt | date("d/m/Y")}}</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour:</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ rgpdaccess.PublishedAt | date("d/m/Y")}}</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Clôture:</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ rgpdaccess.ClosedAt | date("d/m/Y")}}</dd>
+                                </div>
+                            </dl>
+
+
+                        </div>
+                        {% endif %}
+                    </div>
+<br><br>
+					
+					
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#tab-info"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-comment"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+		                            <div id="tab-info" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRgpdAccess.designation, 'Designation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRgpdAccess.designation)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRgpdAccess.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRgpdAccess.description)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formRgpdAccess.responsable, 'Responsable') }}</span>{{ form_widget(formRgpdAccess.responsable)}}</div>
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formRgpdAccess.suppleant, 'Suppléant') }}</span>{{ form_widget(formRgpdAccess.suppleant)}}</div>
+										            </div>
+										        </div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRgpdAccess.nom, 'Nom du demandeur') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRgpdAccess.nom)}}</div>
+											</div>		
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRgpdAccess.email, 'Email du demandeur') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRgpdAccess.email)}}</div>
+											</div>		
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRgpdAccess.statut, 'Statut') }}</label>
+												<div class="col-sm-5">{{ form_widget(formRgpdAccess.statut)}}</div>
+												<div class="col-sm-5">{{ form_widget(formRgpdAccess.ClosedAt)}}</div>
+											</div>	
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRgpdAccess.traitement, 'Traitement') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRgpdAccess.traitement)}}</div>
+											</div>	
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRgpdAccess.pilotes, 'Acteurs internes') }}</label>
+												<div class="col-sm-5">{{ form_widget(formRgpdAccess.pilotes)}}</div>
+											</div>	
+		                                </div>
+		                            </div>
+	
+		                             <div id="tab-files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'RGPD', 'entryprefix': 'ACCESS', 'entryid': rgpdaccess.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="tab-comment" class="tab-pane">
+		                                <div class="panel-body">
+			                                
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formRgpdAccess.commentaire)}}
+											       
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+	            
+					<br><br>
+		            <div class="row">
+						<div class="col-12">
+		                    <span class="float-right">
+			                    <button type='button'  class="btn btn-white" data-target="{{path('rgpd_list')}}"  data-action="leave">Quitter</button>
+			                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+								<button type='submit' class="btn btn-primary">
+								{% if editMode %}
+								Enregistrer
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+								{% endif %}
+		                    </span>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formRgpdAccess) }}
+{% endblock %}
+
+
+{% block javascripts %}
+
+	
+	<script>
+		$(document).ready(function() {
+			$('#rgpd_access_statut').select2();
+			$('#rgpd_access_pilotes').select2();
+			$('#rgpd_access_traitement').select2();
+			$('#rgpd_access_responsable').select2();
+			$('#rgpd_access_suppleant').select2();
+			CKEDITOR.replace( 'rgpd_access_commentaire' );
+			CKEDITOR.replace( 'rgpd_access_description' );
+		
+		function saveLeave (){
+				$('button[data-action="leave"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+						    buttons: {
+						        quitter: function () {
+						           $(location).attr('href', target);
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		saveLeave();
+		});
+	</script>
+	
+{% endblock %}
+
+

@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block header %}
+
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+
+			<h2>Fiche utilisateur US-{{ user.id }}</h2>
+
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{path('start')}}">Mapsi</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{path('security_list')}}">Utilisateur
+                    </a>
+                </li>
+                {% if editMode %}
+                <li class="breadcrumb-item active">
+                    <strong><a>US-{{ user.id }} {{ user.username}}</a></strong>
+                </li>
+              
+				{% endif %}
+            </ol>
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+	        </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block body %}
+   <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-title">
+	                <h5>
+	                   Modification des rôles
+	                </h5>
+	                <div class="ibox-tools">
+	                    <a class="" href="{{path('security_list')}}">
+				        <i class="fa fa-times"></i>
+				    </a>
+	                </div>
+	            </div>
+	            <div class="ibox-content">
+				    {{ form_start(formrole) }}
+						<div class="form-group  row">
+							<label class="col-sm-2 col-form-label">{{ form_label(formrole.userRoles, 'Rôles') }}</label>
+							<div class="col-sm-10">{{ form_widget(formrole.userRoles)}}</div>
+					    </div>
+					   
+						<div class="form-group  row">
+							<label class="col-sm-2 col-form-label"></label>
+							<div class="col-sm-10">
+								<a class="btn btn-white btn-sm" href="{{path('security_list')}}">Annuler</a>
+								<button type='submit' class="btn btn-primary btn-sm">
+								{% if editMode %}
+								Enregistrer les modifications
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+							</div>
+					    </div>
+					{{ form_end(formrole) }}	
+	            </div>
+	        </div>
+    	</div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+	<script>
+		$(document).ready(function() {
+			$('#user_role_update_people').select2();
+		});
+	</script>
+{% endblock %}

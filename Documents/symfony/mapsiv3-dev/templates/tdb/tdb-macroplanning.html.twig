@@ -1,0 +1,149 @@
+
+<style>
+    .vis-item {
+    border:0;
+    background-color: #17a2b8;
+	color:#000;
+	font-size: 10px;
+	padding: 0px;
+  }
+.vis-item-content {
+	padding: 0px;
+  }
+  
+  .vis-label {
+	font-weight: bold;
+  }
+  
+    .vis-left {
+	width:160px;
+  }
+  
+  #visualization {
+    width: 100%;
+    min-height: 100%;
+    height: 100%;
+    }
+    
+.vis-item.orange {
+  background-color: #EDD892;
+  border-color: #f8ac59;
+}
+.vis-item.vis-selected.orange {
+  /* custom colors for selected orange items */
+  background-color: orange;
+  border-color: orangered;
+}
+
+.vis-item.projet {
+  background-color: #1ab394;
+  border-color: #1ab394;
+  font-size: 14px;
+}
+.vis-item.vis-selected.projet {
+  /* custom colors for selected orange items */
+  background-color: orange;
+  border-color: orangered;
+}
+</style>
+
+
+<div id="visualization"></div>
+
+
+
+
+<script>
+        var groups = new vis.DataSet([
+			{% for program in allprograms if program.topprogram == 1   %}
+				{ 
+				id: {{ program.id }}, content: "{{ program.designation }}", value: {{ program.id }},
+				subgroupOrder: function(a, b) {return a.subgroupOrder - b.subgroupOrder;},
+				subgroupStack: { {% for projet in program.projets %}proj_{{ projet.id }}: true,{% endfor %} } 
+				},
+			{% endfor %}
+			]);
+
+			// create a dataset with items
+			// note that months are zero-based in the JavaScript Date object, so month 3 is April
+			var items = new vis.DataSet([
+			{% for projet in allprojets if projet.program is not null %}
+				{% set order = loop.index %}
+				 {
+				    id: {{ projet.id }},
+				    group: {{ projet.program.id }},
+				    subgroup: "proj_{{ projet.id }}",
+				    subgroupOrder: {{ order }},
+				    content: "{{ projet.code }} - {{ projet.designation }}",
+				    start: new Date(
+				    	{% set minValuegantt = "now"|date("Y, m, d") %}
+						{% for action in projet.actions %}
+							{% set minValuegantt = min(action.datedebut|date_modify("-1 month")|date("Y, m, d"), minValuegantt) %}
+						{% endfor %}
+						{{ minValuegantt }}
+					),
+				    end: new Date(
+					    {% set maxValue2 = 0 %}
+		                {% for action in projet.actions if action.datefin is defined and action.datefin is not null %}
+		                   	{% set maxValue2 = max(action.datefin|date_modify("-1 month")|date("Y,m,d"), maxValue2) %}
+		                {% endfor %}
+		                {{ maxValue2 }}
+				    ),
+					className: "projet text-white"
+				 },
+				{% for action in projet.actions %}
+					{% for jalon in action.jalonconnectactions if jalon.topjalon == 1  %}
+					  {
+					    id: 'jal{{ jalon.id }}',
+					    group: {{ projet.program.id }},
+					    subgroup: "proj_{{ projet.id }}",
+					    content: "{{ jalon.jalon }}",
+					    start: new Date({{jalon.daterevue|date_modify("-1 month")|date("Y, m, d")}}),
+						type: "box",
+						className: "orange",
+						subgroupOrder: {{ order }},
+					  },
+					{% endfor %}
+				{% endfor %}
+			{% endfor %}
+			]);
+			
+			// create visualization
+			var container = document.getElementById("visualization");
+			var options = {
+			  // option groupOrder can be a property name or a sort function
+			  // the sort function must compare two groups and return a value
+			  //     > 0 when a > b
+			  //     < 0 when a < b
+			  //       0 when a == b
+			  groupOrder: function(a, b) {
+			    return a.value - b.value;
+			  },
+			  editable: false,
+			  stack: true,
+			  stackSubgroups: true,
+			  min: new Date(2010, 0, 1), // lower limit of visible range
+			  max: new Date(2050, 0, 1), // upper limit of visible range
+			  zoomMin: 1000 * 60 * 60 * 24 * 31, // one day in milliseconds
+			  zoomMax: 1000 * 60 * 60 * 24 * 31 * 12 * 5 
+			  
+			};
+			
+			
+			
+			var timeline = new vis.Timeline(container);
+			timeline.setOptions(options);
+			timeline.setGroups(groups);
+			timeline.setItems(items);
+			
+			$("#sparkline1").sparkline([34, 43, 43, 35, 44, 32, 44, 48], {
+                type: 'line',
+                width: '100%',
+                height: '50',
+                lineColor: '#1ab394',
+                fillColor: "transparent"
+            });
+        
+
+
+</script>

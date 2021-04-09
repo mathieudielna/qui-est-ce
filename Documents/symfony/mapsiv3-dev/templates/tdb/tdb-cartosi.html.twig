@@ -1,0 +1,75 @@
+<style type="text/css">
+#mynetwork {
+		width: 100%;
+		height: 600px;
+		border: 0px solid lightgray;
+	}
+</style>
+
+<div id="mynetwork"></div>
+
+<script>
+///////////// CARTO SI
+    var nodes = [
+        {% for processus in allprocessuses %}
+            {id: {{ processus.id }}666, label: '{{ processus.designation }}', shape: 'dot'},
+        {% endfor %}
+        {% for application in allapplications %}
+            {id: {{ application.id }}, 
+            label: '{{ application.designation }}', 
+            shape: 'box', 
+            {% if application.typeappli.designation is defined and application.typeappli.designation == 'Infrastructure' %}color: {background:'yellow', border:'gray'}
+            {% elseif application.typeappli.designation is defined and application.typeappli.designation == 'Support' %}color: {background:'pink', border:'gray'}
+            {% else %}color: {background:'#F5FCFF', border:'gray'}{% endif %}, url: '{{path('appli_edit',{'id' : application.id} ) }}'},
+        {% endfor %}
+    ];
+
+    // create an array with edges
+    var edges = [
+        {% for application in allapplications %}
+        {% if application.id is defined %}
+            {% for app in application.appConnectActivites if app.activite.processus.id is defined %}
+                {from: {{ application.id }}, to: {{ app.activite.processus.id }}666, dashes:true},
+            {% endfor %}
+            {% for applicationlin in application.applicationlink %}
+                {from: {{ application.id }}, to: {{ applicationlin.id }} },
+            {% endfor %}
+        {% endif %}
+        {% endfor %}
+    ];
+
+    // create a network
+    var container = document.getElementById('mynetwork');
+
+    // provide the data in the vis format
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {
+        "edges": {
+        "smooth": {
+            "forceDirection": "none",
+            "roundness": 0.2
+        }
+        },
+        "physics": {
+        "forceAtlas2Based": {
+            "springLength": 100
+        },
+        "maxVelocity": 40,
+        "minVelocity": 0.3,
+        "solver": "forceAtlas2Based",
+        "timestep": 0.47
+        }
+    }
+    // initialize your network!
+    var network = new vis.Network(container, data, options);
+            
+    network.on("selectNode", function (params) {
+    if (params.nodes.length === 1) {
+    var node = nodes.get(params.nodes[0]);
+    window.open(node.url, '_self');
+        }
+    });
+</script>

@@ -1,0 +1,406 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formAudit  _self %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+            {% if editMode %}
+			<h2>Suivi des audits</h2>
+			{% else %}
+			<h2>Créer un nouvel audit</h2>
+			{% endif %} 
+            <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+				<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+				</svg> Retour vers {{ rr }}
+			</a> 
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+               
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+{{ form_start(formAudit) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouvel audit
+									{% else %}
+									AUD-{{ audit.id }} {{ audit.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Etat :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(audit) %}<strong>{{ workflow_metadata(audit, 'title', place) ?: ''}}</strong>{% endfor %}
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if audit.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : audit.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ audit.responsable.firstname | default("") }} {{ audit.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if audit.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : audit.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ audit.suppleant.firstname | default("") }} {{ audit.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in audit.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ audit.publishedat | date("d M Y")  }} par {{ audit.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                   <dd class="mb-1">Passé en {% for place in workflow_marked_places(audit) %} {{ workflow_metadata(audit, 'title', place)|lower ?: ''}}{% endfor %} le {{ audit.validatedat | date("d M Y")  }} par {{ audit.validator.firstname | default("n/c") }} </dd>
+									{% set rolep = "" %}
+									{% for people in audit.peoples %}{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}{% endfor %}
+									{% set roles = "" %}{% if audit.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% set roler = "" %}{% if audit.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% for transition in workflow_transitions(audit) %}
+										{% if workflow_can(audit, transition.name) %}
+											{% if workflow_metadata(audit, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(audit, 'ambiance', transition)}} btn-xs adisab" href="{{path('audit_workflow', {
+												'id' : audit.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(audit, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No audits available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+                    </div>
+<br><br>
+					
+					
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#relations"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+									
+									{% if editMode %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#files"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-files-o"></i>
+												</span>
+											</a>
+										</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#commentaire"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+		                            <div id="information" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formAudit.designation, 'Designation') }}</strong></label>
+												<div class="col-sm-7">{{ form_widget(formAudit.designation)}}</div>
+												<div class="col-sm-3">{{ form_widget(formAudit.typeaudit)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAudit.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAudit.description)}}</div>
+											</div>
+										     
+										   <div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Certificateur</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Auditeur</span>{{ form_widget(formAudit.auditeur)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Organisme de certification</span>{{ form_widget(formAudit.organisme)}}</div>
+										            </div>
+										        </div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formAudit.responsable)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formAudit.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formAudit.peoples)}}</div>
+										            </div>
+										        </div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Dates</label>
+												<div class="col-md-3"><span class="form-text m-b-none text-navy">{{ form_label(formAudit.PreparedAt, 'Préparation') }}</span>{{ form_widget(formAudit.PreparedAt)}}</div>
+												<div class="col-md-3"><span class="form-text m-b-none text-navy">{{ form_label(formAudit.StartedAt, 'Démarrage') }}</span>{{ form_widget(formAudit.StartedAt)}}</div>
+												<div class="col-md-3"><span class="form-text m-b-none text-navy">{{ form_label(formAudit.FinishedAt, 'Fin') }}</span>{{ form_widget(formAudit.FinishedAt)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAudit.resultatlight, 'Résultat général') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAudit.resultatlight)}}</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label"><strong>Non conformités</strong> <button type='button' id="add-nc" class="btn btn-outline-success btn-xs">+</button><br>
+												<small>
+												Définissez les non conformités identifées lors de cette audit.</small>
+												</label>
+													<div class="col-sm-10">{{ form_widget(formAudit.nonconformites) }}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAudit.resultat, 'Résultats détaillés') }}</label>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">Points sensibles</span>{{ form_widget(formAudit.resultat)}}</div>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">Piste de progrès</span>{{ form_widget(formAudit.progres)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAudit.actions, 'Actions correctives') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAudit.actions)}}</div>
+											</div>	
+												
+		                                </div>
+		                            </div>
+									 <div id="relations" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Relations</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+													<div class="form-group row">
+														<label class="col-sm-2 col-form-label">{{ form_label(formAudit.typeconformite, 'Domaines d\'audit') }}</label>
+														<div class="col-sm-10">{{ form_widget(formAudit.typeconformite)}}</div>
+													</div>
+													<div class="form-group  row">
+														<label class="col-sm-2 col-form-label">{{ form_label(formAudit.processuses, 'Processus') }}</label>
+														<div class="col-sm-10">{{ form_widget(formAudit.processuses)}}</div>
+													</div>
+													<div class="form-group  row">
+														<label class="col-sm-2 col-form-label">{{ form_label(formAudit.traitements, 'Traitements') }}</label>
+														<div class="col-sm-10">{{ form_widget(formAudit.traitements)}}</div>
+													</div>
+													<div class="form-group  row">
+														<label class="col-sm-2 col-form-label">{{ form_label(formAudit.sites, 'Sites') }}</label>
+														<div class="col-sm-10">{{ form_widget(formAudit.sites)}}</div>
+													</div>
+													<div class="form-group  row">
+														<label class="col-sm-2 col-form-label">{{ form_label(formAudit.tiers, 'Tiers') }}</label>
+														<div class="col-sm-10">{{ form_widget(formAudit.tiers)}}</div>
+													</div>
+
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+									{% if editMode %}
+		                             <div id="files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'RGPD', 'entryprefix': 'AUDIT', 'entryid': audit.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+									{% endif %}
+		                            <div id="commentaire" class="tab-pane">
+		                                <div class="panel-body">
+			                                
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formAudit.commentaire)}}
+											       
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formAudit) }}
+{% endblock %}
+
+{% block _audit_nonconformites_widget %}
+		{{ form_widget(form)}}
+{% endblock %}
+{% block _audit_nonconformites_entry_widget %}
+	<div class="row" id="block_{{id}}">
+		<div class="col-md-11">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-6"><span class="form-text m-b-none text-navy">Désignation</span>{{ form_widget(form.designation)}}</div>
+						<div class="col-md-6"><span class="form-text m-b-none text-navy">Sévérité</span>{{ form_widget(form.severite)}}</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6"><span class="form-text m-b-none text-navy">Description</span>{{ form_widget(form.description)}}</div>
+						<div class="col-md-6"><span class="form-text m-b-none text-navy">Points d'attention</span>{{ form_widget(form.ptattention)}}</div>
+					</div>	
+				</div>
+			</div>
+		</div>
+		<div class="col-md-1">
+			{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+				<button type="button" data-action="delete" data-target="#block_{{id}}" id="del" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>
+			{% endif %}
+		</div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+
+	
+	<script>
+		$(document).ready(function() {
+			CKEDITOR.replace( 'audit_commentaire' );
+			CKEDITOR.replace( 'audit_description' );
+			CKEDITOR.replace( 'audit_resultat' );
+			CKEDITOR.replace( 'audit_progres' );
+		});
+
+		//Ajout / Supp. des nons conformités
+		$('#add-nc').click(function(){
+			const index =$('#audit_nonconformites div.row').length;
+			const tmpl =$('#audit_nonconformites').data('prototype').replace(/__name__/g, index);
+		
+			$('#audit_nonconformites').append(tmpl);
+			$('select').select2()
+			handleDeleteButtons();
+		});
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+	</script>
+	
+{% endblock %}
+
+

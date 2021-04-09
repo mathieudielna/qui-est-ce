@@ -1,0 +1,52 @@
+<table class="hover table table-bordered dataTables-ressource">
+    <thead>
+        <tr>
+            <th scope="col">Désignation</th>
+            <th scope="col">Site</th>
+            <th scope="col">Managers</th>
+            <th scope="col" class="no-sort"></th>
+        
+        </tr>
+    </thead>
+    <tbody>
+        {% for ressource in ressources %}
+        <article>
+            <tr>
+                <td  class="table-title"  scope="row" data-order="{{ ressource.designation }}">
+                    <a class="" href="{{path('ressource_edit',{'id' : ressource.id} ) }}">{{ ressource.designation | default("") }}</a>
+                    <span class="badge badge-secondary small">RESS-{{ ressource.id }}</span>
+                </td>
+                <td scope="row">{{ ressource.site.designation | default("N/C") }}</td>
+                <td scope="row"><b>{{ ressource.responsable.firstname | default("")  }} {{ ressource.responsable.lastname | default("")  }}</b><br>
+                    {{ ressource.suppleant.firstname | default("")  }} {{ ressource.suppleant.lastname | default("")  }}
+                </td>
+                <td data-order="{{ ressource.PublishedAt | date("Ymd")}}">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('ressource_edit',{'slug' : ressource.slug, 'id' : ressource.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('ressource_remove',{'slug' : ressource.slug, 'id' : ressource.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                        <a class="dropdown-item">
+                            <small>Modifiée le {{ ressource.PublishedAt | date("d M Y")}}</small>
+                            <small> {% set today = "now"|date("Y/m/d") %}
+                            {% set difference = date(ressource.PublishedAt).diff(date(today)) %}
+                            {% set leftDays = difference.days %}
+                            {% if leftDays >= 180 and leftDays < 360 %}
+                            <small class="text-warning">({{ leftDays }}j)</small>
+                            {% elseif leftDays >= 360 %}
+                                <small class="text-danger">({{ leftDays }}j)</small>
+                            {% else %}
+                                <small>({{ leftDays }}j)</small>
+                            {% endif %}
+                            <br>par {{ressource.publisher.firstname | default("") }} {{ ressource.publisher.lastname | default("") }}</small>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </article>
+        {% endfor %}
+    </tbody>
+</table>

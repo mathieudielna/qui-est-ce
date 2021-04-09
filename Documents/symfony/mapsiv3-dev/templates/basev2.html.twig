@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset='utf-8' />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/x-icon" href="/mapsi.ico" />
+
+    <title>{% block title %}{% endblock %}</title>
+
+    {{ encore_entry_link_tags('app') }} 
+    <link rel="stylesheet" href="/fullcalendar/packages/core/main.css"/>
+    <link rel="stylesheet" href="/fullcalendar/packages/daygrid/main.css"/>
+    <link rel="stylesheet" href="/fullcalendar/packages/list/main.css"/>
+    <link rel="stylesheet" href="/fullcalendar/packages/timegrid/main.css"/> 
+
+    <link rel="stylesheet" href="/chartjs/dist/Chart.css"/>
+    <link href="/vis/vis-network.css" rel="stylesheet">
+	<link href="/vis/vis-timeline-graph2d.min.css" rel="stylesheet">
+    <link href="/ionslider/ion.rangeSlider.css" rel="stylesheet">
+    <link rel="stylesheet" href="/leaflet/leaflet.css" />
+    <link href="/inspinia/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="/inspinia/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    {% block stylesheets %}
+    {% endblock %}
+</head>
+
+<div id="overlay">
+    <div class="cv-spinner">
+        <span class="spinner"></span>
+    </div>
+</div>
+
+<body>
+
+    <div id="mySidebar" class="sidebar">
+        <div class="row">
+            <div id="showbar" class="col-sm-12">
+            </div>
+        </div>
+        <br><br><br>
+    </div>
+
+    
+    <div id="main" class="">   
+        <div class="row">
+            <div class="col">
+                {{ include('main-menu.html.twig') }} 
+                <div id="ariane">
+                {% set current_path = app.request.get('_route') %}
+                {% if current_path != "start" %}
+                    <div class="row wrapper page-heading tablelist">
+                        <div class="col-sm-8">
+                            <h1 class="h1title">
+                                {% block headertitle %}
+
+                                {% endblock %}
+                            </h1>
+                        </div>
+                        <div class="col-sm-4">
+                            {% block headercreate %}
+                                {% if is_granted('ROLE_USER_EDITABLE') or is_granted('ROLE_ADMIN')%}
+                                
+                                {% endif %}
+                            {% endblock %}
+                        </div>
+                    </div>
+                {% endif %}
+                </div>
+                        
+                {% block body %}
+
+
+                {% endblock %}
+                <br><br>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <footer class="bg-light text-center text-lg-start bg-white fixed-bottom">
+                <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.0)">
+                    <strong>Copyright</strong> MAPSI &copy; 2021 //
+                    <a class="text-dark" href="https://<web.mapsi.fr>">Toutes vos données GRC sont la !</a>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    
+</body>
+
+    {{ encore_entry_script_tags('app') }}	
+    <script src="/js/chartjs-plugin-colorschemes.js"></script>	
+    <script src="/js/chartjslabel.js"></script>
+
+    <script src='/fullcalendar/packages/core/main.js'></script>
+    <script src='/fullcalendar/packages/daygrid/main.js'></script>
+    <script src='/fullcalendar/packages/timegrid/main.js'></script>
+    <script src='/fullcalendar/packages/list/main.js'></script>
+    <script src='/fullcalendar/packages/bootstrap/main.js'></script>
+    <script src='/fullcalendar/packages/local/fr.js'></script>
+
+	<script src="/js/pwstrength-bootstrap.min.js"></script>    
+	<script src="/js/moment-with-locales.js"></script>
+    <script src="/ionslider/ion.rangeSlider.js"></script>
+    <script src="/js/mermaid.min.js"></script>
+	<script src="/leaflet/leaflet.js"></script>
+		 
+    <script src="/vis/vis-network.js"></script>  
+    <script src="/vis/vis-timeline-graph2d.min.js"></script> 
+
+    <script src="/inspinia/js/plugins/peity/jquery.peity.min.js"></script>
+    <script src="/inspinia/js/demo/peity-demo.js"></script>
+
+    <script src="/inspinia/js/plugins/toastr/toastr.min.js"></script>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+
+    
+    {% block javascripts %}
+			
+	{% endblock %}
+
+	
+	<script>
+
+        
+    
+        /* Set the width of the sidebar to 250px and the left margin of the page content to 250px */
+        var volet_edit = '0';
+        function openNav() {
+            volet_edit='1';
+            var width = $(window).width();
+            if (width < 980 && volet_edit=='1'){
+                console.log('Your screen is smaller than 980');
+                document.getElementById("mySidebar").style.width = "100%";
+                document.getElementById("main").style.marginRight = "100%";
+            }
+            if (width > 980 && volet_edit=='1'){
+                console.log('Your screen is bigger than 980');
+                document.getElementById("mySidebar").style.width = "580px";
+                document.getElementById("main").style.marginRight = "580px";
+
+                $('.nav-tabs').responsiveTabs();
+            }
+        }
+
+        /* Set the width of the sidebar to 0 and the left margin of the page content to 0 */
+        function closeNav(entite) {
+        $("#overlay").fadeIn(300);
+        document.getElementById("mySidebar").style.width = "0";
+        document.getElementById("main").style.marginRight = "0";
+        $('#showbar').html('');
+        $("#overlay").fadeOut(300);
+        $('#dataTables-'+entite).DataTable().ajax.reload();
+        
+        $('.nav-tabs').responsiveTabs();
+        volet_edit='O';
+     
+        }
+
+        /* Function ajax pour initier l'affichage d'une fiche pour modifier ou créer une entité */
+        var sform_clean;
+        
+        function editEntite(id, entite) { 
+            
+				$("#overlay").fadeIn(300);
+                var pathArray = window.location.pathname.split('/');
+                domid = pathArray[2];
+                console.log('domaine '+domid);
+				if ( id !== 'undefined' ) {var url = '/app/'+entite+'/ajaxedit/'+id+'/'+entite;} else {var url = '/app/'+entite+'/ajaxcreate/'+domid;}
+				console.log(url);
+			$.ajax({  
+				url:        url,  
+				type:       'POST',   
+				dataType:   'json', 
+				async:      true,  
+				success: function( data, status, output) {  
+						openNav();
+						$('#showbar').html('');
+						$('#showbar').append(data.output);
+                        $("#overlay").fadeOut(300);
+                        sform_clean = $("form").serialize();
+                        $('#dataTables-'+entite).DataTable().ajax.reload();
+				},  
+				error : function(xhr, textStatus, errorThrown) {  
+					console.log('error'); 
+					alert('Ajax request failed.'); 
+                    $("#overlay").fadeOut(300); 
+				}  
+			});  
+			
+        }
+
+        /* Enregistrement ou création d'une fiche entité*/
+        function submitAjax(id,entite)  {
+            event.preventDefault();
+            console.log('SubmitAjax'); var used_submit = 0; $("#overlay").fadeIn(300);
+            if ( id !== 'undefined' ) {var url = '/app/'+entite+'/ajaxedit/'+id+'/'+entite;} else {var url = '/app/'+entite+'/ajaxcreate';}
+            console.log(url);
+        $.ajax({  
+                url:          url,  
+                method:       'POST',   
+                dataType:   'json',
+                data: $("form[name='"+entite+"']").serialize(), 
+                async:      true,  
+                success: function( data, status, output) {  
+                        console.log(status);
+                        console.log(output);
+                        $('#showbar').html('');
+                        $('#showbar').append(data.output);
+                        $('#dataTables-'+entite).DataTable().ajax.reload();
+                        sform_clean = $("form").serialize();
+                        $("#overlay").fadeOut(300);
+                        toastr.success('Enregistrement de la fiche '+entite, 'Succès')
+                },  
+                error : function(xhr, textStatus, errorThrown) {  
+                    console.log('Erreur'); 
+                    console.log(status);
+                    alert('Erreur enregistrement'); 
+                    $("#overlay").fadeOut(300); 
+                }   
+            });
+        }
+
+        
+        function leaveEntity(entite)  {
+            var used_submit = 0;
+            var sform_dirty = $("form[name='"+entite+"']").serialize();
+            if(sform_clean != sform_dirty && used_submit ==0) {
+                var r = confirm("Attention!\nVous avez des modifications non enregistrées, Voulez vous vraiment quitter la fiche ?");
+                if (r == true) {closeNav(entite);} else {}
+            }
+            else
+            { console.log('Pas de changements'); closeNav(entite); };
+            function CleanLeavePage(){
+            used_submit = 1;
+            }
+        }
+
+        function deleteEntity(id, entite)  {
+            event.preventDefault();
+            $("#overlay").fadeIn(300);
+            var r = confirm("Voulez vous vraiment supprimer cette fiche ? Toutes vos données seront supprimées");
+            if (r == true) { 
+            
+            var url = '/app/remove/'+id+'/'+entite;
+            console.log(url);
+            $.ajax({  
+                url:        url,  
+                type:       'POST',   
+                dataType:   'json', 
+                async:      true,  
+                success: function( data, status, output) {  
+                        $('#showbar').html('');
+                        closeNav(entite);
+                        $('#dataTables-'+entite).DataTable().ajax.reload();
+                        $("#overlay").fadeOut(300);
+                        toastr.success('Suppression de la fiche '+entite, 'Succès')
+                },  
+                error : function(xhr, textStatus, errorThrown) {  
+                    console.log('error'); 
+                    alert('Le processus n\'est pas supprimé'); 
+                    
+                    $("#overlay").fadeOut(300); 
+                }  
+            });      
+            
+            
+            } else {$("#overlay").fadeOut(300); }
+
+        }
+
+        function resetPassword(id)  {
+            event.preventDefault();
+            $("#overlay").fadeIn(300);
+            var r = confirm("Voulez vous vraiment réinitialiser le mot de passe de cet utilisateur");
+            if (r == true) { 
+            
+            var url = '/app/admin/user/'+id+'/init/password';
+            console.log(url);
+            $.ajax({  
+                url:        url,  
+                type:       'POST',   
+                dataType:   'json', 
+                async:      true,  
+                success: function( data, status, output) {  
+                    $("#overlay").fadeOut(300);
+                    toastr.success('Changement de mot de passe de l\'utilisateur', 'Succès')
+                },  
+                error : function(xhr, textStatus, errorThrown) {  
+                    console.log('error'); 
+                    toastr.error('Le mot de passe n\'est pas réinitialisé', 'Erreur')
+                    
+                    $("#overlay").fadeOut(300); 
+                }  
+            });      
+            } else {$("#overlay").fadeOut(300); }
+        }
+
+
+        /* Function recevant les demandes d'ouverture d'une fiche afin de verifier que la fiche actuelle ne nécessitent pas d'enregistrer avant de la quitter*/
+        function crossEntity(id, entite)  {
+            {# event.preventDefault(); #}
+            var used_submit = 0;
+            var sform_dirty = $("form[name='"+entite+"']").serialize();
+            if(volet_edit=='1' && sform_clean != sform_dirty && used_submit ==0) {
+                console.log('Changement sur le formulaire');
+                var r = confirm("Attention!\nVous avez des modifications non enregistrées, Voulez vous vraiment quitter cette fiche ?");
+                if (r == true) { editEntite(id, entite);} else { }
+            } else { editEntite(id, entite); console.log('Pas de changement sur le form'); console.log(entite+id);
+            };
+            function CleanLeavePage(){used_submit = 1;}
+        }
+        
+
+
+        function refreshprocessus() {
+            event.preventDefault();
+            $('#dataTables-processus').DataTable().ajax.reload();
+            console.log('Rechargement du tableau OK');
+        }
+    
+
+        $(document).ready(function() {
+            
+        var urlParams = new URLSearchParams(window.location.search);
+        var domid = urlParams.get('domid');
+		var entite = urlParams.get('entite');
+        var domaine = urlParams.get('domaine');
+        var trans = urlParams.get('trans');
+        var tdb = urlParams.get('tdb');
+        var id = urlParams.get('id');
+
+        if(!domid)
+        {
+            var domid = 'home';
+            var entite = 'start';
+            var domaine = '';
+            var trans = '';
+            var tdb = 'oui';
+            var id = '';
+        }
+        
+        console.log(domid, entite);
+        $.tabswitch(domid, entite, domaine, trans, tdb); 
+        if ( id !== 'undefined' && id !== null && id !== '' ) {editEntite(id, entite);}
+
+        $(window).resize(function()  {
+            var width = $(window).width();
+            if (width < 980 && volet_edit=='1'){
+                console.log('Your screen is smaller than 980');
+                document.getElementById("mySidebar").style.width = "100%";
+                document.getElementById("main").style.marginRight = "100%";
+            }
+            if (width > 980 && volet_edit=='1'){
+                console.log('Your screen is bigger than 980');
+                document.getElementById("mySidebar").style.width = "580px";
+                document.getElementById("main").style.marginRight = "580px";
+            }
+        });
+
+        toastr.options = {
+        "progressBar": true,
+        "positionClass": "toast-top-center",
+        }
+        
+        
+        {% for message in app.flashes('success') %}  
+            toastr.success('{{ message }}')
+        {% endfor %}
+        {% for message in app.flashes('warning') %}  
+            toastr.warning('{{ message }}')
+        {% endfor %}		
+
+	    });	
+
+	</script>
+</html>

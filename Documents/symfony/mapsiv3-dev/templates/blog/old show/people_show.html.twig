@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+	<article>
+			<h1>Collaborateur </h1>
+			<h2>{{ people.firstname }} {{ people.lastname }}</h2>
+			<div class="content">
+				{{ people.role | raw }}
+			</div>
+			 <a class="btn btn-success" href="{{path('people_edit',{'id' : people.id} ) }}">Modifier</a>
+	</article>
+	
+{% endblock %}

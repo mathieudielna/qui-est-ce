@@ -1,0 +1,582 @@
+{% extends 'basev2.html.twig' %}
+
+{% block stylesheets %}
+	<style type="text/css">
+    </style>
+{% endblock %}
+{% block headertitle %}
+   Plan de continuité des activités
+{% endblock %}	
+{% block headercreate %}
+	<a class="dropdown-item dropdowncreate" href="{{path('evenement_create')}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Evénement PCA</a>
+{% endblock %}
+
+
+
+
+{% block body %}
+<div class="wrapper wrapper-content animated fadeIn">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="tabs-container">
+				<ul class="nav nav-tabs" role="tablist">
+					<li><a class="nav-link active show" data-toggle="tab" href="#tab-iso22301"> Tableau de bord PCA</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#tab-1"> BIA</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#tab-3"> Activités</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#tab-4"> Applications</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#tab-pcit"> Systèmes</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#tab-evenement"> Evénement PCA</a></li>
+				</ul>
+				<div class="tab-content">
+					<div role="tabpanel" id="tab-iso22301" class="tab-pane active show">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<h3>Management de la Continuité d'activité</h3>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="tabpanel" id="tab-1" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<h2>Bilan d'Impact sur Activités</h2>
+									<h3>Les impacts d’un sinistre majeur sur les activités stratégiques.</h3>
+								</div>
+								<div class="col-lg-6">
+									<div class="ibox collapsed">
+										<div class="ibox-title">
+											<h5><a class="collapse-link">Impact en terme de réputation et d'organisation en cas d’arrêt des activités</a></h5>
+										</div>
+										<div class="ibox-content">
+											<table class="table table-hover dataTables-pca-act display" style="width:100%">
+												<thead>
+													<tr>
+														<th scope="col">Activités</th>
+														<th scope="col">Image externe</th>
+														<th scope="col">Relations partenaires et clientss</th>
+														<th scope="col">Affaires (récurrente)</th>
+														<th scope="col">Satisfaction des collaborateurs</th>
+														<th scope="col">Impact sur l'organisation interne</th>
+														
+													</tr>
+												</thead>
+												<tbody>
+													{% for activite in activites %}
+													<article>
+														<tr>
+															<th>
+																<a class="" href="{{path('activite_edit',{'id' : activite.id} ) }}">{{ activite.id | default("") }}-{{ activite.designation | default("") }}</a>
+															</th>
+															<td bgcolor="{{ activite.impactimg.color | default("") }}" data-order="{{ activite.impactimg.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impactactionnaire.color | default("") }}" data-order="{{ activite.impactactionnaire.code | default("") }}"></td>
+															<td bgcolor="{{ activite.activitebusinessfutur.color | default("") }}" data-order="{{ activite.activitebusinessfutur.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impactcollaborateur.color | default("") }}" data-order="{{ activite.impactcollaborateur.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impactinterne.color | default("") }}" data-order="{{ activite.impactinterne.code | default("") }}"></td>
+															
+														</tr>	
+													</article>
+													{% endfor %}
+												</tbody>
+											</table>
+										</div>
+									</div>
+									<div class="ibox collapsed">
+										<div class="ibox-title">
+											<a class="collapse-link"><h5>Impact en cas d’arrêt des métiers</h5></a>
+										</div>
+										<div class="ibox-content">
+											<table class="table table-hover dataTables-pca-met display" style="width:100%">
+												<thead>
+													<tr>
+														<th scope="col">Métiers / Fonctions</th>
+														<th scope="col">4 heures</th>
+														<th scope="col">1 jour</th>
+														<th scope="col">3 jours</th>
+														<th scope="col">1 semaine</th>
+														<th scope="col">2 semaines</th>
+														<th scope="col">1 mois</th>
+													</tr>
+												</thead>
+												<tbody>
+													{% for metier in metiers %}
+													<article>
+														<tr>
+															<th>
+																<a class="" href="{{path('metier_edit',{'id' : metier.id} ) }}">{{ metier.designation | default("") }}</a>
+															</th>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for processus in metier.processuses %}
+																{% for activite in processus.activites if activite.impact4h is not null %}
+																	{% set minimpact = activite.impact4h.code %}{% set minimpact = min(activite.impact4h.code, minimpact) %}
+																	{% if activite.impact4h.code == minimpact %}{% set colorimpact = activite.impact4h.color %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact| default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for processus in metier.processuses %}
+																{% for activite in processus.activites if activite.impact1j is not null %}
+																	{% set minimpact = activite.impact1J.code %}{% set minimpact = min(activite.impact1j.code, minimpact) %}
+																	{% if activite.impact1j.code == minimpact %}{% set colorimpact = activite.impact1j.color %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for processus in metier.processuses %}
+																{% for activite in processus.activites if activite.impact3j is not null %}
+																	{% set minimpact = activite.impact3j.code %}{% set minimpact = min(activite.impact3j.code, minimpact) %}
+																	{% if activite.impact3j.code == minimpact %}{% set colorimpact = activite.impact3j.color %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for processus in metier.processuses %}
+																{% for activite in processus.activites if activite.impact1s is not null %}
+																	{% set minimpact = activite.impact1s.code %}{% set minimpact = min(activite.impact1s.code, minimpact) %}
+																	{% if activite.impact1s.code == minimpact %}{% set colorimpact = activite.impact1s.color %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for processus in metier.processuses %}
+																{% for activite in processus.activites if activite.impact2s is not null %}
+																	{% set minimpact = activite.impact2s.code %}{% set minimpact = min(activite.impact2s.code, minimpact) %}
+																	{% if activite.impact2s.code == minimpact %}{% set colorimpact = activite.impact2s.color %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for processus in metier.processuses %}
+																{% for activite in processus.activites if activite.impact1m is not null %}
+																	{% set minimpact = activite.impact1m.code %}{% set minimpact = min(activite.impact1m.code, minimpact) %}
+																	{% if activite.impact1m.code == minimpact %}{% set colorimpact = activite.impact1m.color %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{colorimpact | default("")}}"></td>
+														</tr>	
+													</article>
+													{% endfor %}
+												</tbody>
+											</table>
+									
+										</div>
+									</div>
+									
+									
+									<div class="ibox collapsed">
+										<div class="ibox-title">
+											<a class="collapse-link"><h5>Impact en cas d’arrêt des processus</h5></a>
+										</div>
+										<div class="ibox-content">
+											<table class="table table-hover dataTables-pca-process display" style="width:100%">
+												<thead>
+													<tr>
+														<th scope="col">Processus</th>
+														<th scope="col">4 heures</th>
+														<th scope="col">1 jour</th>
+														<th scope="col">3 jours</th>
+														<th scope="col">1 semaine</th>
+														<th scope="col">2 semaines</th>
+														<th scope="col">1 mois</th>
+													</tr>
+												</thead>
+												<tbody>
+													{% for processus in processuses %}
+													<article>
+														<tr>
+															<th>
+																<a class="" href="{{path('processus_edit',{'id' : processus.id} ) }}">{{ processus.code | default("N/C")  }} {{ processus.designation | default("") }}</a>
+															</th>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for activite in processus.activites if activite.impact4h is not null %}
+																{% set minimpact = activite.impact4h.code %}{% set minimpact = min(activite.impact4h.code, minimpact) %}
+																{% if activite.impact4h.code == minimpact %}{% set colorimpact = activite.impact4h.color %}
+																{% endif %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for activite in processus.activites if activite.impact1J is not null %}
+																{% set minimpact = activite.impact1j.code %}{% set minimpact = min(activite.impact1j.code, minimpact) %}
+																{% if activite.impact1j.code == minimpact %}{% set colorimpact = activite.impact1j.color %}
+																{% endif %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for activite in processus.activites if activite.impact3j is not null %}
+																{% set minimpact = activite.impact3j.code %}{% set minimpact = min(activite.impact3j.code, minimpact) %}
+																{% if activite.impact3j.code == minimpact %}{% set colorimpact = activite.impact3j.color %}
+																{% endif %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for activite in processus.activites if activite.impact1s is not null %}
+																{% set minimpact = activite.impact1s.code %}{% set minimpact = min(activite.impact1s.code, minimpact) %}
+																{% if activite.impact1s.code == minimpact %}{% set colorimpact = activite.impact1s.color %}
+																{% endif %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact| default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for activite in processus.activites if activite.impact2s is not null %}
+																{% set minimpact = activite.impact2s.code %}{% set minimpact = min(activite.impact2s.code, minimpact) %}
+																{% if activite.impact2s.code == minimpact %}{% set colorimpact = activite.impact2s.color %}
+																{% endif %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{minimpact | default("")}}"></td>
+															{% set minimpact = "" %}{% set colorimpact = "" %}
+															{% for activite in processus.activites if activite.impact1m is not null %}
+																{% set minimpact = activite.impact1m.code %}{% set minimpact = min(activite.impact1m.code, minimpact) %}
+																{% if activite.impact1m.code == minimpact %}{% set colorimpact = activite.impact1m.color %}
+																{% endif %}
+															{% endfor %}
+															<td bgcolor="{{colorimpact | default("")}}" data-order="{{colorimpact | default("")}}"></td>
+														</tr>	
+													</article>
+													{% endfor %}
+												</tbody>
+											</table>
+									
+										</div>
+									</div>
+									<div class="ibox collapsed">
+										<div class="ibox-title">
+											<h5><a class="collapse-link">Impact en cas d’arrêt des activités</a></h5>
+										</div>
+										<div class="ibox-content">
+											<table class="table table-hover dataTables-pca-act display" style="width:100%">
+												<thead>
+													<tr>
+														<th scope="col">Activités</th>
+														<th scope="col">4 heures</th>
+														<th scope="col">1 jour</th>
+														<th scope="col">3 jours</th>
+														<th scope="col">1 semaine</th>
+														<th scope="col">2 semaines</th>
+														<th scope="col">1 mois</th>
+													</tr>
+												</thead>
+												<tbody>
+													{% for activite in activites %}
+													<article>
+														<tr>
+															<th>
+																<a class="" href="{{path('activite_edit',{'id' : activite.id} ) }}">{{ activite.designation | default("") }}</a>
+															</th>
+															<td bgcolor="{{ activite.impact4h.color | default("") }}" data-order="{{ activite.impact4h.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impact1j.color | default("") }}" data-order="{{ activite.impact1j.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impact3j.color | default("") }}" data-order="{{ activite.impact3j.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impact1s.color | default("") }}" data-order="{{ activite.impact1s.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impact2s.color | default("") }}" data-order="{{ activite.impact2s.code | default("") }}"></td>
+															<td bgcolor="{{ activite.impact1m.color | default("") }}" data-order="{{ activite.impact1m.code | default("") }}"></td>
+														</tr>	
+													</article>
+													{% endfor %}
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-12">
+									<h3>De déterminer quelle est (ou sont) la (ou les) stratégie(s) de reprise envisageable(s).</h3>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="tabpanel" id="tab-3" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="row">
+										<div class="col-lg-12">		
+											<h3>
+											La sensibilité des activités ou l’objectif de reprise
+											</h3><br>
+											{% for criticite in criticites %}
+											{% if criticite.activites | length  > 0 %}
+													<h4 class="text-dark">Les activités à reprendre dans les {{ criticite.designation | default("") }}</h4>
+													<table class="table">
+														<tbody>
+															{% for activite in criticite.activites %}
+															<tr>
+																<td style="width: 8%">
+																	<span class="label {% if activite.pca.code is defined and activite.pca.code == 1 %}label-success{% else %}label-danger{% endif %} small"><i class="fa fa-superpowers"></i></span> 
+																	<span class="label {% if activite.procedurepca.code is defined and activite.procedurepca.code == 1 %}label-success{% else %}label-danger{% endif %} small"><i class="fa fa-files-o"></i></span>
+																</td>
+																<td style="width: 20%">{{ activite.processus.metier.code | default("") }} > {{ activite.processus.designation | default("") }}</td>
+																<td><a class="" href="{{path('activite_edit',{'id' : activite.id} ) }}">ACT-{{ activite.id | default("") }} - {{ activite.designation | default("") }}</a></td>
+															</tr>
+															{% endfor %}
+														</tbody>
+													</table>
+											{% endif %}
+											{% endfor %}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="tabpanel" id="tab-4" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="row">
+										<div class="col-lg-12">		
+											<h3>
+												La sensibilité des applications ou l’objectif de reprise
+											</h3><br>
+											
+											{% for criticite in criticites %}
+											
+												<h4 class="text-dark">Les applications à reprendre dans les {{ criticite.designation | default("") }}</h4>
+												<table class="table">
+													<tbody>
+														{% for application in applications %}
+															{% set minDima = 1000 %}
+															{% set desiDima = "NC" %}
+															{% set colorDima = "NC" %}
+															{% set heureDima = "" %}
+															{% for activite in application.appConnectActivites %}
+																{% if activite.dima.dureeheure is defined %}
+																	{% set minDima = min(activite.dima.dureeheure, minDima) %}
+																	{% if activite.dima.dureeheure == minDima %}
+																		{% set desiDima = activite.dima.designation %}
+																		{% set colorDima = activite.dima.color %}
+																		{% set heureDima = activite.dima.dureeheure %}
+																	{% endif %}
+																{% endif %}
+															{% endfor %}				                 
+															{% if desiDima == criticite.designation %}
+																
+																<tr>
+																	<td style="width: 3%">
+																		{{application.typeappli.designation | default("N/C")}}
+																	</td>
+																	<td style="width: 5%">
+																		<a class="" href="{{path('appli_edit',{'id' : application.id} ) }}">APP-{{ application.id | default("") }} - {{ application.designation | default("") }}</a>
+																	</td>
+																	<td style="width: 5%">
+																		{% for systeme in application.systemes %}
+																			{{systeme.designation | default("N/C")}}, 
+																		{% endfor %}
+																	</td>
+																</tr>
+															{% endif %}
+														{% endfor %} 
+													</tbody>
+												</table>
+		
+											{% endfor %}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="tabpanel" id="tab-pcit" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="row">
+										<div class="col-lg-12">		
+											<h3>
+												La sensibilité des systèmes et l’objectif de reprise
+											</h3>
+											{{ include('datatable/systemetable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="tabpanel" id="tab-evenement" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="table-responsive">
+										<table class="table table-hover dataTables-evenement" >
+											<thead>
+												<tr>
+													<th scope="col">ID</th>
+													<th scope="col">Désignation</th>
+													<th scope="col">Statut</th>
+													<th scope="col">Type d'événement</th>
+													<th scope="col">Responsable</th>
+													<th scope="col">MaJ</th>
+													{% if is_granted('ROLE_ADMIN') %}<th scope="col" class="no-sort"></th>{% endif %}
+												</tr>
+											</thead>
+											<tbody>
+											{% for evenement in evenements %}
+												<article>
+													<tr class="gradeX">
+														<th><span class="badge badge-secondary">PCA-{{ evenement.id }}</span></th>
+														<th class="table-title" scope="row"><a class="" href="{{path('evenement_edit',{'id' : evenement.id} ) }}">{{ evenement.designation }}</a></th>
+														<td><span class="badge badge-secondary" style="background-color:{{ evenement.statut.color | default("N/C")}}">
+																	{{ evenement.statut.designation | default("N/C")  }}
+																</span></td>
+														<td>
+															{% for typeevenement in evenement.typeevenements %}
+															<small>{{ typeevenement.designation | default("") }}</small><br>
+															{% endfor %}
+														</td>
+														<td scope="row"><b>{{ evenement.responsable.firstname | default("")  }} {{ evenement.responsable.lastname | default("")  }}</b><br>
+														</td>
+														<td>{{ evenement.PublishedAt | date("d/m/Y")}}</td>
+														{% if is_granted('ROLE_ADMIN') %}
+															<td>
+																<button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																	<i class="fa fa-info"></i>
+																</button>
+																<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+																	<a class="dropdown-item" href=""> Afficher</a>
+																	<a class="dropdown-item del" href=""> Supprimer</a>
+																</div>
+															</td>
+															{% endif %}
+													</tr>
+												</article>
+											{% endfor %}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+
+{% block javascripts %}
+<script>
+
+$(document).ready(function() {
+    $('.dataTables-pca-act').DataTable(
+	    {
+		    pageLength: 100,
+		    paging:   false,
+			info:     false,
+			ordering: false,
+			searching: false
+		 });
+	
+	$('.dataTables-pca-met').DataTable(
+	    {
+		    pageLength: 100,
+		    paging:   false,
+			info:     false,
+			ordering: false,
+			searching: false
+		 });
+		 
+	$('.dataTables-pca-process').DataTable(
+	    {
+		    pageLength: 100,
+		    paging:   false,
+			info:     false,
+			ordering: false,
+			searching: false
+		 });
+		
+		 
+		 
+	$('.dataTables-evenement').DataTable({
+                pageLength: 25,
+                responsive: false,
+                dom: '<"html5buttons"B>lTfgitp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-action',visible: false, searchable: false	},
+	             ],
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv', title: 'MAPSI {{app.user.customer.designation}} PCA Evenement'},
+                    {extend: 'excel', title: 'MAPSI {{app.user.customer.designation}} PCA Evenement'},
+                    {extend: 'pdf', title: 'MAPSI {{app.user.customer.designation}} PCA Evenement'},
+                    {extend: 'print', title: 'MAPSI {{app.user.customer.designation}} PCA Evenement',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_  évènements PCA",
+					    "infoEmpty":      "De 0 à 0 sur 0 évènements PCA",
+					    "infoFiltered":   "(filtered from _MAX_ total entries)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_ évènements PCA",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "Rechercher :",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        }
+
+            });
+		 
+});
+
+/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+</script>
+
+
+    
+{% endblock %}

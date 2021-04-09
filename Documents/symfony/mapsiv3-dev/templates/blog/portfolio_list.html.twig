@@ -1,0 +1,1022 @@
+{% extends 'basev2.html.twig' %}
+
+{% block stylesheets %}
+<style>
+.vis-item {
+    border:0;
+    background-color: #17a2b8;
+	color:#000;
+	font-size: 10px;
+	padding: 0px;
+  }
+.vis-item-content {
+	padding: 0px;
+  }
+  
+  .vis-label {
+	font-weight: bold;
+  }
+  
+    .vis-left {
+	width:160px;
+  }
+  
+  #visualization {
+    width: 100%;
+    min-height: 100%;
+    height: 100%;
+    }
+    
+.vis-item.orange {
+  background-color: #EDD892;
+  border-color: #f8ac59;
+}
+.vis-item.vis-selected.orange {
+  /* custom colors for selected orange items */
+  background-color: orange;
+  border-color: orangered;
+}
+
+.vis-item.projet {
+  background-color: #1ab394;
+  border-color: #1ab394;
+  font-size: 14px;
+}
+.vis-item.vis-selected.projet {
+  /* custom colors for selected orange items */
+  background-color: orange;
+  border-color: orangered;
+}
+
+</style>
+
+{% endblock %}
+{% block title %}PORTFOLIO MAPSI{% endblock %}
+
+{% block headertitle %}
+   Pilotage
+{% endblock %}	
+{% block headercreate %}
+	<div class="btn-group dropleft buttonnew" role="group">
+		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			<strong>Créer</strong>
+		</button>
+		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+			<a class="dropdown-item dropdowncreate" href="{{path('program_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Programme</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('projet_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Projet</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('action_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Action</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('tache_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Tâche</a>
+		</div>
+	</div>
+{% endblock %}
+
+
+
+{% block body %}
+{# <div class="wrapper wrapper-content animated fadeIn">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="tabs-container">
+				<ul class="nav nav-tabs" role="tablist">
+					<li><a class="nav-link active show" data-toggle="tab" href="#tracking"> Tracking</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#planning"> Planning</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#gantt" id="tab-gantt-button"> Calendrier</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#program"><i class="fa fa-list-ol"></i> Programmes <span class="badge">{{ programs | length }}</span></a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#projet"><i class="fa fa-list-ol"></i> Projets <span class="badge">{{ projets | length }}</span></a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#action"><i class="fa fa-list-ol"></i> Actions <span class="badge">{{ actions | length }}</span></a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#jalon"><i class="fa fa-list-ol"></i> Tâches <span class="badge">{{ jalons | length }}</span></a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#kpi"> KPI</a></li>
+					<li><a class="nav-link" data-toggle="tab" href="#files"> Documents</a></li>
+				</ul>
+				<div class="tab-content">
+					<div role="tabpanel" id="tracking" class="tab-pane active show">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<div id=""><canvas id="TrackingChart" width="800" height="450"></canvas></div>				                                        							
+								</div>
+							</div>
+						</div>
+					</div>
+						<div role="tabpanel" id="planning" class="tab-pane">
+						<div class="panel-body">
+							<div id="visualization"></div>
+						</div>
+					</div>
+		
+					<div role="tabpanel" id="gantt" class="tab-pane">
+						<div class="panel-body">
+							<div id='calendar'></div>
+						</div>
+					</div>
+					
+					<div role="tabpanel" id="program" class="tab-pane">
+						<div class="panel-body">
+							{{ include('datatable/programmetable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+						</div>
+					</div>
+					
+					<div role="tabpanel" id="projet" class="tab-pane">
+						<div class="panel-body">
+							{{ include('datatable/projettable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+						</div>
+					</div>
+					<div role="tabpanel" id="action" class="tab-pane">
+						<div class="panel-body">
+							{{ include('datatable/actiontable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+						</div>
+					</div>
+					
+					<div role="tabpanel" id="jalon" class="tab-pane">
+						<div class="panel-body">
+							{{ include('datatable/tachetable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+						</div>
+					</div>
+					
+					<div role="tabpanel" id="kpi" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="row m-b-lg m-t-lg">
+										<div class="col-md-6">
+											<h2 class="no-margins">
+												MON PORTFOLIO {{ app.user.customer.designation }}
+											</h2>
+											<h4>Vue 
+												{% if is_granted('ROLE_ADMIN') %}
+													Administrateur
+												{% else %}
+													Membre
+												{% endif %}
+											</h4>
+											<small>
+												
+											</small>
+										</div>
+										<div class="col-md-3">
+											<table class="table small m-b-xs">
+												<tbody>
+												<tr>
+													<td>
+														<strong>{% if is_granted('ROLE_ADMIN') == false %}{{ programs|length }}{% elseif is_granted('ROLE_ADMIN') %}{{ allprograms|length }}{% endif %}</strong> Programmes {% if is_granted('ROLE_ADMIN') == false %}({{ allprograms|length }}){% endif %}
+													</td>
+													<td>
+														<strong>{% if is_granted('ROLE_ADMIN') == false %}{{ projets|length }}{% elseif is_granted('ROLE_ADMIN') %}{{ allprojets|length }}{% endif %}</strong> Projets {% if is_granted('ROLE_ADMIN') == false %}({{ allprojets|length }}){% endif %}
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<strong>{% if is_granted('ROLE_ADMIN') == false %}{{ actions|length }}{% elseif is_granted('ROLE_ADMIN') %}{{ allactions|length }}{% endif %}</strong> Actions {% if is_granted('ROLE_ADMIN') == false %}({{ allactions|length }}){% endif %}
+													</td>
+													<td>
+														{% set count = 0 %}
+														{% for action in actions %}
+															{% for jalon in jalons if jalon.action == action  %}
+																{% set count = count + 1 %}
+															{% endfor %}
+														{% endfor %}
+														<strong>{% if is_granted('ROLE_ADMIN') == false %}{{ count }}{% elseif is_granted('ROLE_ADMIN') %}{{ jalons|length }}{% endif %}</strong> Jalons / Livrables {% if is_granted('ROLE_ADMIN') == false %}({{ jalons|length }}){% endif %}
+													</td>
+												</tr>
+												<tr>
+													<td>
+														{% set sum = 0 %}
+														{% set complet = "" %}
+														{% set suma = 0 %}
+															{% for action in actions %}
+																{%if action.budget is not null %}
+																	{% set sum = action.budget + sum ?? 0 %}
+																{% else %} 
+																	{% set complet = "Incomplet" %}
+																{% endif %}
+																
+																{% for jalon in action.jalonConnectActions if action.responsable==app.user.people or action.suppleant==app.user.people  %}
+																	{%if jalon.budget is not null and jalon.fini ==1 %}
+																		{% set suma = jalon.budget + suma ?? 0 %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+															<strong>(P) {{ sum | number_format(0, '.', ' ') }}€ - (C) {{ suma | number_format(0, '.', ' ') }}€</strong>
+															<br>Budget
+													</td>
+													<td>
+														<strong>
+														{% set sumj = 0 %}
+														{% set sume = 0 %}
+															{% for action in actions %}
+																{%if action.etp is not null %}
+																	{% set sumj = action.etp + sumj ?? 0 %}
+																{% endif %}
+																{% for jalon in action.jalonConnectActions %}
+																	{%if jalon.etp is not null and jalon.fini ==1 %}
+																		{% set sume = jalon.etp + sume ?? 0 %}
+																	{% endif %}
+																{% endfor %}
+															{% endfor %}
+														(P) {{ sumj | number_format(0, '.', ' ') }} j/h - (C) {{ sume | number_format(0, '.', ' ') }} j/h
+														</strong> <br>Charge RH
+													</td>
+												</tr>
+												</tbody>
+											</table>
+										</div>
+										<div class="col-md-3">
+											<small> {% if is_granted('ROLE_ADMIN')== false %}Ma{% endif %} Progression générale</small>
+											<h2 class="no-margins">
+												{% set sumratings = 0 %}
+												{% for action in actions %}																			
+													{% set sumratings = sumratings + action.progression %}
+												{% endfor %}
+												{%if actions|length > 0 %}
+												{% set sumratings = sumratings / actions|length %}
+												{% endif %}
+												{{  sumratings | number_format(0, '.', ' ') }}%
+											</h2>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12">
+											<div class="row">
+												<div class="col-lg-3">
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h5>Indicateurs clés (Globaux)</h5>
+														</div>
+														<div class="panel-body">
+															<table class="table table-stripped small">
+																<tbody>
+																<tr>
+																	<td class="no-borders">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="no-borders">
+																		<strong>{{ allprograms|length }} programmes</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		<strong>
+																		{% set sumratings = 0 %}
+																		{% for action in allactions %}																			
+																			{% set sumratings = sumratings + action.progression %}
+																		{% endfor %}
+																		{%if allactions|length > 0 %}
+																		{% set sumratings = sumratings / allactions|length %}
+																		{% endif %}
+																		{{  sumratings | number_format(0, '.', ' ') }} % de progression estimée
+																		</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		{% set sum = 0 %}
+																		{% set complet = "" %}
+																			{% for action in allactions %}
+																				{%if action.budget is not null %}
+																					{% set sum = action.budget + sum ?? 0 %}
+																				{% else %} 
+																					{% set complet = "Incomplet" %}
+																				{% endif %}
+																			{% endfor %}
+																			{% set suma = 0 %}
+																			{% for jalon in jalons %}
+																				{%if jalon.budget is not null and jalon.fini ==1 %}
+																					{% set suma = jalon.budget + suma ?? 0 %}
+																				{% endif %}
+																			{% endfor %}
+																			
+																			<strong>(P) {{ sum | number_format(0, '.', ' ') }} € <i>{{ complet }}</i> - (C) {{ suma | number_format(0, '.', ' ') }} €</strong>
+																			
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		{% set sumj = 0 %}
+																		{% for action in allactions %}
+																		{%if action.etp is not null %}
+																			{% set sumj = action.etp + sumj ?? 0 %}
+																		{% endif %}
+																	{% endfor %}
+																	{% set suma = 0 %}
+																			{% for jalon in jalons %}
+																				{%if jalon.etp is not null and jalon.fini ==1 %}
+																					{% set suma = jalon.etp + suma ?? 0 %}
+																				{% endif %}
+																			{% endfor %}
+																	<strong>(P) {{ sumj | number_format(0, '.', ' ') }} j/h - (C) {{ suma | number_format(0, '.', ' ') }} j/h</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		<strong>{{ allprojets|length }} projets</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td>
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td>
+																		<strong>{{ allactions|length }} actions</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td>
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td>
+																		{% set count = 0 %}
+																		{% for action in allactions %}
+																			{% for jalon in jalons if jalon.action == action  %}
+																				{% set count = count + 1 %}
+																			{% endfor %}
+																		{% endfor %}
+																		<strong>{{ count }} jalons / livrables</strong>
+																		
+																	</td>
+																</tr>
+																</tbody>
+															</table>			                                        
+														</div>
+													</div>
+												</div>
+												{% if is_granted('ROLE_ADMIN')==false %}
+												<div class="col-lg-3">
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h5>Mes indicateurs</h5>
+														</div>
+														<div class="panel-body">
+															<table class="table table-stripped small">
+																<tbody>
+																<tr>
+																	<td class="no-borders">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="no-borders">
+																		<strong>{{ programs|length }} programmes</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		<strong>
+																		{% set sumratings = 0 %}
+																		{% for action in actions %}																			
+																			{% set sumratings = sumratings + action.progression %}
+																		{% endfor %}
+																		{%if actions|length > 0 %}
+																		{% set sumratings = sumratings / actions|length %}
+																		{% endif %}
+																		{{  sumratings | number_format(0, '.', ' ') }} % de progression estimée
+																		</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		{% set sum = 0 %}
+																		{% set complet = "" %}
+																			{% for action in actions %}
+																				{%if action.budget is not null %}
+																					{% set sum = action.budget + sum ?? 0 %}
+																				{% else %} 
+																					{% set complet = "Incomplet" %}
+																				{% endif %}
+																			{% endfor %}
+																			{% set suma = 0 %}
+																			{% for jalon in jalons %}
+																				{%if jalon.budget is not null and jalon.fini ==1 %}
+																					{% set suma = jalon.budget + suma ?? 0 %}
+																				{% endif %}
+																			{% endfor %}
+																			
+																			<strong>(P) {{ sum | number_format(0, '.', ' ') }} € <i>{{ complet }}</i> - (C) {{ suma | number_format(0, '.', ' ') }} €</strong>
+																			
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		{% set sumj = 0 %}
+																		{% for action in actions %}
+																		{%if action.etp is not null %}
+																			{% set sumj = action.etp + sumj ?? 0 %}
+																		{% endif %}
+																	{% endfor %}
+																	{% set suma = 0 %}
+																			{% for jalon in jalons %}
+																				{%if jalon.etp is not null and jalon.fini ==1 %}
+																					{% set suma = jalon.etp + suma ?? 0 %}
+																				{% endif %}
+																			{% endfor %}
+																	<strong>(P) {{ sumj | number_format(0, '.', ' ') }} j/h - (C) {{ suma | number_format(0, '.', ' ') }} j/h</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td class="">
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td class="">
+																		<strong>{{ projets|length }} projets</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td>
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td>
+																		<strong>{{ actions|length }} actions</strong>
+																	</td>
+																</tr>
+																<tr>
+																	<td>
+																		<i class="fa fa-eercast text-success"></i>
+																	</td>
+																	<td>
+																		{% set count = 0 %}
+																		{% for action in actions %}
+																			{% for jalon in jalons if jalon.action == action  %}
+																				{% set count = count + 1 %}
+																			{% endfor %}
+																		{% endfor %}
+																		<strong>{{ count }} jalons / livrables</strong>
+																		
+																	</td>
+																</tr>
+																</tbody>
+															</table>			                                        
+														</div>
+													</div>
+												</div>
+												{% endif %}
+												<div class="col-lg-6">
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h5>Projets par métier</h5>
+														</div>
+														<div class="panel-body">
+															<canvas id="ChartMetier" width="100%" height="40px"></canvas>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>										
+								</div>
+
+								<div class="col-lg-12">
+									<div class="hr-line-dashed"></div>
+									<h2>Actions</h2>
+								</div>
+								<div class="col-lg-12">
+									<div class="row">
+										<div class="col-lg-12">
+											<div class="row">
+												<div class="col-lg-3">
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h5>Statut</h5>
+														</div>
+														<div class="panel-body">
+															<table class="table table-stripped small">
+																<tbody>
+																	{% for statut in statuts %}
+																		<tr>
+																			<td class="{% if loop.index == 1 %}no-borders{% endif %}">
+																				{{ statut.designation | default("N/C") }}
+																				<span class="float-right label label-success">
+																					{% set count = 0 %}
+																						{% for action in actions if action.statut == statut and action.archive is null %}
+																					{% set count = count + 1 %}
+																					{% endfor %}
+																					{{ count }}
+																				</span>
+																			</td>
+																		</tr>
+																	{% endfor %}
+																		<tr>
+																			<td class="">
+																				Archivé <i>(Hors calculs)</i>
+																				<span class="float-right label label-success">
+																					{% set countz = 0 %}
+																					{% for action in actions if action.archive is not null %}
+																						{% set countz = countz + 1 %}
+																					
+																					{% endfor %}
+																					{{ countz }}
+																				</span>
+																			</td>
+																		</tr>
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+													<div class="col-lg-3">
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h5>Actions par processus</h5>
+														</div>
+														<div class="panel-body">
+															<table class="table table-stripped small">
+																<tbody>
+																	{% for processus in processuses %}
+																		<tr>
+																			<td class="{% if loop.index == 1 %}no-borders{% endif %}">
+																				{{ processus.code | default("N/C") }} - {{ processus.designation | default("N/C") }}
+																				<span class="float-right label label-success">
+																				{% set count = 0 %}
+																						{% for action in processus.actions if action.archive is null %}
+											
+																					{% set count = count + 1 %}
+																				
+																					{% endfor %}
+																					{{ count }}
+																				</span>
+																			</td>
+																		</tr>
+																	{% endfor %}
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+												<div class="col-lg-3">
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h5>Priorités</h5>
+														</div>
+														<div class="panel-body">
+															<table class="table table-stripped small">
+																<tbody>
+																	{% for priorite in priorites %}
+																		<tr>
+																			<td class="{% if loop.index == 1 %}no-borders{% endif %}">
+																				{{ priorite.designation | default("N/C") }}
+																				<span class="float-right label label-success">
+																					{% set count = 0 %}
+																						{% for action in actions if action.priorite == priorite and action.archive is null %}
+																					{% set count = count + 1 %}
+																					{% endfor %}
+																					{{ count }}
+																				</span>
+																			</td>
+																		</tr>
+																	{% endfor %}
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+												<div class="col-lg-3">
+													<div class="panel panel-default">
+														<div class="panel-heading">
+															<h5>Phase</h5>
+														</div>
+														<div class="panel-body">
+															<table class="table table-stripped small">
+																<tbody>
+																	{% for phase in phases %}
+																		<tr>
+																			<td class="{% if loop.index == 1 %}no-borders{% endif %}">
+																				{{ phase.designation | default("N/C") }}
+																				<span class="float-right label label-success">
+																				{% set complet = "" %}
+																				{% set sumt = "0" %}
+																					{% for action in actions if action.phase == phase %}
+																						{%if action.budget is not null %}
+																							{% set sumt = action.budget + sumt ?? 0 %}
+																						{% else %} 
+																							{% set complet = "I" %}
+																						{% endif %}
+																					{% endfor %}
+																					<strong>{{ sumt | number_format(0, '.', ' ') }} €</strong>
+																					<i>({{ complet }})</i>
+																				</span>
+																				<span class="float-right label label-success">
+																					{% set sumj = 0 %}
+																					{% for action in actions if action.phase == phase  %}
+																						{%if action.etp is not null %}
+																							{% set sumj = action.etp + sumj ?? 0 %}
+																						{% endif %}
+																					{% endfor %}
+																				<strong>{{ sumj | number_format(0, '.', ' ') }} j/h</strong>
+																				</span>
+																				
+																				<span class="float-right label label-success">
+																					{% set count = 0 %}
+																						{% for action in actions if action.phase == phase %}
+																					{% set count = count + 1 %}
+																					{% endfor %}
+																					{{ count }}
+																					
+																					{% set sum = 0 %}
+																				</span>
+																			</td>
+																		</tr>
+																	{% endfor %}
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>											    
+											</div>
+										</div>
+									</div>										
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="files" class="tab-pane">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+							</div>
+							<br>			                                
+							<div class="form-group row">				
+								<div class="col-sm-12">
+									<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entity', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Portfolio'}}) }}" width="100%" height="500" frameborder="0"></iframe>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div> #}
+{% endblock %}
+
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+
+
+			
+			 $('a.arch').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous archiver cette action ?',
+			    buttons: {
+			        archiver: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+    
+            
+            
+            ///////////// FULLCALENDAR
+            var calendarEl = document.getElementById('calendar');
+		
+		       var calendar = new FullCalendar.Calendar(calendarEl, {
+			        height: 650,
+			        locale: 'fr',
+		          	plugins: [ 'dayGrid', 'list', 'bootstrap' ],
+		          	themeSystem: 'bootstrap',
+				  	editable: false,
+				  	droppable: false,
+				  	weekNumbers: true,
+				  	header: {left:   'dayGridMonth, dayGridWeek, listMonth', center: 'title', right:  'today prev,next' }, // buttons for switching between views
+					defaultView: 'listMonth',
+					eventLimit: true,
+					views: {
+					    dayGridMonth: { // name of view
+					      titleFormat: { year: 'numeric', month: 'long' }
+					      // other view-specific options here
+					    },
+					    dayGridWeek: { // name of view
+					      titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+					      // other view-specific options here
+					    },
+					    listMonth: { // name of view
+					      titleFormat: { year: 'numeric', month: 'long' },
+					      buttonText: 'Planning'
+					    }
+					},
+					events: [
+						  {% for action in actions %}
+						  {% for jalon in action.jalonconnectactions %}
+						  {% set desi = jalon.action.designation|replace({"'" : "`"}) %}
+						  {% set jal = jalon.jalon|replace({"'" : "`"}) %}
+						    { 
+						      title: "{{ jal }} -> ACT-{{ jalon.action.id }} {{ desi }}",
+						      start: "{{ jalon.daterevue | date("Y-m-d")  }}",
+						      url: "{{path('tache_edit',{'id' : jalon.id, 'r' : 'portfolio_list', 'rr' : 'SI'} ) }}"
+						    },
+						  {% endfor %}
+						  {% endfor %}
+						  ],
+					eventClick: function(info) {
+					    info.jsEvent.preventDefault(); // don't let the browser navigate
+
+						    if (info.event.url) {
+						      window.open(info.event.url);
+						    }
+						  },
+					businessHours: {
+					  daysOfWeek: [ 1, 2, 3, 4, 5 ]
+					}
+										
+				});
+				calendar.render();
+				    
+			
+		
+	///////////// GANTT
+		var groups = new vis.DataSet([
+			{% for program in allprograms if program.topprogram == 1   %}
+				{ 
+				id: {{ program.id }}, content: "{{ program.designation }}", value: {{ program.id }},
+				subgroupOrder: function(a, b) {return a.subgroupOrder - b.subgroupOrder;},
+				subgroupStack: { {% for projet in program.projets %}proj_{{ projet.id }}: true,{% endfor %} } 
+				},
+			{% endfor %}
+			]);
+
+			// create a dataset with items
+			// note that months are zero-based in the JavaScript Date object, so month 3 is April
+			var items = new vis.DataSet([
+			{% for projet in allprojets if projet.program is not null %}
+				{% set order = loop.index %}
+				 {
+				    id: {{ projet.id }},
+				    group: {{ projet.program.id }},
+				    subgroup: "proj_{{ projet.id }}",
+				    subgroupOrder: {{ order }},
+				    content: "{{ projet.code }} - {{ projet.designation }}",
+				    start: new Date(
+				    	{% set minValuegantt = "now"|date("Y, m, d") %}
+						{% for action in projet.actions %}
+							{% set minValuegantt = min(action.datedebut|date_modify("-1 month")|date("Y, m, d"), minValuegantt) %}
+						{% endfor %}
+						{{ minValuegantt }}
+					),
+				    end: new Date(
+					    {% set maxValue2 = 0 %}
+		                {% for action in projet.actions if action.datefin is defined and action.datefin is not null %}
+		                   	{% set maxValue2 = max(action.datefin|date_modify("-1 month")|date("Y,m,d"), maxValue2) %}
+		                {% endfor %}
+		                {{ maxValue2 }}
+				    ),
+					className: "projet text-white"
+				 },
+				{% for action in projet.actions %}
+					{% for jalon in action.jalonconnectactions if jalon.topjalon == 1  %}
+					  {
+					    id: 'jal{{ jalon.id }}',
+					    group: {{ projet.program.id }},
+					    subgroup: "proj_{{ projet.id }}",
+					    content: "{{ jalon.jalon }}",
+					    start: new Date({{jalon.daterevue|date_modify("-1 month")|date("Y, m, d")}}),
+						type: "box",
+						className: "orange",
+						subgroupOrder: {{ order }},
+					  },
+					{% endfor %}
+				{% endfor %}
+			{% endfor %}
+			]);
+			
+			// create visualization
+			var container = document.getElementById("visualization");
+			var options = {
+			  // option groupOrder can be a property name or a sort function
+			  // the sort function must compare two groups and return a value
+			  //     > 0 when a > b
+			  //     < 0 when a < b
+			  //       0 when a == b
+			  groupOrder: function(a, b) {
+			    return a.value - b.value;
+			  },
+			  editable: false,
+			  stack: true,
+			  stackSubgroups: true,
+			  min: new Date(2010, 0, 1), // lower limit of visible range
+			  max: new Date(2050, 0, 1), // upper limit of visible range
+			  zoomMin: 1000 * 60 * 60 * 24 * 31, // one day in milliseconds
+			  zoomMax: 1000 * 60 * 60 * 24 * 31 * 12 * 5 
+			  
+			};
+			
+			
+			
+			var timeline = new vis.Timeline(container);
+			timeline.setOptions(options);
+			timeline.setGroups(groups);
+			timeline.setItems(items);
+			
+			$("#sparkline1").sparkline([34, 43, 43, 35, 44, 32, 44, 48], {
+                type: 'line',
+                width: '100%',
+                height: '50',
+                lineColor: '#1ab394',
+                fillColor: "transparent"
+            });
+			
+		
+		});
+	
+		///////////// COURBE X PROJET
+		
+		var timeParser = 'DD/MM/YYYY';	    
+		new Chart(document.getElementById("TrackingChart"), {
+			  type: 'line',
+			   data:    {
+            datasets: [
+                {
+                    fill: false,
+                    backgroundColor : '#1ab394',
+                    borderColor: '#1ab394',
+                    label: "Prévisionnel",
+                    data: [
+	                    {% for jalon in alljalons | sortbyfield('date') if jalon.date is not null %}
+						{
+							x: "{{ jalon.date | date("d/m/Y")  }}", y: {{ loop.index}}
+						},
+						{% endfor %}
+                     ]
+                },
+                
+                {
+                    label: "Outlook",
+                    
+                    data: [
+                    {% set maxValue = 0 %}
+                    {% set loopi = 0 %}
+                   {% for jalon in alljalons | sortbyfield('datereelle') if date(jalon.datereelle) < date() and jalon.datereelle is not null %}
+                   {% set maxValue = max(jalon.datereelle|date("Y-m-d"), maxValue) %}
+                    {% set loopi = loop.index %}
+                   {% endfor %}
+					{
+						x: "{{maxValue|date("d/m/Y")}}", y:	{{ loopi}}
+					},
+	                    
+	                    {% for jalon in alljalons | sortbyfield('daterevue') if jalon.daterevue is not null  %}
+	                    {% if date(jalon.daterevue) >= date() %}
+						{
+							x: "{{ jalon.daterevue | date("d/m/Y")  }}", y: 
+							{{ loop.index}}
+						},
+						{% endif %}
+						{% endfor %}
+                     ],
+                    
+                    fill: false,
+                    backgroundColor : '#C8C2AE',
+                    borderColor: '#C8C2AE',
+                    borderDash: [5, 5]
+                },
+                
+                {
+                    label: "Réelle",
+                    data: [
+	                    {% for jalon in alljalons | sortbyfield('datereelle') if date(jalon.datereelle) < date() and jalon.datereelle is not null %}
+	                   
+						{
+							x: "{{ jalon.datereelle | date("d/m/Y")  }}", y: 
+							{{ loop.index}}
+							
+						},
+						{% endfor %}
+                     ],
+                    
+                    fill: true,
+                    backgroundColor : '#0093dc',
+                    borderColor: '#0093dc'
+                }
+               
+            ]
+        },
+		options: {
+            responsive: true,
+            title:      {
+                display: true,
+                text:    "Progression du plan projet"
+                },
+
+			
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    time:       {
+                        parser: timeParser,
+                        tooltipFormat: 'll'
+                    },
+                    scaleLabel: {
+                        display:     false,
+                        labelString: 'Date'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'Livrables'
+                    }
+                }]
+            }
+        }					  
+		
+		
+			
+	});
+	
+	var ctx = document.getElementById('ChartMetier');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+        {% for metier in metiers %}
+        '{{ metier.code | default("N/C")}}',
+        {% endfor %}
+        ],
+        
+        
+        datasets: [{
+            label: 'Projet',
+            yAxisID: 'y-axis-1',
+            data: [{% for metier in metiers %}{{ metier.projets|length|default("0")}}, {% endfor %}],
+            borderWidth: 1
+        }]
+    },
+    	     options: {
+			     plugins: {
+			        labels: [
+					   
+					    {
+					      render: 'value',
+
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    },
+		        scales: {
+						yAxes: [{
+							display: true,
+							position: 'left',
+							id: 'y-axis-1',
+							scaleLabel: {
+					          display: false,
+					          labelString: 'Nb. actions'
+					        },
+					        ticks:{
+					          beginAtZero: true, 
+					          stepSize: 1
+					        }
+							}],
+					}
+		    }
+});
+	if (location.hash) {
+        $('a[href=\'' + location.hash + '\']').tab('show');
+    }
+    var activeTab = localStorage.getItem('activeTab');
+    if (activeTab) {
+        $('a[href="' + activeTab + '"]').tab('show');
+    }
+    
+    $('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+        e.preventDefault()
+        var tab_name = this.getAttribute('href')
+        if (history.pushState) {
+        history.pushState(null, null, tab_name)
+        }
+        else {
+        location.hash = tab_name
+        }
+        localStorage.setItem('activeTab', tab_name)
+    
+        $(this).tab('show');
+        return false;
+    });
+    $(window).on('popstate', function () {
+        var anchor = location.hash ||
+        $('a[data-toggle=\'tab\']').first().attr('href');
+        $('a[href=\'' + anchor + '\']').tab('show');
+    });
+
+    </script>
+{% endblock %}

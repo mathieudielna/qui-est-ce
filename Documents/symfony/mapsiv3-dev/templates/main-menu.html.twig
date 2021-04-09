@@ -1,0 +1,146 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white border" style="margin-right:20px; margin-left:20px; margin-top:20px; border-radius: 5px;">
+    <a class="navbar-brand border-right pr-3" href="#">
+        <img src="/img/mapsi.png" height="38" alt="">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbars" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+    <div class="collapse navbar-collapse" id="navbar">
+        <ul class="nav navbar-nav mr-auto">
+            <li class="nav-item megamenu-li">
+               <a class="nav-link switch" data-entite="start" data-domaine="Tableau de bord" data-domid="home" data-tdb="oui" style="vertical-align: middle !important;"> 
+               <i class="bi bi-pie-chart-fill" style="font-size: 1.29rem;  color: #0093DC;"></i> <span class="removeresolution"> Dashboard</span></a>
+            </li>
+            <li class="nav-item dropdown megamenu-li">
+                <a class="nav-link dropdown-toggle" href="" id="dropdown01" data-toggle="dropdown" data-tdb="oui" aria-haspopup="true" aria-expanded="false"><i class="bi bi-layout-wtf" style="font-size: 1.29rem;  color: #0093DC;"></i> <span class="removeresolution">  Organisation</span> <b class="caret"></b></a>
+                <div class="dropdown-menu megamenu" aria-labelledby="dropdown01">
+                    <div class="row">
+                        <div class="col-sm-6 col-lg-3">
+                            <h3>Référentiels métiers et SI</h3>
+                            <p>Les données permettant de définir l'organisation sont référencées au sein de ce module</p>
+                        </div>
+                        {% if is_granted('ROLE_USER_PROCESS') %}
+                        <div class="col-sm-6 col-lg-3 border-left">
+                        <strong>Système de management des processus</strong>
+                            <a class="dropdown-item switch" data-entite="processus" data-domaine="Management des processus" data-domid="process">Processus</a>
+                            <a class="dropdown-item switch" data-entite="activite" data-domaine="Management des processus" data-domid="process">Activités</a>
+                            <a class="dropdown-item switch" data-entite="flux" data-domaine="Management des processus" data-domid="process">Traitements</a>
+                            <a class="dropdown-item switch" data-entite="objet_metier" data-domaine="Management des processus" data-domid="process">Objets métiers</a>
+                        </div>
+                        {% endif %}
+                        {% if is_granted('ROLE_USER_SI') %}
+                        <div class="col-sm-6 col-lg-3 border-left">
+                        <strong>Cartographie du SI</strong>
+                            <a href="{{path('si_list')}}" class="dropdown-item" >SI</a>
+                            <a class="dropdown-item switch" data-entite="application" data-domaine="Système d\information" data-domid="si">Application</a>
+                            <a class="dropdown-item switch" data-entite="systeme" data-domaine="Système d\information" data-domid="si">Systèmes</a>
+                        </div>
+                        {% endif %}
+                        {% if is_granted('ROLE_USER_ASSET') %}
+                        <div class="col-sm-6 col-lg-3 border-left">
+                        <strong>Référentiel des assets</strong>
+                            <a class="dropdown-item switch" data-entite="people" data-domaine="Assets management" data-domid="asset">Collaborateurs</a>
+                            <a class="dropdown-item switch" data-entite="metier" data-domaine="Assets management" data-domid="asset">Métiers</a>
+                            <a class="dropdown-item switch" data-entite="site" data-domaine="Assets management" data-domid="asset">Sites</a>
+                            <a class="dropdown-item switch" data-entite="tier" data-domaine="Assets management" data-domid="asset">Tiers</a>
+                            <a class="dropdown-item switch" data-entite="ressource" data-domaine="Assets management" data-domid="asset">Ressources</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item dropdown megamenu-li">
+                <a class="nav-link dropdown-toggle" href="" id="dropdownpilote" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-calendar4-week" style="font-size: 1.29rem;  color: #0093DC;"></i> <span class="removeresolution">  Pilotage</span> <b class="caret"></b></a>
+                <div class="dropdown-menu megamenu" aria-labelledby="dropdownpilote">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <h3>Pilotez la transformation de votre organisation</h3>
+                            <p>
+                                Mapsi centralise vos plans d’action, qu’ils soient issues de votre plan stratégique, de vos objectifs de conformité ou de vos projets opérationnels.
+                            </p>
+                        </div>
+                        {% if is_granted('ROLE_USER_PORTFOLIO') %}
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3>Pilotage</h3>
+                                    <p class="card-text">Portfolio des projets de transformation et de conformité</p>
+                                    <a class="btn btn-primary mr-1 mb-2 switch" data-entite="program" data-domid="portfolio">Programmes</a>
+                                    <a class="btn btn-primary mr-1 mb-2 switch" data-entite="projet" data-domid="portfolio">Projets</a>
+                                    <a class="btn btn-primary mr-1 mb-2 switch" data-entite="action" data-domid="portfolio">Actions</a>
+                                    <a class="btn btn-primary mr-1 mb-2 switch" data-entite="jalon_connect_action" data-domid="portfolio">Tâches</a>
+                                    <a class="btn btn-primary mr-1 mb-2 ">Tracking</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if is_granted('ROLE_USER_AXE') %}
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3>Plan stratégique</h3>
+                                    <p class="card-text">Accès au plan et axes stratégiques</p>
+                                    <a class="btn btn-primary mr-1 switch" data-entite="axe" data-domid="strat">Axes stratégiques</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item dropdown megamenu-li">
+                <a class="nav-link dropdown-toggle" href="" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-clipboard-check" style="font-size: 1.29rem;  color: #0093DC;"></i> <span class="removeresolution">Comply</span> <b class="caret"></b></a>
+                <div class="dropdown-menu megamenu" aria-labelledby="dropdown02">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <h3>Conformité à 360°</h3>
+                            <p>MAPSI est un progiciel intégré et intuitif pour suivre l’ensemble des référentiels et actions de conformité de votre organisation</p>
+                        </div>
+                        <div class="col-lg-9">
+                            {% if is_granted('ROLE_USER_RISQUE') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="risque" data-domaine="Gestion des risques" data-domid="risk" style="font-size:16px"><i class="bi bi-tree" style="font-size: 1.6rem;"></i> Risques</a>{% endif %}
+                            {% if is_granted('ROLE_USER_CTRLINT') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="controle" data-domaine="Contrôle interne" data-domid="ctrlinterne" style="font-size:16px"><i class="bi bi-file-check" style="font-size: 1.6rem;"></i> Contrôle interne</a>{% endif %}
+                            {% if is_granted('ROLE_USER_PCA') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="pca" data-domaine="Plan de continuité des activités" data-domid="pca" style="font-size:16px"><i class="bi bi-exclamation-diamond" style="font-size: 1.6rem;"></i> PCA</a>{% endif %}
+                            {% if is_granted('ROLE_USER_ITIL') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="itil" data-domaine="ITIL" data-domid="itil" style="font-size:16px"><i class="bi bi-arrow-repeat" style="font-size: 1.6rem;"></i> ITIL</a>{% endif %}
+                            {% if is_granted('ROLE_USER_RGPD') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="tdb-rgpd" data-tdb="oui" data-domaine="Réglementation générale sur la protection des données" data-domid="rgpd" style="font-size:16px"><i class="bi bi-shield-lock" style="font-size: 1.6rem;"></i> RGPD</a>{% endif %}
+                            {% if is_granted('ROLE_USER_QUALITE') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="tdb-qualite" data-tdb="oui" data-domaine="Système de manamegement de la qualité" data-domid="qualite" style="font-size:16px"><i class="bi bi-award" style="font-size: 1.6rem;"></i> Qualité</a>{% endif %}
+                            {% if is_granted('ROLE_USER_ENVIRONNEMENT') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="tdb-environnement" data-tdb="oui" data-domaine="Système de management de l\'environnement" data-domid="environnement" style="font-size:16px"><i class="bi bi-tree" style="font-size: 1.6rem;"></i> Environnement</a>{% endif %}
+                            {% if is_granted('ROLE_USER_ENERGIE') %}<a class="btn btn-primary btn-outline btn-lg m-2 switch" data-entite="energie" data-domaine="Système de management de environnemental" data-domid="energie" style="font-size:16px"><i class="bi bi-lightning" style="font-size: 1.6rem;"></i> Energie</a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <ul class="nav navbar-top-links navbar-right">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="text-xs block"><i class="bi bi-person-circle" style="font-size: 1.3rem;"></i> <b class="caret"></b>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item">{{ app.user.email }}</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" onclick="crossEntity({{ app.user.people.id }},'people')"><i class="bi bi-person-square" style="font-size: 1.3rem;"></i>  Mon profile Mapsi</a>
+                    <a class="dropdown-item" onclick="crossEntity({{ app.user.id }},'password')"><i class="bi bi-file-lock2" style="font-size: 1.3rem;"></i>  Changer mon mot de passe</a>   
+                    <div class="dropdown-divider"></div> 
+                    <a class="dropdown-item" href="{{path('logout')}}"><i class="bi bi-box-arrow-right" style="font-size: 1.3rem;"></i> Déconnexion</a>                    
+                </div>
+            </li>
+            <li class="nav-item dropdown border-left">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="text-xs block">{% if app.user.customer.image is not null %}                
+                    <img src="{{ vich_uploader_asset(app.user.customer, 'imageFile', 'App\\Entity\\MapsiCustomer') }}" height="38" >					
+                    {% elseif app.user.customer.image is null %}
+                    <img alt="image" class="img-md" src="/img/logo.png"/>
+                    {% endif %}
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item switch" data-entite="tdb-mapsicustomer" data-tdb="oui" data-domid="mapsi_customer"><i class="bi bi-person-square" style="font-size: 1.3rem;"></i>  Profil société</a>
+                    <a class="dropdown-item switch" data-entite="user" data-toggle="tab" data-domid="mapsi_customer"><i class="bi bi-file-lock2" style="font-size: 1.3rem;"></i>  Utilisateurs</a>
+                    {% if is_granted('ROLE_SUPER_ADMIN') %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{{path('customerchange',{'id' : app.user.id} ) }}"><i class="bi bi-building" style="font-size: 1.3rem;"></i> Changer d'entité Mapsi</a>     
+                    {% endif %}                    
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>

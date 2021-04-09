@@ -1,0 +1,475 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formObjetMetier  'bootstrap_4_layout.html.twig' %}
+
+{% block stylesheets %}
+	<style type="text/css">
+		.change-message {
+			display: none;
+			}
+		span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+    </style>
+{% endblock %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+		            {% if editMode %}
+					<h2>Fiche Objet Métier</h2>
+					{% else %}
+					<h2>Créer une nouvel objet métier</h2>
+					{% endif %} 
+		            <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+						<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+						</svg> Retour vers {{ rr }}
+					</a> 
+		        </div>
+                <div class="col-sm-4">
+                    <div class="title-objetmetier">
+                       
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+
+{% block body %}
+{{ form_start(formObjetMetier) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+                                	<a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+								</span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									OM-{{ objetmetier.id }} {{ objetmetier.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+							<div class="hr-line-dashed"></div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Statut :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(objetmetier) %}<strong>{{ workflow_metadata(objetmetier, 'title', place) ?: ''}}</strong>{% endfor %}
+									
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if objetmetier.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : objetmetier.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ formObjetMetier.vars.value.responsable.firstname | default("") }} {{ formObjetMetier.vars.value.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if objetmetier.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : objetmetier.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ formObjetMetier.vars.value.suppleant.firstname | default("") }} {{ formObjetMetier.vars.value.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							{% if objetmetier.redacteur is not null %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Rédacteur :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										<a shref="{{path('people_edit',{'id' : objetmetier.redacteur.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ formObjetMetier.vars.value.redacteur.firstname | default("") }} {{ formObjetMetier.vars.value.redacteur.lastname | default("N/C") }}
+									</a>
+									</dd>
+								</div>
+                            </dl>
+							{% endif %}
+							{% if objetmetier.peoples | length >0 %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in objetmetier.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+							{% endif %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>DPO :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										<a shref="" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ app.user.customer.dpo.firstname }} {{ app.user.customer.dpo.lastname }}
+										</a>
+									</dd>
+								</div>
+                            </dl>
+                        </div>
+						
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ objetmetier.publishedat | date("d M Y")  }} par {{ objetmetier.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ objetmetier.validatedat | date("d M Y")  }} par {{ objetmetier.validator.firstname | default("n/c") }} </dd>
+
+									<div class="hr-line-dashed"></div>
+
+									<ul class="steps">
+										<li class="step {% if workflow_has_marked_place(objetmetier, 'review') or workflow_has_marked_place(objetmetier, 'validation') or workflow_has_marked_place(objetmetier, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(objetmetier, 'draft') %}step-active{% elseif workflow_has_marked_place(objetmetier, 'rejected') %}step-error{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">1</span>
+											<span class="step-text">{% if workflow_has_marked_place(objetmetier, 'draft') or workflow_has_marked_place(objetmetier, 'rejected') %}Rédaction{% else %}Rédigé{% endif %}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(objetmetier, 'validation') or workflow_has_marked_place(objetmetier, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(objetmetier, 'review') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">2</span>
+											<span class="step-text">{% if workflow_has_marked_place(objetmetier, 'review') or workflow_has_marked_place(objetmetier, 'draft') or workflow_has_marked_place(objetmetier, 'rejected') %}Révision<br>(Resp.){% else %}Revu<br>(Resp.){% endif%}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(objetmetier, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(objetmetier, 'validation') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">3</span>
+											<span class="step-text">{% if workflow_has_marked_place(objetmetier, 'validation_ok') %}Validé<br>(DPO){% else %}validation<br>(DPO){% endif%}</span>
+											</div>
+										</li>
+									</ul>
+
+									<div class="hr-line-dashed"></div>
+
+									{% set rolep = "" %}{% if objetmetier.redacteur == app.user.people  %}{% set rolep = "redacteur" %}{% endif %}
+									{% set roles = "" %}{% if objetmetier.responsable == app.user.people  %}{% set roles = "responsable" %}{% set rolep = "redacteur" %}{% endif %}
+									{% set roler = "" %}{% if app.user.customer.dpo == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "dpo" %}{% set roles = "responsable" %}{% set rolep = "redacteur" %}{% endif %}
+									{% for transition in workflow_transitions(objetmetier) %}
+										{% if workflow_can(objetmetier, transition.name) %}
+											{% if workflow_metadata(objetmetier, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(objetmetier, 'ambiance', transition)}} btn-xs adisab" href="{{path('objetmetier_workflow', {
+												'id' : objetmetier.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(objetmetier, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No actions available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+                    </div>
+					<br><br>
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs noprint">
+									{% if editMode %}
+									<li>
+										<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+				                            <span style="font-size: 18px;">
+												Synthèse
+											</span>
+										</a>
+									</li>
+									{% endif %}
+		                            <li>
+									<a class="nav-link {% if not editMode %}active show{% endif %}" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#commentaire"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+									{% if editMode %}
+									<div id="introduction" class="tab-pane active show">
+			                            <div class="panel-body">
+			                                <div class="row">	
+												<div class="col-lg-8">
+													<p>
+														{{ objetmetier.description | raw}}
+													</p>
+												</div>
+												<div class="col-lg-4">
+													<div class="row">
+														<div class="col-lg-12">	
+															<h5>Comply</h5>
+															{% if objetmetier.dcp.code is defined and objetmetier.dcp.code is not null and objetmetier.dcp.code=="1" %}
+															<span class="label label-danger" style="margin: 2px">RGPD{% if objetmetier.dcpsensible.code is defined and objetmetier.dcpsensible.code is not null and objetmetier.dcpsensible.code=="1" %} Sensible{% endif %}
+															</span>
+															{% endif %}														
+														</div>
+														{% if objetmetier.fluxes|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Flux</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for f in objetmetier.fluxes %}
+																<li><a href="{{path('flux_edit',{'id' : f.id, 'r' : 'process_list', 'rr' : 'Process'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ f.designation|length > 50 ? f.designation|slice(0, 50) ~ '...' : f.designation  }}
+																</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if objetmetier.datas|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Données</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for data in objetmetier.datas %}
+																<li><a class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ data.designation|length > 42 ? data.designation|slice(0, 42) ~ '...' : data.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if objetmetier.applications|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Applications</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for app in objetmetier.applications %}
+																<li><a class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ app.designation|length > 42 ? app.designation|slice(0, 42) ~ '...' : app.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+													</div>	
+												</div>	
+											</div>
+			                            </div>
+			                        </div>
+									{% endif %}
+		                            <div id="information" class="tab-pane {% if not editMode %}active show{% endif %}">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formObjetMetier.designation, 'Designation') }}</strong></label>
+												<div class="col-sm-10">{{ form_widget(formObjetMetier.designation)}}</div>
+											</div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formObjetMetier.description, 'Description') }}</strong></label>
+												<div class="col-sm-10">{{ form_widget(formObjetMetier.description)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+																
+												<div class="form-group row"><label class="col-sm-2 col-form-label"><strong>Managers</strong></label>
+													<div class="col-sm-10">
+														<div class="row">
+															<div class="col-md-4"><span class="form-text m-b-none text-navy">{{ form_label(formObjetMetier.responsable, 'Responsable') }}</span>{{ form_widget(formObjetMetier.responsable)}}</div>
+															<div class="col-md-4"><span class="form-text m-b-none text-navy">{{ form_label(formObjetMetier.suppleant, 'Suppléant') }}</span>{{ form_widget(formObjetMetier.suppleant)}}</div>
+															<div class="col-md-4"><span class="form-text m-b-none text-navy">{{ form_label(formObjetMetier.redacteur, 'Rédacteur') }}</span>{{ form_widget(formObjetMetier.redacteur)}}</div>
+														</div>
+													</div>
+												</div>
+												<div class="form-group row"><label class="col-sm-2 col-form-label"></label>
+													<div class="col-sm-10">
+														<div class="row">
+															<div class="col-md-12"><span class="form-text m-b-none text-navy">{{ form_label(formObjetMetier.peoples, 'Contributeurs') }}</span>{{ form_widget(formObjetMetier.peoples)}}</div>
+														</div>
+													</div>
+												</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formObjetMetier.datas, 'Données associées') }}</strong>
+												<br><small>Sélectionnez les données personnelles contenues dans cet objet</small>
+												</label>
+												<div class="col-sm-10">{{ form_widget(formObjetMetier.datas)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formObjetMetier.fluxes, 'Flux / Traitement') }}</strong>
+												<br><small>Quels sont les traitements de données qui utilisent cet objet ?</small>
+												</label>
+												<div class="col-sm-10">{{ form_widget(formObjetMetier.fluxes)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group row {% if app.user.customer.dpo == app.user.people or is_granted('ROLE_ADMIN')  %}{% else %}d-none{% endif %}"><label class="col-sm-2 col-form-label"><strong>Diagnostic RGPD</strong></label>
+												<div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-4"><span class="form-text m-b-none text-navy">DCP</span>{{ form_widget(formObjetMetier.dcp)}}</div>
+														<div class="col-md-4"><span class="form-text m-b-none text-navy">Sensible</span>{{ form_widget(formObjetMetier.dcpsensible)}}</div>
+														<div class="col-md-4"><span class="form-text m-b-none text-navy">Statut RGPD</span>{{ form_widget(formObjetMetier.statutrgpd)}}</div>
+													</div>
+												</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+																	
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label">
+												<strong>Support et stockage</strong>
+												</label>
+												<div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Support</span>{{ form_widget(formObjetMetier.type)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Application</span>{{ form_widget(formObjetMetier.applications)}}</div>
+														
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Echange</span>{{ form_widget(formObjetMetier.typesupport)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Mesures de prévention / détection</span>{{ form_widget(formObjetMetier.mesuresprev)}}</div>
+													</div>
+												</div>
+											</div>
+										</div>
+		                            </div>
+		                            <div id="files" class="tab-pane noprint">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'ObjetMetier', 'entryprefix': 'OM', 'entryid': objetmetier.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="commentaire" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formObjetMetier.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formObjetMetier) }}
+{% endblock %}
+
+
+
+
+{% block javascripts %}
+
+	
+	<script>
+		$(document).ready(function() {
+
+			CKEDITOR.replace( 'objet_metier_commentaire', {
+				uiColor: '#FFFFFF'
+			});
+			CKEDITOR.replace('objet_metier_description', {
+				uiColor: '#FFFFFF'
+			});
+
+
+			//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+		});
+
+	</script>
+	
+{% endblock %}
+
+

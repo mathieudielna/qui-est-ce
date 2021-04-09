@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>MAPSI | PDF</title>
+
+    <link type="text/css" media="all"  href="inspinia/css/bootstrap.min.css" rel="stylesheet" />
+    <link type="text/css" media="all"  href="inspinia/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <link type="text/css" media="all"  href="inspinia/css/animate.css" rel="stylesheet" />
+    <link type="text/css" media="all"  href="inspinia/css/style.css" rel="stylesheet" />
+    
+    <style type="text/css">
+	</style>
+    
+</head>
+
+
+<body class="white-bg">
+	<div class="wrapper wrapper-content">
+		<div class="row">
+			<strong> {{ controle.customer.designation }}</strong>
+			<h1>Fiche contrôle interne</h1>
+		</div>
+		<div class="row">
+			<table class="table">
+				<tr>
+					<td>Désignation</td>
+					<td>CTRL-{{ controle.id }} - {{ controle.designation }}</td>
+				</tr>
+				<tr>
+					<td>Description</td>
+					<td>{{ controle.description | raw }}</td>
+				</tr>
+				<tr>
+					<td>Auteur</td>
+					<td>{{ controle.auteur.firstname }} {{ controle.auteur.lastname }}</td>
+				</tr>
+			</table>
+		</div>
+    </div>
+</body>

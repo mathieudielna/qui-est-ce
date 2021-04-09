@@ -1,0 +1,105 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'om' }) }}
+
+<table id="dataTables-om" class="table table-bordered select table-hover">    
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th scope="col" class="export pdf" style="width:80px">Etat</th>
+            <th scope="col" class="export pdf">Désignation</th>
+            <th scope="col" class="export pdf">Managers</th>
+            <th scope="col" class="export">Relations</th>
+            <th scope="col" class="export">Comply</th>
+            <th scope="col" class="no-sort" style="width:60px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for objetmetier in objetmetiers %}
+                <tr>
+                    <td></td>
+                    <td class="text-center">
+                        <span class="badge">
+                            {% for place in workflow_marked_places(objetmetier) %}
+                                <strong>{{ workflow_metadata(objetmetier, 'title', place) ?: ''}}</strong>
+                            {% endfor %}
+                        </span>
+                    </td>
+                    <td  class="table-title"  scope="row" data-order="{{ objetmetier.designation }}">
+                        <a class="" href="{{path('objetmetier_edit',{'slug' : objetmetier.slug, 'id' : objetmetier.id, 'r' : r, 'rr' : rr} ) }}">{{ objetmetier.designation }}</a> <span class="badge badge-secondary">OM-{{ objetmetier.id }}</span>
+                        <br><small>{% for data in objetmetier.datas %}{{ data.designation | default("") }} {% endfor %}</small>
+                    </td>
+                    <td>
+                    <strong>{{ objetmetier.responsable.firstname | default("") }} {{ objetmetier.responsable.lastname | default("") }}</strong>
+                        <br>
+                        {{ objetmetier.suppleant.firstname | default("") }} {{ objetmetier.suppleant.lastname | default("") }}
+                    </td>
+                    <td>
+                        {% if objetmetier.fluxes|length > 0 %}
+                            <span class="dropdown tablerelation">
+                                <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="bi bi-arrow-down-up" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ objetmetier.applications|length }}   </strong> 
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <h4 class="tablerelation"> Traitements</h4>
+                                    {% for flux in objetmetier.fluxes %}
+                                    <a class='dropdown-item'>{{loop.index}}. {{ flux.designation | default('N/C')  }}</a>
+                                    {% endfor %}
+                                </div>
+                            </span>
+                        {% endif %}
+                        {% if objetmetier.applications|length > 0 %}
+                            <span class="dropdown tablerelation">
+                                <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="bi bi-app-indicator" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ objetmetier.applications|length }}   </strong> 
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <h4 class="tablerelation"> Applications</h4>
+                                    {% for app in objetmetier.applications %}
+                                    <a class='dropdown-item'>{{loop.index}}. {{ app.designation | default('N/C')  }}</a>
+                                    {% endfor %}
+                                </div>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>{% set label = "" %}
+                        {% if objetmetier.dcp.designation is defined and objetmetier.dcp.designation=="Oui" %}
+                            {% if objetmetier.statutrgpd.designation is defined and objetmetier.statutrgpd.designation is not null and objetmetier.statutrgpd.designation=="Non conforme" %}
+                                {% set label = "label-danger" %}
+                            {% elseif objetmetier.statutrgpd.designation is defined and objetmetier.statutrgpd.designation is not null and objetmetier.statutrgpd.designation=="Conforme" %}
+                                {% set label = "label-primary" %}
+                            {% endif %}
+
+                            <span class="label {{label | default("") }} small">RGPD
+                            {% if objetmetier.dcpsensible.designation is defined and objetmetier.dcpsensible.designation=="Oui" %} Sensible{% endif %}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td data-order="{{ objetmetier.PublishedAt | date("Ymd")}}" class="text-center">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('objetmetier_edit',{'slug' : objetmetier.slug, 'id' : objetmetier.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                            {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                            <a class="dropdown-item del" href="{{path('objetmetier_remove',{'slug' : objetmetier.slug, 'id' : objetmetier.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                            {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ objetmetier.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(objetmetier.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{objetmetier.publisher.firstname | default("") }} {{ objetmetier.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+        {% endfor %}
+    </tbody>
+</table>

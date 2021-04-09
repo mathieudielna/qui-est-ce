@@ -1,0 +1,297 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'flux' }) }}
+
+<table id="dataTables-flux" class="table table-bordered select table-hover">
+
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th class="export pdf" style="width:80px">Etat</th>
+            <th class="export pdf">Désignation</th>
+            <th>Managers</th>
+            <th>Exp. / Dest.</th>
+            <th>Relations</th>
+            <th class="export pdf">Comply</th>
+            {% if conformite=="RGPD" %}<th class="export">Diag. RGPD</th>{% endif %}
+            <th class="no-sort actionbtn" style="width:60px"></th>
+            <th scope="col" class="no-show export">Description</th>
+            <th scope="col" class="no-show export pdf">Responsable</th>
+            <th scope="col" class="no-show export">Suppléant</th>
+            <th scope="col" class="no-show export">Nb OM DCP</th>
+            <th scope="col" class="no-show export">OM DCP</th>
+            <th scope="col" class="no-show export">OM DCP Data</th>
+            <th scope="col" class="no-show export">Expéditeur int.</th>
+            <th scope="col" class="no-show export">Expéditeur ext.</th>
+            <th scope="col" class="no-show export">Destinataire int</th>
+            <th scope="col" class="no-show export">Destinataire ext</th>
+            <th scope="col" class="no-show export">Périodicité</th>
+            <th scope="col" class="no-show export">Support</th>
+            <th scope="col" class="no-show export">Durée de conservation</th>
+            <th scope="col" class="no-show export">Nb activité</th>
+            <th scope="col" class="no-show export">Activité</th>
+            <th scope="col" class="no-show export">Nb application</th>
+            <th scope="col" class="no-show export">Application</th>
+            <th scope="col" class="no-show export">Nb action</th>
+            <th scope="col" class="no-show export">Action</th>
+            <th scope="col" class="no-show export">Hors UE</th>
+            <th scope="col" class="no-show export">Finalité</th>
+            <th scope="col" class="no-show export">Personnes concernées</th>
+            <th scope="col" class="no-show export">Données sensibles</th>
+            <th scope="col" class="no-show export">Fondements juridiques</th>
+            <th scope="col" class="no-show export">Accord collecte</th>
+            <th scope="col" class="no-show export">Accord utilisation</th>
+            <th scope="col" class="no-show export">Engagement sous traitant</th>
+            <th scope="col" class="no-show export">Autres sous traitants</th>
+            <th scope="col" class="no-show export">DPIA</th>
+            <th scope="col" class="no-show export">Type de traitement</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for flux in fluxs %}
+        <tr class="gradeX">
+            <td></td>
+            <td>
+                <span class="badge">
+                    {% for place in workflow_marked_places(flux) %}
+                        <strong>{{ workflow_metadata(flux, 'title', place) ?: ''}}</strong>
+                    {% endfor %}
+                </span>
+            </td>
+            <td  class="table-title"  scope="row" data-order="{{ flux.designation }}">
+                <a class="" href="{{path('flux_edit',{'slug' : flux.slug, 'id' : flux.id, 'r' : r, 'rr' : rr} ) }}">{{ flux.designation }}</a> <span class="badge badge-secondary">FX-{{ flux.id }}</span>
+            </td>
+            <td>
+                <strong>{{ flux.responsable.firstname | default("") }} {{ flux.responsable.lastname | default("") }}</strong>
+                <br>
+                {{ flux.suppleant.firstname | default("") }} {{ flux.suppleant.lastname | default("") }}
+            </td>
+            <td>
+                {% if flux.expin|length + flux.expout|length  > 0 %}
+                    <span class="dropdown tablerelation">
+                        <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Exp. <strong>{{ flux.expin|length + flux.expout|length }}</strong> 
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <h4 class="tablerelation"> Interne</h4>
+                            {% for expi in flux.expin %}
+                            <a class='dropdown-item'>{{loop.index}}. {{ expi.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                            <div class="dropdown-divider"></div>
+                            <h4 class="tablerelation"> Externe</h4>
+                            {% for expou in flux.expout %}
+                            <a class='dropdown-item'>{{loop.index}}. {{ expou.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                        </div>
+                    </span>
+                {% endif %}
+                {% if flux.destin|length + flux.destext | length  > 0 %}
+                    <span class="dropdown tablerelation">
+                        <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Dest. <strong>{{ flux.destin | length + flux.destext | length  }} </strong>
+                        </button>
+                        <div class="dropdown-menu tablerelation" aria-labelledby="dropdownMenuButton">
+                            <h4 class="tablerelation"> Interne</h4>
+                            {% for desti in flux.destin %}
+                            <a class='dropdown-item'>{{loop.index}}. {{ desti.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                            <div class="dropdown-divider"></div>
+                            <h4 class="tablerelation"> Externe</h4>
+                            {% for destex in flux.destext %}
+                            <a class='dropdown-item'>{{loop.index}}. {{ destex.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                        </div>
+                    </span>
+                {% endif %}
+            </td>													    
+                
+            <td>
+                {% if flux.fluxConnectActivites|length > 0 %}
+                    <span class="dropdown tablerelation">
+                        <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                           <i class="bi bi-bezier tablerelation icon"></i> <strong class="tablerelation">{{ flux.fluxConnectActivites | length  }}  </strong>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <h4 class="tablerelation"> Activités</h4>
+                            {% for appconnect in flux.fluxConnectActivites %}
+                            <a class='dropdown-item'>{{loop.index}}. {{ appconnect.activite.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                        </div>
+                    </span>
+                {% endif %}
+                 {% if flux.applications|length > 0 %}
+                    <span class="dropdown tablerelation">
+                        <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                           <i class="bi bi-arrow-down-up" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ flux.applications|length }}   </strong> 
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <h4 class="tablerelation"> Applications</h4>
+                            {% for app in flux.applications%}
+                            <a class='dropdown-item'>{{loop.index}}. {{ app.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                        </div>
+                    </span>
+                {% endif %}
+                {% if flux.objetmetiers|length > 0 %}
+                    <span class="dropdown tablerelation">
+                        <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                           <i class="bi bi-file-earmark-medical-fill"></i> <strong class="tablerelation">{{ flux.objetmetiers|length }}</strong>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <h4 class="tablerelation"> Objets métiers</h4>
+                            {% for om in flux.objetmetiers %}
+                            <a class='dropdown-item'>{{loop.index}}. {{ om.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                        </div>
+                    </span>
+                {% endif %}
+                {% if flux.actions|length > 0 %}
+                    <span class="dropdown tablerelation">
+                        <button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                           <i class="bi bi-kanban-fill"></i> <strong class="tablerelation"> {{ flux.actions|length }}</strong>  
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <h4 class="tablerelation"><i class="bi bi-kanban-fill"></i> Actions</h4>
+                            {% for action in flux.actions %}
+                            <a class='dropdown-item'>{{loop.index}}. {{ action.designation | default('N/C')  }}</a>
+                            {% endfor %}
+                        </div>
+                    </span>
+                {% endif %}
+            </td>
+            <td>{% set label = "" %}
+                {% if flux.statutrgpd.designation is defined and flux.statutrgpd.designation is not null and flux.statutrgpd.designation=="Non conforme" %}
+                    {% set label = "label-danger" %}
+                {% elseif flux.statutrgpd.designation is defined and flux.statutrgpd.designation is not null and flux.statutrgpd.designation=="Conforme" %}
+                    {% set label = "label-primary" %}
+                {% endif %}
+                {% set dcp = "Non" %}{% for om in flux.objetmetiers if om.dcp.code is defined and om.dcp.code==1 %}{% set dcp = "RGPD" %}{% endfor %}
+                {% if dcp=="RGPD" %}<span class="label {{label | default("") }} small" style="margin: 2px">RGPD
+                {% set dcpsensible = "Non" %}{% for om in flux.objetmetiers if  om.dcpsensible.code is defined and om.dcpsensible.code==1 %}{% set dcpsensible = "Oui" %}{% endfor %}
+                {% if dcpsensible=="Oui" %}Sensible{% endif %}
+                </span>{% endif %}
+                {% if flux.risques|length  >= 1 %}
+                <span class="label label-danger small style="margin: 2px"">RIA
+                </span>
+                {% endif %}
+            </td>
+            {% if conformite=="RGPD" %}
+            <td class="project-completion">
+                {% set score = "0" %}
+                {% if flux.objetmetiers | length > 0 %}{% set score = score + 10 %}{% endif %}
+                {% if flux.responsable is defined %}{% set score = score + 10 %}{% endif %}
+                {% if flux.finalite is defined %}{% set score = score + 10 %}{% endif %}
+                {% if flux.expin | length > 0 or flux.expout | length > 0 %}{% set score = score + 10 %}{% endif %}
+                {% if flux.destin | length > 0 or flux.destext | length > 0 %}{% set score = score + 10 %}{% endif %}
+                {% if flux.fluxConnectActivites | length > 0 %}{% set score = score + 10 %}{% endif %}
+                {% if flux.applications | length > 0 %}{% set score = score + 10 %}{% endif %}
+                {% if flux.periodicites | length > 0 %}{% set score = score + 5 %}{% endif %}
+                {% if flux.supports | length > 0 %}{% set score = score + 5 %}{% endif %}
+                {% if flux.dureeconservation is defined %}{% set score = score + 5 %}{% endif %}
+                {% if flux.dcpjuridique | length > 0 %}{% set score = score + 5 %}{% endif %}
+                {% if flux.personneconcerne | length > 0 %}{% set score = score + 5 %}{% endif %}
+                {% if flux.typetraitementrgpds | length > 0 %}{% set score = score + 5 %}{% endif %}
+                <small>{{ score | round | default("0")  }}%</small>
+                <div class="progress progress-mini">
+                    <div style="width: {{ score | round | default("0")  }}%;" class="progress-bar"></div>
+                </div>
+            </td>
+            {% endif %}
+            <td data-order="{{ flux.PublishedAt | date("Ymd")}}" class="text-center">
+                <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-info"></i>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                    <a class="dropdown-item" href="{{path('flux_edit',{'slug' : flux.slug, 'id' : flux.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                    {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                    <a class="dropdown-item del" href="{{path('flux_remove',{'slug' : flux.slug, 'id' : flux.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                    {% endif %}
+                    <a class="dropdown-item">
+                        <small>Modifiée le {{ flux.PublishedAt | date("d M Y")}}</small>
+                        <small> {% set today = "now"|date("Y/m/d") %}
+                        {% set difference = date(flux.PublishedAt).diff(date(today)) %}
+                        {% set leftDays = difference.days %}
+                        {% if leftDays >= 180 and leftDays < 360 %}
+                        <small class="text-warning">({{ leftDays }}j)</small>
+                        {% elseif leftDays >= 360 %}
+                            <small class="text-danger">({{ leftDays }}j)</small>
+                        {% else %}
+                            <small>({{ leftDays }}j)</small>
+                        {% endif %}
+                        <br>par {{flux.publisher.firstname | default("") }} {{ flux.publisher.lastname | default("") }}</small>
+                    </a>
+                </div>
+            </td>
+            <td>{{ flux.description | default("") | raw }}</td>
+            <td>{{ flux.responsable.firstname | default("") }} {{ flux.responsable.lastname | default("") }}</td>
+            <td>{{ flux.suppleant.firstname | default("") }} {{ flux.suppleant.lastname | default("") }}</td>
+            <td>{{ flux.objetmetiers | length }}</td>
+            <td>
+                {% for om in flux.objetmetiers %}
+                    <span class='small'><b>{{loop.index}}. {{ om.designation | default('N/C') | raw  }}</span><br>	
+                {% endfor %}
+            </td>
+            <td>{{ flux.description | default("") | raw }}</td>
+            <td>
+                {% for expi in flux.expin %}
+                    <span class='small'><b>{{loop.index}}. {{ expi.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>
+                {% for expou in flux.expout %}
+                    <span class='small'><b>{{loop.index}}. {{ expou.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>
+                {% for desti in flux.destin %}
+                    <span class='small'><b>{{loop.index}}. {{ desti.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}</td>
+            <td>
+                {% for destex in flux.destext %}
+                    <span class='small'><b>{{loop.index}}. {{ destex.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>
+                {% for periodicite in flux.periodicites %}
+                    <span class='small'><b>{{loop.index}}. {{ periodicite.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>
+                {% for support in flux.supports %}
+                    <span class='small'><b>{{loop.index}}. {{ support.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>
+                {{ flux.dureeconservation.designation | default("") | raw }}
+            </td>
+            <td>{{ flux.fluxConnectActivites | length }}</td>
+            <td>
+                {% for activite in flux.fluxConnectActivites %}
+                    <span class='small'><b>{{loop.index}}. {{ activite.activite.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>{{ flux.applications | length }}</td>
+            <td>
+                {% for application in flux.applications %}
+                    <span class='small'><b>{{loop.index}}. {{ application.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>{{ flux.actions | length }}</td>
+            <td>
+                {% for action in flux.actions %}
+                    <span class='small'><b>{{loop.index}}. {{ action.designation | default('') | raw  }}</b></span><br>	
+                {% endfor %}
+            </td>
+            <td>{{ flux.transferthorsue.designation | default("") }}</td>
+            <td>{{ flux.finalite | default("") }}</td>
+            <td>{% for personneconcern in flux.personneconcerne %}{{ personneconcern.designation | default("") }} {% endfor %}</td>
+            <td>{% for dcpsen in flux.dcpsensible %}{{ dcpsen.designation | default("") }} {% endfor %}</td>
+            <td>{% for dcpjur in flux.dcpjuridique %}{{ dcpjur.designation | default("") }} {% endfor %}</td>
+            <td>{{ flux.accordcollecte.designation | default("") }}</td>
+            <td>{{ flux.accordutilisation.designation | default("") }}</td>
+            <td>{{ flux.dcpsstraitant.designation | default("") }}</td>
+            <td>{{ flux.sstraitant | default("") }}</td>
+            <td>{{ flux.dpia.designation | default("") }}</td>
+            <td>{% for typetraitement in flux.typetraitementrgpds %}{{ typetraitement.designation | default("") }} {% endfor %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

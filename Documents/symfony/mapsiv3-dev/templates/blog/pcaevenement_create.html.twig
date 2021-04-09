@@ -1,0 +1,707 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formPcaevenement  'bootstrap_4_layout.html.twig' _self %}
+
+{% block stylesheets %}
+<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+	
+    </style>
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+            {% if editMode %}
+			<h2>Événement PCA</h2>
+			{% else %}
+			<h2>Créer un nouvel événement</h2>
+			{% endif %} 
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{path('start')}}">Mapsi</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{path('pca_list')}}">PCA
+                    </a>
+                </li>
+                {% if editMode %}
+                <li class="breadcrumb-item active">
+                    <strong><a>EVE-{{ evenement.id }}</a></strong>
+                </li>
+                {% else %}
+                <li class="breadcrumb-item active">
+                    <strong><a>Nouvel événement</a></strong>
+                </li>
+				{% endif %}
+            </ol>
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+               
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+{{ form_start(formPcaevenement ) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+		            
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <button type='button'  class="btn btn-white" data-target="{{path('rgpd_list')}}"  data-action="leave">Quitter</button>
+				                    {% if is_granted('ROLE_ADMIN') %}
+									<button type='submit' class="btn btn-primary">
+									{% if editMode %}
+									Enregistrer
+									{% else %}
+									Ajouter
+									{% endif %}
+									</button>
+									{% endif %}
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle demande
+									{% else %}
+									EVENEMENT-{{ evenement.id }} {{ evenement.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Status :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+                                    	<span class="label" style="background-color:{{ evenement.statut.color | default("N/C")}}">
+											{{ evenement.statut.designation | default("N/C")  }}
+										</span>
+                                    </dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Responsable :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{{ evenement.responsable.firstname | default("N/C")  }} {{ evenement.responsable.lastname| default("N/C")  }}
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Lancement :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ evenement.StartAt| date("d M Y") | default("")  }}</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Cloture :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ evenement.FinishAt| date("d M Y")  }}</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">{{ evenement.PublishedAt| date("d M Y")  }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        {% endif %}
+                    </div>
+<br><br>
+				
+					
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li>
+										<a class="nav-link active show" data-toggle="tab" href="#tab-info"> 
+											<span style="font-size: 18px;"><img src="/bootstrap-icons-1/info-circle-fill.svg" alt="" width="18" height="18" title="Bootstrap"></span>
+										</a>
+									</li>
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-conclusion"> 
+											<span style="font-size: 18px;"><img src="/bootstrap-icons-1/shield-check.svg" alt="" width="18" height="18" title="Bootstrap"></span>
+										</a>
+									</li>
+									<li><a class="nav-link" data-toggle="tab" href="#tab-trackingapp"> 
+											<span style="font-size: 18px;"><img src="/bootstrap-icons-1/laptop.svg" alt="" width="18" height="18" title="Bootstrap"></span>
+										</a>
+									</li>
+									<li><a class="nav-link" data-toggle="tab" href="#tab-trackingserv"> 
+				                        	<span style="font-size: 18px;"><img src="/bootstrap-icons-1/server.svg" alt="" width="18" height="18" title="Bootstrap"></span>
+										</a>
+									</li>
+									<li><a class="nav-link" data-toggle="tab" href="#tab-report"> 
+				                        	<span style="font-size: 18px;"><img src="/bootstrap-icons-1/calendar3.svg" alt="" width="18" height="18" title="Bootstrap"></span>
+										</a>
+									</li>
+								
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-files"> 
+				                            <span style="font-size: 18px;"><img src="/bootstrap-icons-1/files.svg" alt="" width="18" height="18" title="Bootstrap"></span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-comment"> 
+				                            <span style="font-size: 18px;"><img src="/bootstrap-icons-1/pencil-square.svg" alt="" width="18" height="18" title="Bootstrap"></span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+		                            <div id="tab-info" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formPcaevenement.designation, 'Designation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formPcaevenement.designation)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formPcaevenement.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formPcaevenement.description)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formPcaevenement.objectif, 'Objectifs') }}</label>
+												<div class="col-sm-10">{{ form_widget(formPcaevenement.objectif)}}</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formPcaevenement.scenario, 'Scenario de l\'évènement') }}</label>
+												<div class="col-sm-10">{{ form_widget(formPcaevenement.scenario)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Managers</label>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">{{ form_label(formPcaevenement.responsable, 'Responsable') }}</span>{{ form_widget(formPcaevenement.responsable)}}</div>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">{{ form_label(formPcaevenement.suppleant, 'Suppleant') }}</span>{{ form_widget(formPcaevenement.suppleant)}}</div>
+											</div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Contributeurs</label>
+												<div class="col-sm-10">{{ form_widget(formPcaevenement.contributeurs)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Statut</label>
+												<div class="col-sm-5">{{ form_widget(formPcaevenement.statut)}}</div>
+												<div class="col-sm-5">{{ form_widget(formPcaevenement.typeevenements)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Planification</label>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">{{ form_label(formPcaevenement.StartAt, 'Début') }}</span>{{ form_widget(formPcaevenement.StartAt)}}</div>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">{{ form_label(formPcaevenement.FinishAt, 'Fin') }}</span>{{ form_widget(formPcaevenement.FinishAt)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Périmètre</label>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">Application</span>
+													 {% for apptrack in evenement.AppTrack %}
+													 	<span class="float-left badge badge-success">{{ apptrack.application.designation | default("") }}</span><span class="float-left">&nbsp;</span>
+													 {% endfor %}
+													 
+													 </div>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">Système</span>
+													{% for servtrack in evenement.pcaEvenementServTracks %}
+													 	<span class="float-left badge badge-success">{{ servtrack.systeme.designation | default("") }}</span><span class="float-left">&nbsp;</span>
+													 {% endfor %}
+													
+												</div>
+											</div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"></label>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">{{ form_label(formPcaevenement.activites, 'Activités') }}</span>{{ form_widget(formPcaevenement.activites)}}</div>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">{{ form_label(formPcaevenement.tiers, 'Tiers') }}</span>{{ form_widget(formPcaevenement.tiers)}}</div>
+											</div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"></label>
+												<div class="col-sm-10"><span class="form-text m-b-none text-navy">{{ form_label(formPcaevenement.sites, 'Sites') }}</span>{{ form_widget(formPcaevenement.sites)}}</div>
+											</div>
+		                                </div>
+		                            </div>
+
+									 <div id="tab-conclusion" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Conclusion</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											      
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                            
+									<div id="tab-report" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Data événement PCA</h3></div>
+											</div>
+											<br>
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label">Applications<br><button type='button' id="add-pcaevenementapp" class="btn btn-primary btn-sm">+</button></label>
+													<div class="col-sm-10">{{ form_widget(formPcaevenement.AppTrack) }}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label">Serveurs<br><button type='button' id="add-pcaevenementserv" class="btn btn-primary btn-sm">+</button></label>
+													<div class="col-sm-10">{{ form_widget(formPcaevenement.pcaEvenementServTracks) }}</div>
+										    </div>
+			                            </div>
+			                        </div>
+			                        <div id="tab-trackingapp" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Tracking Application</h3></div>
+											</div>
+											<br>
+											<div class="row">
+												<div class="col-sm-12">
+													<table class="table table-hover dataTables-apptrack">
+													    <thead>
+					                                        <tr>
+					                                            <th>Application</th>
+					                                            <th>Statut</th>
+					                                            <th>DIMA (Objectif / Réel)</th>
+					                                            <th>PDMA (Objectif / Réel)</th>
+					                                            <th>Validation</th>
+					                                            <th>Commentaire</th>
+					                                        </tr>
+					                                    </thead>
+							                            <tbody>
+														   {% for apptrack in evenement.AppTrack %}
+								                            <tr class="info">
+									                            <td class="table-title">
+										                            <a class="" href="{{path('appli_edit',{'id' : apptrack.application.id} ) }}">{{ apptrack.application.designation | default("") }}</a>
+										                        </td>
+										                         <td>
+																	<span class="badge {% if apptrack.statut.color is defined and apptrack.statut.color is not null %}{{apptrack.statut.color}}{% endif %}">{{ apptrack.statut.designation | default("") }}</span>
+										                        </td>
+								                                <td>									                                
+									                            {% set minDima = 1000 %}
+												                {% set desiDima = "N/C" %}
+												                {% set colorDima = "N/C" %}
+												                {% set dureeDima = "N/C" %}
+																{% for activite in apptrack.application.appConnectActivites %}
+																{% if activite.dima.dureeheure is not defined %}
+																	{% else %}
+																    {% set minDima = min(activite.dima.dureeheure, minDima) %}
+																    {% if activite.dima.dureeheure == minDima %}
+																	    {% set desiDima = activite.dima.designation %}
+																	    {% set dureeDima = activite.dima.dureeheure %}
+																	    {% set colorDima = activite.dima.color %}
+																    {% endif %}
+																    {% endif %}
+																{% endfor %}
+															    <span class="badge {{colorDima}}">
+										                            {{desiDima | default("N/C")}}
+										                        </span> / <span class="badge {% if apptrack.statut.color is defined and apptrack.statut.color is not null %}{{apptrack.dima.color}}{% endif %}">{{ apptrack.dima.designation | default("") }}</span><br>
+									                                
+										                        </td>
+										                        <td>
+											                        {% set minPdma = 1000 %}
+												                {% set desiPdma = "N/C" %}
+												                {% set colorPdma = "N/C" %}
+												                {% set dureePdma = "N/C" %}
+																{% for activite in apptrack.application.appConnectActivites %}
+																{% if activite.pdma.dureeheure is not defined %}
+																	{% else %}
+																    {% set minPdma = min(activite.pdma.dureeheure, minPdma) %}
+																    {% if activite.pdma.dureeheure == minPdma %}
+																	    {% set desiPdma = activite.pdma.designation %}
+																	    {% set colorPdma = activite.pdma.color %}
+																	    {% set dureePdma = activite.pdma.dureeheure %}
+																    {% endif %}
+																    {% endif %}
+																{% endfor %}
+															    <span class="badge {{colorDima}}">
+										                            {{desiPdma | default("N/C")}}
+										                        </span> / 
+											                        <span class="badge {% if apptrack.statut.color is defined and apptrack.statut.color is not null %}{{apptrack.pdma.color}}{% endif %}">{{ apptrack.pdma.designation | default("") }}</span>										                     
+										                        </td>
+										                        <td>
+																{% if apptrack.dima.dureeheure is defined and apptrack.statut.color is not null %}
+											                        {% if dureeDima >= apptrack.dima.dureeheure and dureePdma >= apptrack.pdma.dureeheure %}<span class="badge badge-success"><i class="fa fa-check"></i></span>{% endif %}
+											                    {% endif %}   
+										                        </td>
+										                       
+								                                <td>
+																	{{ apptrack.commentaire | default("") }}
+																</td>
+								                            </tr>
+															{% endfor %}
+							                            </tbody>
+						                        	</table>
+										        </div>
+											</div>
+			                            </div>
+			                        </div>
+			                        <div id="tab-trackingserv" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Tracking Serveurs</h3></div>
+											</div>
+											<br>
+											<div class="row">
+												<div class="col-sm-12">
+													<table class="table table-hover dataTables-apptrack">
+													    <thead>
+					                                        <tr>
+					                                            <th>Système</th>
+					                                            <th>Statut</th>
+					                                            <th>DIMA (Objectif / Réel)</th>
+					                                            <th>PDMA (Objectif / Réel)</th>
+					                                            <th>Validation</th>
+					                                            <th>Commentaire</th>
+					                                        </tr>
+					                                    </thead>
+							                            <tbody>
+														   {% for servtrack in evenement.pcaEvenementServTracks %}
+								                            <tr class="info">
+									                            <td class="table-title">
+										                            <a>{{ servtrack.systeme.designation | default("") }}</a>
+										                        </td>
+								                                <td>
+									                                <span class="badge {% if servtrack.statut is not null and servtrack.statut is defined %}{{servtrack.statut.color | default('')}}{% endif %}">{{ servtrack.statut.designation | default("") }}</span>
+										                        </td>
+										                        <td>
+											                        {% set minDima = 1000 %}
+													                {% set desiDima = "N/C" %}
+													                {% set colorDima = "N/C" %}
+													                {% set dureeDima = "N/C" %}
+																	{% for application in servtrack.systeme.applications %}
+																	{% for activite in application.appConnectActivites %}
+																	{% if activite.dima.dureeheure is not defined %}
+																		{% else %}
+																	    {% set minDima = min(activite.dima.dureeheure, minDima) %}
+																	    {% if activite.dima.dureeheure == minDima %}
+																		    {% set desiDima = activite.dima.designation %}
+																		    {% set dureeDima = activite.dima.dureeheure %}
+																		    {% set colorDima = activite.dima.color %}
+																	    {% endif %}
+																	    {% endif %}
+																	{% endfor %}
+																    {% endfor %}
+																    <span class="badge {{colorDima}}">
+											                            {{desiDima | default("N/C")}}
+											                        </span> / <span class="badge {{servtrack.dima.color}}">{{ servtrack.dima.designation | default("") }}</span>
+											                        							                     
+										                        </td>
+										                        <td>
+											                        {% set minPdma = 1000 %}
+																	{% set desiPdma = "NC" %}
+																	{% set dureePdma = "NC" %}
+																	{% set colorPdma = "NC" %}
+																	{% for application in servtrack.systeme.applications %}
+																	{% for activite in application.appConnectActivites %}
+																	{% if activite.pdma.dureeheure is not defined %}
+																		{% else %}
+																		{% set minPdma = min(activite.pdma.dureeheure, minPdma) %}
+																	   	{% if activite.pdma.dureeheure == minPdma %}
+																		    {% set desiPdma = activite.Pdma.designation %}
+																		    {% set dureePdma = activite.Pdma.dureeheure %}
+																		    {% set colorPdma = activite.Pdma.color %}
+																    {% endif %}
+																    {% endif %}
+																	{% endfor %}
+																	{% endfor %}
+																    <span class="badge {{colorPdma}}">
+											                            {{desiPdma | default("N/C")}}
+											                        </span> / <span class="badge {{servtrack.pdma.color}}">{{ servtrack.pdma.designation | default("") }}</span>	
+										                        </td>
+										                        <td>
+																	{% if dureePdma >= servtrack.pdma.dureeheure and dureeDima >= servtrack.dima.dureeheure %}<span class="badge badge-success"><i class="fa fa-check"></i></span>{% endif %}
+										                        </td>
+								                                <td>
+																	{{ servtrack.commentaire | default("") }}
+																</td>
+								                            </tr>
+															{% endfor %}
+							                            </tbody>
+						                        	</table>
+										        </div>
+											</div>
+			                            </div>
+			                        </div>
+		                             <div id="tab-files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'PCA', 'entryprefix': 'PCA_Evenement', 'entryid': evenement.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="tab-comment" class="tab-pane">
+		                                <div class="panel-body">
+			                                
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											       {{ form_widget(formPcaevenement.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+	            
+					<br><br>
+		            <div class="row">
+						<div class="col-12">
+		                    <span class="float-right">
+			                    <button type='button'  class="btn btn-white" data-target="{{path('pca_list')}}"  data-action="leave">Quitter</button>
+			                    {% if is_granted('ROLE_ADMIN') %}
+								<button type='submit' class="btn btn-primary">
+								{% if editMode %}
+								Enregistrer
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+								{% endif %}
+		                    </span>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formPcaevenement ) }}
+{% endblock %}
+
+{% block _pcaevenement_AppTrack_widget %}
+	 <div class="row" id="block_{{id}}">
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">Application</span></div>
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">Statut</span></div>
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">DIMA</span></div>
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">PDMA</span></div>
+	    <div class="col-sm-3"><span class="form-text m-b-none text-navy">Commentaire</span></div>
+	</div>
+	{{ form_widget(form)}}
+{% endblock %}
+
+{% block _pcaevenement_AppTrack_entry_widget %}
+            <div class="row" id="block_{{id}}">
+	            <div class="col-sm-2">{{ form_widget(form.application)}}</div>
+	            <div class="col-sm-2">{{ form_widget(form.statut)}}</div>
+	            <div class="col-sm-2">{{ form_widget(form.dima)}}</div>
+	            <div class="col-sm-2">{{ form_widget(form.pdma)}}</div>
+                <div class="col-sm-3">{{ form_widget(form.commentaire)}}</div>
+                <div class="col-1">{% if is_granted('ROLE_ADMIN') %}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del" class="btn btn-danger btn-circle"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+            </div>
+{% endblock %}
+
+{% block _pcaevenement_pcaEvenementServTracks_widget %}
+	 <div class="row" id="block_{{id}}">
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">Serveurs</span></div>
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">Statut</span></div>
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">DIMA</span></div>
+	    <div class="col-sm-2"><span class="form-text m-b-none text-navy">PDMA</span></div>
+	    <div class="col-sm-3"><span class="form-text m-b-none text-navy">Commentaire</span></div>
+	</div>
+
+	{{ form_widget(form)}}
+{% endblock %}
+
+{% block _pcaevenement_pcaEvenementServTracks_entry_widget %}
+            <div class="row" id="block_{{id}}">
+	            <div class="col-md-2">{{ form_widget(form.systeme)}}</div>
+	            <div class="col-sm-2">{{ form_widget(form.statut)}}</div>
+	            <div class="col-sm-2">{{ form_widget(form.dima)}}</div>
+	            <div class="col-sm-2">{{ form_widget(form.pdma)}}</div>
+                <div class="col-md-3">{{ form_widget(form.commentaire)}}</div>
+                <div class="col-1">{% if is_granted('ROLE_ADMIN') %}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del" class="btn btn-danger btn-circle"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+            </div>
+{% endblock %}
+
+
+{% block javascripts %}
+
+	<script>
+		$(document).ready(function() {
+			$('#pcaevenement_applications').select2({placeholder: "Sélectionner les applications"});
+			$('#pcaevenement_responsable').select2({placeholder: "Sélectionner le responsable"});
+			$('#pcaevenement_suppleant').select2({placeholder: "Sélectionner le suppléant"});
+			$('#pcaevenement_statut').select2({placeholder: "Statut"});
+			$('#pcaevenement_systemes').select2({placeholder: "Sélectionner les systèmes"});
+			$('#pcaevenement_activites').select2({placeholder: "Sélectionner les activités"});
+			$('#pcaevenement_tiers').select2({placeholder: "Sélectionner les tiers"});
+			$('#pcaevenement_sites').select2({placeholder: "Sélectionner les sites"});
+			$('#pcaevenement_typeevenements').select2({placeholder: "Sélectionner le type"});
+			$('#pcaevenement_contributeurs').select2({placeholder: "Sélectionner les participants aux tests"});
+
+			CKEDITOR.replace( 'pcaevenement_description' );
+			CKEDITOR.replace( 'pcaevenement_objectif' );
+			CKEDITOR.replace( 'pcaevenement_scenario' );
+			CKEDITOR.replace( 'pcaevenement_commentaire' );
+			$('.appfield').select2();
+			
+			
+			
+			 $('.dataTables-apptrack').DataTable({
+                pageLength: 25,
+                responsive: false,
+                dom: '<"html5buttons"B>lTfgitp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-action',visible: false, searchable: false	},
+	             ],
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv', title: 'MAPSI {{app.user.customer.designation}} AppTrack'},
+                    {extend: 'excel', title: 'MAPSI {{app.user.customer.designation}} AppTrack'},
+                    {extend: 'pdf', title: 'MAPSI {{app.user.customer.designation}} AppTrack'},
+                    {extend: 'print', title: 'MAPSI {{app.user.customer.designation}} AppTrack',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_ ",
+					    "infoEmpty":      "De 0 à 0 sur 0  sous traitants",
+					    "infoFiltered":   "(filtered from _MAX_ total entries)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "Rechercher :",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        }
+
+            });
+			
+		
+			$('#add-pcaevenementapp').click(function(){
+			const index1 =$('#pcaevenement_AppTrack div.row').length;
+			const tmpl1 =$('#pcaevenement_AppTrack').data('prototype').replace(/__name__/g, index1);
+			$('#pcaevenement_AppTrack').append(tmpl1);
+			handleDeleteButtons();
+			$('.appfield').select2();
+			});
+		
+			$('#add-pcaevenementserv').click(function(){
+			const index1 =$('#pcaevenement_pcaEvenementServTracks div.row').length;
+			const tmpl1 =$('#pcaevenement_pcaEvenementServTracks').data('prototype').replace(/__name__/g, index1);
+			$('#pcaevenement_pcaEvenementServTracks').append(tmpl1);
+			handleDeleteButtons();
+			$('.appfield').select2();
+			});
+		
+		
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+		
+		function saveLeave (){
+				$('button[data-action="leave"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+						    buttons: {
+						        quitter: function () {
+						           $(location).attr('href', target);
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		saveLeave();
+		});
+		$('.appfield').select2();
+	</script>
+	
+{% endblock %}
+
+

@@ -1,0 +1,141 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    <h2>Projet ({{ projets|length }})</h2>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{path('start')}}">Mapsi</a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <strong><a>Projets</a></strong>
+                        </li>
+                    </ol>
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-action">
+                        <a class="btn btn-primary" href="{{path('projet_create')}}">+ Nouveau projet</a>
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+{% block prebody %}
+
+{% endblock %}
+
+
+{% block titrefiche %}
+<strong>Projet</strong> <i class="fa fa-angle-right"></i> <a class="" href="{{path('action_list') }}">Action</a>
+
+{% endblock %}
+
+
+{% block body %}
+	
+	<section class="projet">
+		<div class="table-responsive">
+			<table class="table table-striped table-bordered table-hover dataTables-projet" >
+			  <thead>
+			  	<tr>
+			   		<th scope="col">ID</th>
+			   		<th scope="col">Designation</th>
+			   		<th scope="col">Axe</th>
+			   		<th scope="col">Pilotage</th>
+			   		<th scope="col">Budget</th>
+			   		<th scope="col">Actions</th>
+			   		<th scope="col">MaJ</th>
+			   		{% if is_granted('ROLE_ADMIN') %}<th scope="col">Action</th>{% endif %}
+	
+			    </tr>
+				</thead>
+				<tbody>
+					{% for projet in projets %}
+						<article>
+							<tr>
+						      <th scope="row" data-order="{{ projet.id }}"><span class="badge badge-secondary">PROJ-{{ projet.id }}</span></th>
+						      <th scope="row"><a class="" href="{{path('projet_edit',{'id' : projet.id} ) }}">{{ projet.designation | upper }}</a><br>
+						      {{ projet.description|default("Pas de description")|raw }}</th>
+						      <th scope="row">{{ projet.axe.title | default("N/C") }}</th>
+						      <th scope="row">{{ projet.metier.code | default("N/C") }}<br>{{ projet.pilote.firstname | default("N/C")  }} {{ projet.pilote.lastname | default("N/C")  }}</th>
+						      <td scope="row">€ {{ projet.budget | default("Non évalué")  }}</td>
+						      <td>
+							      
+							      {% for action in projet.actions %}
+							     <span class="float-left badge {{ action.priorite.color | default("N/C")  }}">{{ action.priorite.designation | default("N/C") }}  </span>
+	 
+								 &nbsp; &nbsp;<small><a class="" href="{{path('action_edit',{'id' : action.id} ) }}">AC-{{ action.id | default("N/C") }} {{ action.designation |  default("N/C") | slice(0, 60) }}...</a></small>                             
+	                             <br>
+								      
+									   							     
+								  {% endfor %}
+							     
+					        </td>
+						      <td scope="row">{{ projet.publishedat | date("d/m/Y")  }}</td>
+						      	{% if is_granted('ROLE_ADMIN') %}<td><a class="btn btn-danger btn-sm del" href="{{path('projet_remove',{'id' : projet.id} ) }}"><i class="fa fa-trash"></i></a></td>{% endif %}
+	
+							</tr>
+						</article>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+{% endblock %}
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+	        
+	        $('a.del').confirm({
+			    title: 'Attention !',
+			    content: 'Voulez vous vraiment supprimer ce projet ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+	        
+            $('.dataTables-projet').DataTable({
+	            "autoWidth": false,
+	            "columnDefs": [
+				    { "width": "20%", "targets": 5 }
+				  ],
+				stateSave: true,
+	            pageLength: 100,
+                responsive: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'MAPSI Action Conformité'},
+                    {extend: 'pdf', title: 'MAPSIII Action Conformité'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ]
+       
+				
+            });
+
+        });
+
+    </script>
+{% endblock %}

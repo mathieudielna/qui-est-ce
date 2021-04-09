@@ -1,0 +1,597 @@
+{% extends 'basev2.html.twig' %}
+
+{% block stylesheets %}
+<style type="text/css">
+	#mynetwork {
+		width: 100%;
+		height: 800px;
+		border: 0px solid lightgray;
+	}
+
+	#mynetworksys {
+		width: 100%;
+		height: 650px;
+		border: 1px solid lightgray;
+	}
+	
+</style>
+{% endblock %}
+
+{% block title %}SI MAPSI{% endblock %}
+
+{% block headertitle %}
+    Management du SI
+{% endblock %}	
+{% block headercreate %}
+	<div class="btn-group dropleft buttonnew" role="group">
+		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			<strong>Créer</strong>
+		</button>
+		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+			<a class="dropdown-item dropdowncreate" href="{{path('appli_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Application</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('systeme_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Systeme</a>	
+		</div>
+	</div>
+{% endblock %}
+
+
+
+{% block body %}	
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+		                <li><a class="nav-link active show" data-toggle="tab" href="#fonction"> Vue fonctionnelle</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#flux"> Vue flux</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#architecture"> Architecture SI</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#application"> Applications <span class="badge">{{ applications | length }}</span></a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#systeme"> Systèmes <span class="badge">{{ systemes | length }}</span></a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#kpisi"> KPI</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#files"> Documents</a></li>
+	                </ul>
+	                <div class="tab-content">
+		                 <div role="tabpanel" id="fonction" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<div class="card-columns">
+											{% for processus in allprocessuses %}
+												<div class="sortable">
+													<!--Panel-->
+													<div class="card" style="padding: 2px;">
+														<div class="card-body" style="padding: 15px;">
+															{% if processus.typeprocessus.code is defined %}
+																<h3 class=""><a href="{{path('processus_edit',{'id' : processus.id, 'r' : 'process_list', 'rr' : 'Process'} ) }}" class=" 
+																{% if processus.typeprocessus.code is defined and processus.typeprocessus.code == "MAN" %}
+																	text-glaucous
+																{% elseif processus.typeprocessus.code is defined and processus.typeprocessus.code == "REA" %}
+																	text-midnight
+																{% elseif processus.typeprocessus.code is defined and processus.typeprocessus.code == "SUP" %}
+																	text-flirt
+																{% endif %}"><strong>{{ processus.code | default("N/C") }} - {{ processus.designation | default("N/C") }}</strong>	</a></h3>												
+																
+																{% set newArray = [] %}
+																{% for application in allapplications %}
+																	{% for app in application.appConnectActivites if application.appConnectActivites is defined %}
+																		{% if app.activite.processus.id is defined and app.activite.processus.id == processus.id %}
+																			{% if application.id not in newArray %}	
+																				<a  class="btn btn-sm btn-primary" style="margin-bottom:4px;" href="{{path('appli_edit',{'slug' : application.slug, 'id' : application.id, 'r' : 'si_list', 'rr' : 'SI'} ) }}">{{ application.designation| default("N/C") }}</a>
+																				{% set newArray = newArray|merge([application.id]) %}
+																			{% else %}
+																			{% endif %}	
+																		{% endif %}	
+																	{% endfor %}
+																{% endfor %}
+																
+															{% endif %}
+														</div>
+													</div>
+													<!--/.Panel-->
+												</div>
+											{% endfor %}
+										</div>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="flux" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+	                                    <div id="mynetwork"></div>	
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="architecture" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<div id="mynetworksys"></div>
+										<div class="hr-line-dashed"></div>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="application" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+			                        <div class="col-lg-12">
+										{{ include('datatable/applicationtable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+	                    <div role="tabpanel" id="systeme" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+				                    <div class="col-lg-12">							
+										{{ include('datatable/systemetable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+				                    </div>
+								</div>
+	                        </div>
+	                    </div>
+	                     <div role="tabpanel" id="kpisi" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<div class="row">
+						                    <div class="col-lg-3">
+							                    <div class="panel panel-default">
+			                                        <div class="panel-heading">
+			                                           <h5>Indicateurs clés</h5>
+			                                        </div>
+			                                        <div class="panel-body">
+														<table class="table table-stripped small">
+						                                    <tbody>
+						                                    <tr>
+						                                        <td class="no-borders">
+						                                            <i class="fa fa-circle text-navy"></i>
+						                                        </td>
+						                                        <td class="no-borders">
+						                                           {{ allapplications|length }} applications
+						                                        </td>
+						                                    </tr>
+						                                    <tr>
+						                                        <td>
+						                                            <i class="fa fa-circle text-navy"></i>
+						                                        </td>
+						                                        <td>
+						                                            {{ allsystemes|length }} systèmes associés
+						                                        </td>
+						                                    </tr>
+						                                    </tbody>
+						                                </table>			                                        
+													</div>
+			                                    </div>
+											</div>
+						                    <div class="col-lg-9">
+							                    <div class="panel panel-default">
+				                                    <div class="panel-heading">
+				                                        <h5>Répartition par type d'application</h5>
+				                                    </div>
+				                                    <div class="panel-body">
+														<div id=""><canvas id="myChart"></canvas></div>				                                        
+				                                    </div>
+							                    </div>
+						                    </div>
+						                </div>
+						                <div class="row">
+						                    <div class="col-lg-12">
+							                    <div class="panel panel-default">
+				                                    <div class="panel-heading">
+				                                        <h5>Répartition par criticité</h5>
+				                                    </div>
+				                                    <div class="panel-body">
+														<div id=""><canvas id="myrto"></canvas></div>				                                        
+				                                    </div>
+							                    </div>
+						                    </div>
+						                </div>
+						                <div class="row">
+						                    <div class="col-lg-9">
+							                    <div class="panel panel-default">
+				                                    <div class="panel-heading">
+				                                        <h5>Répartition par type de système</h5>
+				                                    </div>
+				                                    <div class="panel-body">
+														<div id=""><canvas id="myChartsysteme"></canvas></div>				                                        
+				                                    </div>
+							                    </div>
+						                    </div>
+						                </div>
+	                      			</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div id="files" class="tab-pane">
+                            <div class="panel-body">
+                                <div class="row">
+									<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+								</div>
+								<br>			                                
+                                <div class="form-group row">				
+							        <div class="col-sm-12">
+							            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entity', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'SI'}}) }}" width="100%" height="500" frameborder="0"></iframe>
+							        </div>
+							    </div>
+                            </div>
+                        </div>
+	                </div>
+				</div>
+	        </div>
+	    </div>
+{% endblock %}
+
+
+{% block javascripts %}
+
+    <script>
+        $(document).ready(function(){        
+
+        });
+        
+           ///////////// CARTO SI
+		    var nodes = [
+			   	{% for processus in allprocessuses %}
+					{id: {{ processus.id }}666, label: '{{ processus.designation }}', shape: 'dot'},
+				{% endfor %}
+			    {% for application in allapplications %}
+				    {id: {{ application.id }}, label: '{{ application.designation }}', shape: 'box', {% if application.typeappli.designation is defined and application.typeappli.designation == 'Infrastructure' %}color: {background:'yellow', border:'gray'}{% elseif application.typeappli.designation is defined and application.typeappli.designation == 'Support' %}color: {background:'pink', border:'gray'}{% else %}color: {background:'#F5FCFF', border:'gray'}{% endif %}, url: '{{path('appli_edit',{'id' : application.id} ) }}'},
+		        {% endfor %}
+		    ];
+		
+		    // create an array with edges
+		    var edges = [
+			    {% for application in allapplications %}
+			    {% if application.id is defined %}
+			    	{% for app in application.appConnectActivites if app.activite.processus.id is defined %}
+				    	{from: {{ application.id }}, to: {{ app.activite.processus.id }}666, dashes:true},
+			    	{% endfor %}
+			    	{% for applicationlin in application.applicationlink %}
+			        	{from: {{ application.id }}, to: {{ applicationlin.id }} },
+			        {% endfor %}
+			    {% endif %}
+		        {% endfor %}
+		    ];
+		
+		    // create a network
+		    var container = document.getElementById('mynetwork');
+		
+		    // provide the data in the vis format
+		    var data = {
+		        nodes: nodes,
+		        edges: edges
+		    };
+		   var options = {
+			  "edges": {
+			    "smooth": {
+			      "forceDirection": "none",
+			      "roundness": 0.2
+			    }
+			  },
+			  "physics": {
+			    "forceAtlas2Based": {
+			      "springLength": 100
+			    },
+			    "maxVelocity": 40,
+			    "minVelocity": 0.3,
+			    "solver": "forceAtlas2Based",
+			    "timestep": 0.47
+			  }
+			}
+		    // initialize your network!
+		    var network = new vis.Network(container, data, options);
+			        
+	        network.on("selectNode", function (params) {
+			if (params.nodes.length === 1) {
+            var node = nodes.get(params.nodes[0]);
+            window.open(node.url, '_self');
+		        }
+		    });
+        
+             											
+        var ctx = document.getElementById('myChart');
+		var myChart = new Chart(ctx, {
+		    type: 'pie',
+		    data: {
+		        labels: [
+		        {% for typeappli in typeapplis %}
+		        	'{{ typeappli.designation }}',
+		        	{% endfor %}
+		        	],
+		        datasets: [{
+		            label: '# of Votes',
+		            data: [
+		                
+					    {% for typeappli in typeapplis %}
+					    {% set count = 0 %}
+						    {% for application in allapplications %}
+						    {% if application.typeAppli == typeappli %}
+								{% set count = count + 1 %}
+							
+							{% endif %}
+						    {% endfor %}
+						    {{ count }},
+						{% endfor %}
+		            ],
+		            fill : false,
+		            borderWidth: 1
+		        }]
+		    },
+		    options: {
+			    plugins: {
+			        labels: [
+					    {
+					      render: 'label',
+					      position: 'outside'
+					    },
+					    {
+					      render: 'value'
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    }
+		    }
+		    });
+		    
+		    var ctx = document.getElementById('myrto');
+			var myrto = new Chart(ctx, {
+		    type: 'bar',
+		    data: {
+		        labels: [
+		        {% for criticite in criticites %}
+		        	'{{ criticite.designation }}',
+		        	{% endfor %}
+		        	],
+		        datasets: [{
+		            label: 'Apps par RTO',
+		            yAxisID: 'y-axis-1',
+		            data: [
+						{% for criticite in criticites %}
+						 	{% set count = 0 %}
+						 	{% for application in allapplications %}            
+						 		{% set minDima = 1000 %}
+						 		{% set desiDima = "NC" %}
+								{% for activite in application.appConnectActivites %}
+									{% if activite.dima.dureeheure is defined %}
+									    {% set minDima = min(activite.dima.dureeheure, minDima) %}
+										{% if activite.dima.dureeheure == criticite.dureeheure %}
+											{% set count = count + 1 %}
+										{% endif %}
+									{% endif %}
+							    {% endfor %}
+							{% endfor %}
+						    {{ count }},		
+						{% endfor %} 
+		            ],
+		            fill : false,
+		            borderWidth: 1
+		        },
+		        {
+			        label: 'Apps par RPO',
+		            yAxisID: 'y-axis-2',
+		            data: [
+						{% for criticite in criticites %}
+						 	{% set countb = 0 %}
+						 	{% for application in allapplications %}            
+						 		{% set minPdma = 1000 %}
+						 		{% set desiPdma = "NC" %}
+								{% for activite in application.appConnectActivites %}
+									{% if activite.pdma.dureeheure is defined %}
+									    {% set minPdma = min(activite.pdma.dureeheure, minPdma) %}
+										{% if activite.pdma.dureeheure == criticite.dureeheure %}
+											{% set countb = countb + 1 %}
+										{% endif %}
+									{% endif %}
+							    {% endfor %}
+							{% endfor %}
+						    {{ countb }},		
+						{% endfor %} 
+		            ]
+		        }
+		        ]
+		    },
+		     options: {
+			     plugins: {
+			        labels: [
+					   
+					    {
+					      render: 'value',
+
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    },
+		        scales: {
+						yAxes: [{
+							display: true,
+							position: 'left',
+							id: 'y-axis-1',
+							scaleLabel: {
+					          display: true,
+					          labelString: 'Nb. applications'
+					        },
+					        ticks:{
+						        min: 0,
+								max: 20,
+					          beginAtZero: true, 
+					          stepSize: 5
+					        }
+							}, 
+							{
+							type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+							display: false,
+							position: 'right',
+							id: 'y-axis-2',
+							gridLines: {
+								drawOnChartArea: false
+							},
+							 ticks:{
+								 min: 0,
+								 max: 20,
+					          beginAtZero: true, 
+					          stepSize: 5
+					        }
+						}],
+					}
+		    }
+		});
+		
+
+		//Graph SI
+		
+		var ctx = document.getElementById('myChartsysteme');
+		var myChart = new Chart(ctx, {
+		    type: 'pie',
+		    data: {
+		        labels: [
+		        {% for typesysteme in typesystemes %}
+		        	'{{ typesysteme.designation }}',
+		        	{% endfor %}
+		        	],
+		        
+		        datasets: [{
+			        
+		            label: '# de type',
+		            data: [
+		                
+					    {% for typesysteme in typesystemes %}
+					    {% set count = 0 %}
+						    {% for systeme in allsystemes %}
+						    {% if systeme.typeSysteme == typesysteme %}
+								{% set count = count + 1 %}
+							
+							{% endif %}
+						    {% endfor %}
+						    {{ count }},
+						{% endfor %}
+		            ],
+		            fill : false,
+		            borderWidth: 1
+		        }]
+		    },
+		    options: {
+			    plugins: {
+			        labels: [
+					    {
+					      render: 'label',
+					      position: 'outside'
+					    },
+					    {
+					      render: 'value'
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    }
+  			}
+		});
+		
+		///////////// CARTO SYSTEMES
+         var nodes = [
+			    {% for systeme in allsystemes %}
+					    {id: {{ systeme.id }}, label: '{{ systeme.designation }}', shape: 'icon',
+					    {% if systeme.typesysteme.code is defined and systeme.typesysteme.code == 'ROUT' %}icon: {face: 'FontAwesome', code: '\uf0b2', size: 50, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SWIT' %}icon: {face: 'FontAwesome', code: '\uf0b2', size: 80, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'PCUT' %}icon: {face: 'FontAwesome', code: '\uf108', size: 20, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'FIRE' %}icon: {face: 'FontAwesome', code: '\uf06d', size: 50, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVS' %}icon: {face: 'FontAwesome', code: '\uf0a0', size: 40, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'TELE' %}icon: {face: 'FontAwesome', code: '\uf098', size: 30, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'CLOU' %}icon: {face: 'FontAwesome', code: '\uf0c2', size: 80, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVI' %}icon: {face: 'FontAwesome', code: '\uf233', size: 50, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'INTE' %}icon: {face: 'FontAwesome', code: '\uf233', size: 50, color: '#57169a'},
+					    {% else %}icon: {face: 'FontAwesome', code: '\uf233', size: 20, color: '#57169a'},{% endif %}  
+					    url: '{{path('systeme_edit',{'id' : systeme.id} ) }}'}, 
+		        {% endfor %}
+		    ];
+		
+		    // create an array with edges
+		    var edges = [
+			    {% for systeme in allsystemes %}
+			    	{% for systemeconnexe in systeme.systemeconnexes %}
+			        		{from: {{ systeme.id }}, to: {{ systemeconnexe.id }}, color:{color:'#ff0000', opacity:0.3} },
+			        {% endfor %}
+			        {% for hos in systeme.host %}
+			        		{from: {{ systeme.id }}, to: {{ hos.id }} },
+			        {% endfor %}
+			        {% for storage in systeme.storages %}
+			        		{from: {{ systeme.id }}, to: {{ storage.id }}, color:{color:'#ffff00', opacity:1} },
+			        {% endfor %}
+		        {% endfor %}
+		    ];
+		
+		    // create a network
+		    var container = document.getElementById('mynetworksys');
+		
+		    // provide the data in the vis format
+		    var data = {
+		        nodes: nodes,
+		        edges: edges
+		    };
+		   var options = {
+			  "edges": {
+			    "smooth": {
+			      "forceDirection": "none",
+			      "roundness": 0.2
+			    }
+			  },
+			  "physics": {
+			    "forceAtlas2Based": {
+			      "springLength": 100
+			    },
+			    "maxVelocity": 40,
+			    "minVelocity": 0.3,
+			    "solver": "forceAtlas2Based",
+			    "timestep": 0.40
+			  }
+			}
+
+		    var network = new vis.Network(container, data, options);
+			        
+	        network.on("selectNode", function (params) {
+			if (params.nodes.length === 1) {
+            var node = nodes.get(params.nodes[0]);
+            window.open(node.url, '_self');
+		        }
+		    });
+		    
+		    
+		    
+		    /// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+    </script>
+    
+{% endblock %}

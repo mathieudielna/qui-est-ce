@@ -1,0 +1,695 @@
+{% extends 'basev2.html.twig' %}
+
+{% block title %}RISQUE MAPSI{% endblock %}
+
+{% block headertitle %}
+   Management des risques
+{% endblock %}	
+{% block headercreate %}
+	<a class="dropdown-item  dropdowncreate" href="{{path('risque_create')}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Risque</a>	
+{% endblock %}
+
+{% block body %}
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+						<li><a class="nav-link active show" data-toggle="tab" href="#kpirisques"> Tableau de bord des risques</a></li>
+		                <li><a class="nav-link" data-toggle="tab" href="#risques"> Risques <span class="badge">{{ allrisques | length }}</span></a></li>
+	                </ul>
+	                <div class="tab-content">
+						<div role="tabpanel" id="kpirisques" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-3">
+										<div class="ibox">
+											<div class="ibox-title">
+												<h5>EVALUTATION DES RISQUES</h5>
+												<div class="ibox-tools">
+													<a class="collapse-link">
+														<i class="fa fa-chevron-up"></i>
+													</a>
+													<a class="fullscreen-link">
+														<i class="fa fa-expand"></i>
+													</a>
+												</div>
+											</div>
+											<div class="ibox-content ibox-heading">
+												<div style="row">
+													<div class="col-12">
+														<span><small><strong>Indice général de risque</strong></small></span>
+														<h2 class="font-bold">
+														{% set sumratings = 0 %}
+														{% set sumrating = 0 %}
+														{% for risque in allrisques %}																			
+															{% set sumratings = sumratings + (risque.impact * risque.probabilite) %}
+														{% endfor %}
+														{% if risques|length > 0 %}
+															{% set sumrating = sumratings / allrisques|length %}
+														{% endif %}
+														{{ sumrating|round(2) }}</h2>
+														<div class="progress progress-small">
+															<div style="width: {{  sumrating | number_format }}%;" class="progress-bar progress-bar-danger" aria-valuenow="{{ sumrating| number_format }}" aria-valuemin="0" aria-valuemax="100"></div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="ibox-content">
+												<div class="text-center">
+													<canvas id="myRisk" height="280"></canvas>
+												</div>
+												<div class="hr-line-dashed"></div>
+												<div class="text-center">						
+													<canvas id="statutrisque" height="280"></canvas>
+												</div>
+												<div class="hr-line-dashed"></div>
+												<div class="text-center">						
+													<canvas id="domainerisque" height="280"></canvas>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="col-lg-4">
+										<div class="ibox">
+											<div class="ibox-title">
+												<h5>Risques actifs</h5>
+												<div class="ibox-tools">
+													<a class="collapse-link">
+														<i class="fa fa-chevron-up"></i>
+													</a>
+													<a class="fullscreen-link">
+														<i class="fa fa-expand"></i>
+													</a>
+												</div>
+											</div>
+											<div class="ibox-content">												
+												<div class="text-center">
+													<canvas id="risquecrea" height="280"></canvas>
+												</div>
+												
+											</div>
+										</div>
+										<div class="ibox">
+											<div class="ibox-title">
+												<h5>Risques majeurs</h5>
+												<div class="ibox-tools">
+													<a class="collapse-link">
+														<i class="fa fa-chevron-up"></i>
+													</a>
+													<a class="fullscreen-link">
+														<i class="fa fa-expand"></i>
+													</a>
+												</div>
+											</div>
+											<div class="ibox-content">
+												<div class="">
+													<div class="table-responsive">
+														<table class="table table table-hover dataTables-risquecritique" >
+															<thead>
+																<tr>
+																	<th scope="col">ID</th>
+																	<th scope="col">Désignation</th>
+																</tr>
+															</thead>
+															<tbody>
+																{% for risque in allrisques if risque.impact==4 and risque.probabilite==4 %}
+																	<article>
+																		<tr>
+																			<td class="table-title" scope="row"><span class="badge badge-secondary">R-{{ risque.id }}</span>
+																			</td>
+																			
+																			<td>
+																				<a class="" href="{{path('risque_edit',{'id' : risque.id, 'r' : 'risque'} ) }}">{{ risque.designation }}</a>
+																			</td>
+																		</tr>
+																	</article>
+																{% endfor %}
+															</tbody>
+														</table>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="col-lg-5">
+										<div class="ibox">
+											<div class="ibox-title">
+												<h5>Risques par processus</h5>
+												<div class="ibox-tools">
+													<a class="collapse-link">
+														<i class="fa fa-chevron-up"></i>
+													</a>
+													<a class="fullscreen-link">
+														<i class="fa fa-expand"></i>
+													</a>
+												</div>
+											</div>
+											<div class="ibox-content">
+												<div class="text-center">						
+													<canvas id="trackingrisque" height="220"></canvas>
+												</div>
+											</div>
+										</div>
+										<div class="ibox">
+											<div class="ibox-title">
+												<h5>Cartographie des typologies de risques</h5>
+												<div class="ibox-tools">
+													<a class="collapse-link">
+														<i class="fa fa-chevron-up"></i>
+													</a>
+													<a class="fullscreen-link">
+														<i class="fa fa-expand"></i>
+													</a>
+												</div>
+											</div>
+											<div class="ibox-content">
+												<div class="text-center">						
+													<div id="visualization" style=""></div>
+												</div>
+											</div>
+										</div>
+										
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-lg-12">
+										
+									</div>
+								</div>
+							</div>
+	                    </div>
+		                <div role="tabpanel" id="risques" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<section class="site">
+											<div class="table-responsive">
+												<table class="table table-striped table-bordered table-hover dataTables-risque" >
+												  <thead>
+												  	<tr>
+												   		<th scope="col">ID</th>
+												   		<th scope="col">Désignation</th>
+												   		<th scope="col">Responsable</th>
+												   		<th scope="col">Type de risque</th>
+												   		<th scope="col">Impact (0/3)</th>
+												   		<th scope="col">Probabilité (0/3)</th>
+												   		<th scope="col">Criticité (0/9)</th>
+												   		<th scope="col">Actions</th>
+												   		<th scope="col">Acceptabilité</th>
+												   		<th scope="col">MaJ</th>
+												   		{% if is_granted('ROLE_ADMIN') %}<th scope="col">Action</th>{% endif %}
+												    </tr>
+													</thead>
+													<tbody>
+														{% for risque in allrisques %}
+															<article>
+																<tr>
+															      <th scope="row" data-order="{{ risque.id }}"><span class="badge badge-secondary">RI-{{ risque.id }}</span></th>
+															      <th scope="row"><a class="" href="{{path('risque_edit',{'id' : risque.id} ) }}">{{ risque.designation | title }}</a></th>
+																  <td scope="row">{{ risque.responsable.firstname | default("N/C")  }} {{ risque.responsable.lastname | default("N/C")  }}</td>
+																  <td scope="row">{{ risque.typerisque.designation | default("N/C") }}</td>
+																  <td scope="row">{{ risque.impact | default("N/C") }}</td>
+																  <td scope="row">{{ risque.probabilite | default("N/C") }}</td>
+																  <td>
+																  <strong>{{ risque.impact * risque.probabilite  }}</strong>
+																  <div class="progress progress-mini">
+										                                <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-danger" style="width:{{ risque.impact * risque.probabilite  *100/9  }}%" role="progressbar" aria-valuenow="{{ risque.impact * risque.probabilite  }}" aria-valuemin="0" aria-valuemax="9"></div>
+										                          </div>
+																  
+																  
+																  
+																  </td>
+																  <td><button class="btn btn-primary btn-circle" type="button">{{ risque.actions | length }}</button></td>
+																  <td scope="row">{{ risque.acceptation.designation | default("N/C") }}</td>
+																  <td>{{ risque.PublishedAt | date("d/m/Y")}}</td>
+															      {% if is_granted('ROLE_ADMIN') %}<td><a class="btn btn-danger btn-sm del" href="{{path('risque_remove',{'id' : risque.id} ) }}"><i class="fa fa-trash"></i></a></td>{% endif %}
+																</tr>
+															</article>
+														{% endfor %}
+													</tbody>
+												</table>
+											</div>
+										</section>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                </div>
+				</div>
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+	        
+	        $('a.del').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous vraiment supprimer ce risque ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+
+			$('.dataTables-risquecritique').DataTable({
+			paging:   true,
+			pagingType: 'simple',
+			bLengthChange: false,
+	        ordering: true,
+	        info:     false,
+	        responsive: false,
+	        searching: false,
+	        pageLength: 10,
+	        language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_",
+					    "infoEmpty":      "De 0 à 0 sur 0 action",
+					    "infoFiltered":   "(filtered from _MAX_ total entries)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "Rechercher :",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       ">",
+					        "previous":   "<"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    },
+		            buttons: {
+		                colvis: 'Sélectionner colonnes'
+		            }
+		        },
+	    });
+	        
+            $('.dataTables-risque').DataTable({
+                pageLength: 25,
+                responsive: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'ExampleFile'},
+                    {extend: 'pdf', title: 'ExampleFile'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ]
+
+            });
+
+        });
+
+
+
+
+		///////////// TRACKING RISQUES statut
+	var ctxo = document.getElementById('statutrisque').getContext('2d');
+	var myChart = new Chart(ctxo, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [
+						{% for statutrisque in statutrisques if statutrisque.risques|length > 0  %}"{{ statutrisque.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: 
+						[{% for statutrisque in statutrisques if statutrisque.risques|length > 0  %}{{ statutrisque.risques|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+			title:      {
+                display: true,
+                text:    "Risques par statut",
+                },
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+
+		///////////// TRACKING RISQUES domaine
+	var ctxo = document.getElementById('domainerisque').getContext('2d');
+	var myChart = new Chart(ctxo, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [
+						{% for typeconformite in typeconformites if typeconformite.risques|length > 0  %}"{{ typeconformite.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: 
+						[{% for typeconformite in typeconformites if typeconformite.risques|length > 0  %}{{ typeconformite.risques|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+			title:      {
+                display: true,
+                text:    "Risques par domaine",
+                },
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+
+	///////////// COURBE créa risque
+		var timeParser = 'DD/MM/YYYY';	    
+		new Chart(document.getElementById("risquecrea"), {
+			  type: 'line',
+			   data:    {
+				   labels: [
+					{% for risque in allrisques | sortbyfield('PublishedAt') if risque.PublishedAt is not null %}
+								
+								 "{{ risque.PublishedAt | date("d/m/Y")  }}",
+					
+								{% endfor %}
+				],
+					datasets: [
+						{
+							type: 'line',
+							fill: false,
+							backgroundColor : 'rgba(26,179,148,0.5)',
+							borderColor: 'rgba(26,179,148,0.5)',
+							label: "Nb. de risques",
+							data: [
+								{% for risque in allrisques | sortbyfield('PublishedAt') if risque.PublishedAt is not null %}
+								{{ loop.index}},
+								{% endfor %}
+							]
+						}, 
+						{
+							type: 'bar',
+							label: 'Nouveaux risques',
+							data: [{% for risque in allrisques | sortbyfield('PublishedAt') if risque.PublishedAt is not null %}
+								{{ loop.index}},
+								{% endfor %}]
+							
+						}
+					]
+        },
+		options: {
+            responsive: true,
+            title:      {
+                display: false,
+                text:    "Risques actifs",
+                },
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    time:       {
+                        parser: timeParser,
+                        tooltipFormat: 'll',
+                        unit: 'month'
+                    },
+                    gridLines: {
+		                display:true
+		            }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     false,
+                        labelString: 'Nb. de risques'
+                    },
+                    ticks: {
+                                beginAtZero: true,
+                                steps: 50
+                            },
+                    gridLines: {
+		                display:false
+		            }
+                }]
+            }
+        }					  
+	});
+
+	///////////// TRACKING RISQUES processus
+
+
+	var ctxi = document.getElementById('trackingrisque').getContext('2d');
+	var myChart = new Chart(ctxi, {
+	    type: 'horizontalBar',
+	    data: {
+	        labels: [
+				{% for processus in allprocessuses %}
+					'{{ processus.code }}',
+				{% endfor %}
+			],
+	        datasets: [
+			{
+				barThickness: 22,
+				label: 'Nb. de risques',
+				data: [
+					{% for processus in allprocessuses %}
+						{% set rcount = 0 %}
+						{% for risque in allrisques%}
+							{% for rpro in risque.processuses if rpro is not null and rpro is defined and rpro == processus %}
+								{% set rcount = rcount + 1 %}
+							{% endfor %}
+						{% endfor %}
+						{{ rcount }},
+					{% endfor %}
+				]
+			}]
+	    },
+	    options: {
+			title: {
+				display: false,
+				text: 'Risques par processus'
+			},
+			tooltips: {
+				callbacks: {
+					labelTextColor:function(tooltipItem, chart){
+						return '#ffffff';
+					}
+            	}
+        	},
+		    scales: {
+	            xAxes: [{
+					scaleLabel: {
+                    display: true,
+                    labelString: 'Nb. de risques'
+                            },
+	                stacked: false,
+	                ticks: {
+		                beginAtZero: true,
+		                min: 0,					
+					      // forces step size to be 5 units
+					    stepSize: 1 // <----- This prop sets the stepSize
+		            },
+		            
+					gridLines: {
+						display:true
+                				}
+	            }],
+	            yAxes: [{
+					scaleLabel: {
+                    display: true,
+                    labelString: 'Processus'
+                            },
+	                stacked: false, 
+				    gridLines: {
+					display:false
+                				}
+	            }]
+	        },	
+		    plugins: {
+			        labels: [
+					    {
+					      render: 'value'
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			}
+	    }
+	});
+
+	///////////// NUAGE RISQUE
+	var ctxa = document.getElementById('myRisk').getContext('2d');
+	var scatterChart = new Chart(ctxa, {
+    type: 'bubble',
+    data: {
+        datasets: [
+			 {% for risque in allrisques %}
+			 	{
+            	label: ['R{{ risque.id }} {{ risque.designation|striptags|slice(0, 30) }}'],
+				backgroundColor: "{% if risque.score < 15 %}rgba(27, 153, 139,0.2){% elseif risque.score >= 15 and risque.score < 40 %}rgba(255, 225, 86,0.8){% elseif risque.score >= 40 and risque.score < 60 %}#F69D5C{% elseif risque.score >= 60 and risque.score < 80 %}#ed5861{% elseif risque.score >= 80 and risque.score <= 100 %}#683B5A{% endif %}",
+            	data: [{
+		            x:{{ risque.probabilite }},
+		            y:{{ risque.impact }},
+		            r:6,
+		            }]
+				},
+			{% endfor %}
+		],
+    },
+    options: {
+		title: {
+				display: true,
+				text: 'Scoring des risques'
+			},
+
+        scales: {
+            xAxes: [{
+				scaleLabel: {
+                    display: true,
+                    labelString: 'Probabilité'
+                            },
+                 ticks: {
+	                beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                },
+
+            }],
+            yAxes: [{
+				scaleLabel: {
+                                display: true,
+                                labelString: 'Impact'
+                            },
+                ticks: {
+                    beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                }
+            }]
+        },
+        plugins: {
+			        labels: [
+					    {
+					      render: 'value',
+					      fontSize: '20',
+					    }
+					]
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+    }
+    
+	});
+
+		///// TREEMAP TYPE DE RISQUES
+
+		google.charts.load('current', {
+		packages: ['treemap']
+		}).then(function () {
+		var data = google.visualization.arrayToDataTable([
+			['Location', 'Parent', 'Scoring', 'Color'],
+			['Global', null,0,0],
+			{% for typerisque in typerisques %}
+				{% set rcount = 0 %}
+				{% for risque in allrisques if risque.typerisque==typerisque %}
+					{% set rcount = rcount + 1 %}
+				{% endfor %}
+				['{{ typerisque.designation }}', 'Global', {{ rcount}}, 10],
+			{% endfor %}
+		]);
+		var view = new google.visualization.DataView(data);
+		view.setColumns([{
+			calc: function (dt, row) {
+			var rowValue;
+
+			if (row === 0) {
+				rowValue = dt.getValue(row, 0);  // value for global
+			} else {
+				// change display value by changing formatted value
+				rowValue = {
+				v: dt.getValue(row, 0),
+				f: dt.getValue(row, 0) + '(' + dt.getFormattedValue(row, 2) + ')'
+				};
+			}
+
+			return rowValue;
+			},
+			label: data.getColumnLabel(0),
+			type: data.getColumnType(0)
+		}, 1, 2, 3]);
+
+		var tree = new google.visualization.TreeMap(document.getElementById('visualization'));
+		google.visualization.events.addListener(tree, 'select', function () {
+			tree.setSelection([]);
+		});
+		tree.draw(view, {
+			headerHeight: 0,
+			fontColor: 'black',
+			showScale: false,
+			maxDepth: 2
+		});
+		});
+
+
+
+    </script>
+{% endblock %}

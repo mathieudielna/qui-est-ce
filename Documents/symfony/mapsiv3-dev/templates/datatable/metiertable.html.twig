@@ -1,0 +1,51 @@
+<table class="hover table table-bordered dataTables-metier" >
+    <thead>
+        <tr>
+            <th scope="col">Désignation</th>
+            <th scope="col">Managers</th>
+            <th scope="col">Collaborateurs</th>
+            <th scope="col" class="no-sort"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for metier in metiers %}
+            <article>
+                <tr>
+                    <td  class="table-title"  scope="row" data-order="{{ metier.designation }}">
+                        <a class="" href="{{path('metier_edit',{'id' : metier.id,'r' : 'metier'} ) }}">{{ metier.code | default("") }} {{ metier.designation }}</a> 
+                    <span class="badge badge-secondary small">MET-{{ metier.id }}</span>
+                    </td>
+                    <td scope="row"><b>{{ metier.directeur.firstname | default("")  }} {{ metier.directeur.lastname | default("")  }}</b><br>
+                    {{ metier.suppleant.firstname | default("")  }} {{ metier.suppleant.lastname | default("")  }}
+                    </td>
+                    <td><span class="badge badge-primary">{{ metier.peoples|length }}</span></td>
+                    <td data-order="{{ metier.PublishedAt | date("Ymd")}}">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('metier_edit',{'slug' : metier.slug, 'id' : metier.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('metier_remove',{'slug' : metier.slug, 'id' : metier.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ metier.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(metier.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{metier.publisher.firstname | default("") }} {{ metier.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </article>
+        {% endfor %}
+    </tbody>
+</table>

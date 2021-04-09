@@ -1,0 +1,169 @@
+{% extends 'base.html.twig' %}
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+            <h2>Tiers ({{ tiers|length }})</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{path('start')}}">Mapsi</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong><a>Tiers</a></strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+                {% if is_granted('ROLE_ADMIN') %}<a class="btn btn-primary" href="{{path('tier_create')}}">+ Nouveau tier</a>{% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+		                <li><a class="nav-link active show" data-toggle="tab" href="#tab-1"> Liste</a></li>
+	                </ul>
+	                <div class="tab-content">
+		                 <div role="tabpanel" id="tab-1" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<section class="tier">
+											<div class="table-responsive">
+												<table class="table table-hover dataTables-tier" >
+												  <thead>
+												  	<tr>
+												   		<th scope="col">ID</th>
+												   		<th scope="col">Désignation</th>
+												   		<th scope="col">Type</th>
+														<th scope="col">Scoring</th>
+												   		<th scope="col">Description</th>
+												   		{% if is_granted('ROLE_ADMIN') %}<th scope="col" class="no-sort"></th>{% endif %}
+												   	
+												    </tr>
+													</thead>
+													<tbody>
+														{% for tier in tiers %}
+															<article>
+																<tr>
+															      <th scope="row" data-order="{{ tier.id }}"><span class="badge badge-secondary">A-{{ tier.id }}</span></th>
+															      <th scope="row"><a class="" href="{{path('tier_edit',{'id' : tier.id} ) }}">{{ tier.designation | default("") }}</a></th>
+															      <td scope="row">{{ tier.type.designation | default("") }}</td>
+																  <td scope="row">
+																	<h5>
+																		{{ tier.score.designation | default("") }}
+																	</h5>
+																		{{ tier.scoringjustif | default("") }}
+																  </td>
+															      <td scope="row">{{ tier.description | default("") }}</td>
+															      {% if is_granted('ROLE_ADMIN') %}
+															    <td>
+																    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																	    <i class="fa fa-info"></i>
+																	</button>
+																	<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+																		<a class="dropdown-item" href="{{path('tier_edit',{'id' : tier.id} ) }}"> Afficher</a>
+																	    <a class="dropdown-item del" href="{{path('tier_remove',{'id' : tier.id} ) }}"> Supprimer</a>
+																	</div>
+																</td>
+																{% endif %}
+																      
+															      
+										
+															    </tr>
+															</article>
+														{% endfor %}
+													</tbody>
+												</table>
+											</div>
+										</section>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                </div>
+				</div>
+	        </div>
+	    </div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+	        
+	        $('a.del').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous vraiment supprimer cet tier ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+	        
+            $('.dataTables-tier').DataTable({
+                pageLength: 25,
+                responsive: false,
+                stateSave: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-action',visible: false, searchable: false	},
+	             ],
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'MAPSI-Tiers'},
+                    {extend: 'pdf', title: 'MAPSI-Tiers'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_",
+					    "infoEmpty":      "De 0 à 0 sur 0 activités",
+					    "infoFiltered":   "(filtrée sur _MAX_ au total)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "Rechercher :",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        }
+
+            });
+
+        });
+
+    </script>
+{% endblock %}

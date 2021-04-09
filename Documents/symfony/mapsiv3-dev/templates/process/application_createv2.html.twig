@@ -1,0 +1,381 @@
+{% extends 'baseform.html.twig' %}
+
+{% form_theme formApplication _self %}
+
+{% block body %}
+	{{ form_start(formApplication) }}
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="ibox" id="printed">
+					<div class="ibox-content">
+						<div class="row">
+							<div class="col-lg-4">
+								<h1>
+								{% if not editMode %}
+								Nouvelle application
+								{% else %}
+								Application
+								{% endif %}
+								</h1>
+							</div>
+							<div class="col-lg-8">
+								
+									<span class="float-right">
+										<a class="btn btn-white btn-sm noprint" onclick="leaveEntity('application')">Quitter</a>
+										{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+											<button type='submit' class="btn btn-primary btn-sm noprint disab" data-id="{{ application.id }}" onclick="deleteEntity({{ application.id | default("undefined") }},'application')">X</button>
+											<button type='submit' class="btn btn-primary btn-sm noprint disab" data-id="{{ application.id }}" onclick="submitAjax({{ application.id | default("undefined") }},'application')">
+											{% if editMode %}
+											Enregistrer <span class="change-message">
+											<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+												<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+											</svg>
+											</span>
+											{% else %}
+											Ajouter
+											{% endif %}
+											</button>
+										{% endif %}
+									</span>
+									
+								
+							</div>
+						</div>
+						
+						<div class="row">
+							
+							<div class="col-lg-12">
+								<div class="row">
+									<div class="col-lg-12">
+										<br>
+										<div class="form-group row">
+											<div class="col-sm-2"></div>
+											<div class="col-sm-10">{{ form_widget(formApplication.designation)}}</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-5">
+												{{ form_widget(formApplication.responsable)}}<small id="" class="form-text text-muted">Responsable</small>
+												{{ form_widget(formApplication.suppleant)}}<small id="" class="form-text text-muted">Suppléant</small>
+												{# {{ form_widget(formApplication.redacteur)}}<small id="" class="form-text text-muted">Rédacteur</small> #}
+											</div>
+											<div class="col-sm-5">{{ form_widget(formApplication.peoples)}}<small id="" class="form-text text-muted">Contributeurs</small></div>
+											
+										</div>
+								
+										<div class="row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-10 align-middle">Maj le {{ application.publishedat | date("d M Y")  }} par {{ application.Publisher.firstname | default("n/c") }}</div>
+										</div>
+										<div class="row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-8 text-sm-left">
+												<dd class="mb-1">{% for place in workflow_marked_places(application) %} <strong>{{ workflow_metadata(application, 'title', place)|lower ?: ''}}</strong>{% endfor %} le {{ application.validatedat | date("d M Y")  }} par {{ application.validator.firstname | default("n/c") }} </dd>
+												{% set rolep = "" %}
+												{% for people in application.peoples %}
+													{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}
+												{% endfor %}
+												{% set roles = "" %}{% if application.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+												{% set roler = "" %}{% if application.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+												{% for transition in workflow_transitions(application) %}
+													{% if workflow_can(application, transition.name) %}
+														{% if workflow_metadata(application, 'role', transition) in [rolep, roles, roler] %}
+															<a type="button" href="#" style="margin: 2px" class="ajaxWorkflow btn btn-{{ workflow_metadata(application, 'ambiance', transition)}} btn-xs adisab" data-id="{{ application.id }}" data-statewk="{{ transition.name }}" data-entite="application">
+															{{ workflow_metadata(application, 'title', transition) ?: 'n-a'}}
+															</a>
+														{% endif %}
+													{% endif %}
+												{% else %}
+													No actions available.
+												{% endfor %}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<br><br>
+					
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="tabs-container">
+									<ul class="nav nav-tabs">
+										<li>
+											<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-info-circle"></i>
+												</span>
+											</a>
+										</li>
+										{% if editMode %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#docs"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-files-o"></i>
+												</span>
+											</a>
+										</li>
+										{% endif %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#comment"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-pencil-square-o"></i>
+												</span>
+											</a>
+										</li>
+									</ul>
+									
+									<div class="tab-content">
+										
+										<div id="introduction" class="tab-pane active show">
+											<div class="panel-body">
+												<div class="row">	
+													<div class="col-sm-12">
+													
+														<h2>Description</h2>
+                                                        <br><br>
+						
+														<div class="form-group row"><label class="col-sm-2 col-form-label">Run</label>
+                                                            <div class="col-sm-10">
+                                                                <div class="row">
+                                                                    <div class="col-md-5"><span class="form-text m-b-none text-navy">Etat</span>{{ form_widget(formApplication.statutrun)}}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+														
+
+												
+														<div class="form-group">
+															<span class="form-text m-b-none">{{ form_label(formApplication.description, 'Description') }}</span>
+															{{ form_widget(formApplication.description)}}
+															<small id="" class="form-text text-muted"></small>
+														</div>
+                                                        <div class="form-group">
+                                                            <span class="form-text m-b-none">{{ form_label(formApplication.editeur, 'Description') }}</span>
+                                                            {{ form_widget(formApplication.editeur)}}
+                                                            <small id="" class="form-text text-muted"></small>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <span class="form-text m-b-none">{{ form_label(formApplication.typeappli, 'Type application') }}</span>
+                                                            {{ form_widget(formApplication.typeappli)}}
+                                                            <small id="" class="form-text text-muted"></small>
+                                                        </div>
+                                                                    
+													
+													</div>
+													<div class="col-lg-12">
+														<h2>Relations</h2>
+                                                        <br>
+                                                        <div class="form-group row">
+                                                            <label class="col-sm-2 col-form-label">Activités<br>{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type='button' id="add-act" class="btn btn-primary btn-sm">+</button>{% endif %}</label>
+                                                                <div class="col-sm-10">
+                                                                            {{ form_widget(formApplication.appConnectActivites) }}
+                                                                </div>
+                                                        </div>
+                                                    
+                                                        <div class="hr-line-dashed"></div>
+
+                                                        <div class="form-group">
+                                                            <span class="form-text m-b-none">{{ form_label(formApplication.applicationlink, 'Relations application') }}</span>
+                                                            {{ form_widget(formApplication.applicationlink)}}
+                                                            <small id="" class="form-text text-muted"></small>
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <span class="form-text m-b-none">{{ form_label(formApplication.systemes, 'Systèmes') }}</span>
+                                                            {{ form_widget(formApplication.systemes)}}
+                                                            <small id="" class="form-text text-muted"></small>
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <span class="form-text m-b-none">{{ form_label(formApplication.actions, 'Actions') }}</span>
+                                                            {{ form_widget(formApplication.actions)}}
+                                                            <small id="" class="form-text text-muted"></small>
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <span class="form-text m-b-none">{{ form_label(formApplication.fluxes, 'Flux') }}</span>
+                                                            {{ form_widget(formApplication.fluxes)}}
+                                                            <small id="" class="form-text text-muted"></small>
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <span class="form-text m-b-none">{{ form_label(formApplication.objetMetiers, 'Objets Métier') }}</span>
+                                                            {{ form_widget(formApplication.objetMetiers)}}
+                                                            <small id="" class="form-text text-muted"></small>
+                                                        </div>
+                                                        
+													</div>
+                                                    <div class="col-lg-12">
+														<h2>PCA</h2>
+                                                        <br>
+                                                        {% if editMode %}
+                                                        <div class="form-group row"><label class="col-sm-2 col-form-label">Criticité</label>
+                                                            <div class="col-sm-10">
+                                                                <div class="row">
+                                                                    <div class="col-md-5">
+                                                                        {% set minDima = 1000 %}
+                                                                        {% set desiDima = "NC" %}
+                                                                        {% set colorDima = "NC" %}
+                                                                        {% for activite in application.appConnectActivites %}
+                                                                        {% if activite.dima.dureeheure is not defined %}
+                                                                                {% else %}
+                                                                            {% set minDima = min(activite.dima.dureeheure, minDima) %}
+                                                                            {% if activite.dima.dureeheure == minDima %}
+                                                                                {% set desiDima = activite.dima.designation %}
+                                                                                {% set colorDima = activite.dima.color %}
+                                                                            {% endif %}
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                        <span class="form-text m-b-none text-navy">Durée d'Indisponibilité Maximale Admissible (DIMA / RTO)</span>
+                                                                        <div class="widget style1 navy-bg">
+                                                                            <div class="row vertical-align">
+                                                                                <div class="col-3">
+                                                                                    {% if minDima < 48 %}
+                                                                                    <i class="fa fa-warning fa-2x"></i>
+                                                                                    {% endif %}
+                                                                                </div>
+                                                                                <div class="col-9 text-right">
+                                                                                    <span class="badge {{colorDima}}">
+                                                                                    <h2 class="font-bold">{{desiDima | default("N/C")}}</h2>
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                
+                                                    
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-md-5">
+                                                                        {% set minPdma = 1000 %}
+                                                                        {% set desiPdma = "NC" %}
+                                                                        {% set colorPdma = "NC" %}
+                                                                        {% for activite in application.appConnectActivites %}
+                                                                        {% if activite.pdma.dureeheure is not defined %}
+                                                                                {% else %}
+                                                                            {% set minPdma = min(activite.pdma.dureeheure, minPdma) %}
+                                                                            {% if activite.pdma.dureeheure == minPdma %}
+                                                                                {% set desiPdma = activite.pdma.designation %}
+                                                                                {% set colorPdma = activite.pdma.color %}
+                                                                                {% endif %}
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                        <span class="form-text m-b-none text-navy">Durée d'Indisponibilité Maximale Admissible (PDMA / RTO)</span>
+                                                                        <div class="widget style1 navy-bg">
+                                                                            <div class="row vertical-align">
+                                                                                <div class="col-3">
+                                                                                    {% if minPdma < 48 %}
+                                                                                    <i class="fa fa-warning fa-2x"></i>
+                                                                                    {% endif %}
+                                                                                </div>
+                                                                                <div class="col-9 text-right">
+                                                                                    <span class="badge {{colorPdma}}">
+                                                                                    <h2 class="font-bold">{{desiPdma | default("N/C")}}</h2>
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                    
+                                                    
+                                                                    </div>
+                                                                    
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="hr-line-dashed"></div>
+                                                        {% endif %}
+                                                        <div class="form-group  row">
+                                                            <label class="col-sm-2 col-form-label">{{ form_label(formApplication.prerequisite, 'Conditions au redémarrage') }}</label>
+                                                            <div class="col-sm-10">{{ form_widget(formApplication.prerequisite) }}</div>
+                                                        </div>
+                                                        <div class="form-group  row">
+                                                            <label class="col-sm-2 col-form-label">{{ form_label(formApplication.ressources, 'Ressources') }}</label>
+                                                            <div class="col-sm-10">{{ form_widget(formApplication.ressources) }}</div>
+                                                        </div>
+                                                        
+													</div>
+												</div>
+											</div>
+										</div>
+									
+
+										{% if editMode %}
+										<div id="docs" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'customername':app.user.customer.designation,  'bigentity': 'Applications', 'entryprefix': 'APP', 'entryid': application.id, 'entryname': application.designation}}) }}" width="100%" height="500" frameborder="0"></iframe>
+													</div>
+												</div>
+											</div>
+										</div>
+										{% endif %}
+										<div id="comment" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Notes</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														{{ form_widget(formApplication.commentaire)}}
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>						
+					</div>
+				</div>
+			</div>
+		</div>
+
+    {{ form_end(formApplication) }}
+{% endblock %}
+
+{% block _application_appConnectActivites_widget %}
+	{{ form_widget(form)}}
+{% endblock %}
+
+{% block _application_appConnectActivites_entry_widget %}
+            <div class="row" id="block_{{id}}">
+	            <div class="col-md-5">{{ form_widget(form.activite)}}</div>
+                <div class="col-md-2">{{ form_widget(form.dima)}}</div>
+                <div class="col-md-2">{{ form_widget(form.pdma)}}</div>
+                <div class="col-1">{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE') %}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-act" class="btn btn-danger btn-circle"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+            </div>
+{% endblock %}
+
+
+
+	
+{% block javascripts %}
+
+	<script>
+
+	$(document).ready(function() {		
+		
+        
+		
+
+
+        
+	});	
+
+
+			
+		
+	</script>
+	
+{% endblock %}
+	
+
+
+

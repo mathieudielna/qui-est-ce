@@ -1,0 +1,406 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formProgram _self %}
+
+{% block stylesheets %}
+	<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+		.change-message {
+			display: none;
+		}
+
+    </style>
+{% endblock %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    {% if editMode %}
+					<h2>Fiche programme</h2>
+					{% else %}
+					<h2>Créer une nouveau programme</h2>
+					{% endif %} 
+                    <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+						<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+						</svg> Retour vers {{ rr }}
+					</a> 
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-program">
+                       
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+{% block body %}
+
+	{{ form_start(formProgram) }}
+ 	<div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox border" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+                                	<a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+								</span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									PROG-{{ program.id }} {{ program.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Statut :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(program) %}<strong>{{ workflow_metadata(program, 'title', place) ?: ''}}</strong>{% endfor %}
+									
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if program.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : program.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ program.responsable.firstname | default("") }} {{ program.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if program.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : program.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ program.suppleant.firstname | default("") }} {{ program.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in program.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ program.publishedat | date("d M Y")  }} par {{ program.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                   <dd class="mb-1">Passé en {% for place in workflow_marked_places(program) %} {{ workflow_metadata(program, 'title', place)|lower ?: ''}}{% endfor %} le {{ program.validatedat | date("d M Y")  }} par {{ program.validator.firstname | default("n/c") }} </dd>
+									{% set rolep = "" %}
+									{% for people in program.peoples %}{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}{% endfor %}
+									{% set roles = "" %}{% if program.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% set roler = "" %}{% if program.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% for transition in workflow_transitions(program) %}
+										{% if workflow_can(program, transition.name) %}
+											{% if workflow_metadata(program, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(program, 'ambiance', transition)}} btn-xs adisab" href="{{path('program_workflow', {
+												'id' : program.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(program, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No actions available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+					</div>
+
+                    
+					<br><br>
+					
+		            <div class="row">
+						<div class="col-lg-12">
+		            		<div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            {% if editMode %}
+									<li>
+										<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+				                            <span style="font-size: 18px;">
+												Synthèse
+											</span>
+										</a>
+									</li>
+									{% endif %}
+		                            <li>
+									<a class="nav-link {% if not editMode %}active show{% endif %}" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+		                            <li>
+		                            	<a class="nav-link" data-toggle="tab" href="#files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+		                            <li><a class="nav-link" data-toggle="tab" href="#commentaire"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+								<div class="tab-content">
+									{% if editMode %}
+									<div id="introduction" class="tab-pane active show">
+			                            <div class="panel-body">
+											<div class="row">	
+												<div class="col-lg-8">
+													<p>
+														{{ program.description | raw}}
+													</p>
+													<div class="row">
+														<div class="col-lg-8">	
+															<dl class="row mb-0">
+																<div class="col-sm-4 text-sm-right">
+																	<dt>Métier :</dt>
+																</div>
+																<div class="col-sm-8 text-sm-left">
+																	<dd class="mb-1">{{ formProgram.vars.value.metier.designation | default("") }}</dd>
+																</div>
+															</dl>
+																			
+														</div> 
+													</div>
+												</div>
+												<div class="col-lg-4">
+													<div class="row">
+														<div class="col-lg-12">	
+															<h5>Progression</h5>
+															<div class="progress m-b-1">
+																{% set sumratings = 0 %}
+																{% for projet in program.projets %}
+																	{% for action in projet.actions if action.id is defined %}																																					{% set sumratings = sumratings + action.progression %}
+																	{% endfor %}
+																{% if projet.actions|length >0  %}
+																	{% set sumratings = sumratings / projet.actions|length %}
+																{% endif  %}
+																{% endfor %}
+																<div style="width: {{  sumratings | number_format(0, '.', ' ') }}%;" class="progress-bar progress-bar-striped progress-bar-animated">
+																</div>
+															</div>
+															<small>Progression du programme à <strong>{{  sumratings | number_format(0, '.', ' ') }} %</strong></small>
+																													
+														
+															<h5>Comply</h5>
+																													
+														</div>
+													
+													</div>	
+												</div>
+											</div>
+
+			                            </div>
+			                        </div>
+									{% endif %}
+		                            <div id="information" class="tab-pane {% if not editMode %}active show{% endif %}">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formProgram.designation, 'Désignation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formProgram.designation)}}</div>
+										    </div>
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formProgram.code, 'Code') }}</label>
+												<div class="col-sm-10">{{ form_widget(formProgram.code)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formProgram.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formProgram.description)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Direction</span>{{ form_widget(formProgram.metier)}}</div>
+										            </div>
+													<div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formProgram.responsable)}}</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Suppleant</span>{{ form_widget(formProgram.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formProgram.peoples)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formProgram.projets, 'Projets') }}</label>
+												<div class="col-sm-10">{{ form_widget(formProgram.projets)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label">Top programme</label>
+												<div class="col-sm-10">{{ form_widget(formProgram.topprogram)}}</div>
+										    </div>
+		                                </div>
+		                            </div>
+									<div id="files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Portfolio', 'entryprefix': 'PROG', 'entryid': program.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="commentaire" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formProgram.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+								</div>
+		            		</div>
+			            </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formProgram) }}	
+	
+{% endblock %}
+
+
+
+{% block javascripts %}
+	<script>
+		$(document).ready(function() {
+			$('.select2').select2();
+			
+			CKEDITOR.replace( 'program_commentaire' );
+			CKEDITOR.replace( 'program_description' );
+		});
+		
+		//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+	
+		
+			/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+	</script>
+{% endblock %}
+
+

@@ -1,0 +1,1212 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formAction _self %}
+
+{% block stylesheets %}
+	<style type="text/css">
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+
+		.change-message {
+		display: none;
+		}
+
+td.details-control {
+    background: url('https://datatables.net/examples/resources/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url('https://datatables.net/examples/resources/details_close.png') no-repeat center center;
+}
+    </style>
+{% endblock %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    {% if editMode %}
+					<h2>Fiche action</h2>
+					{% else %}
+					<h2>Créer une nouvelle action</h2>
+					{% endif %} 
+                    <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+						<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+						</svg> Retour vers {{ rr }}
+					</a> 
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-action">
+                       
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+{% block body %}
+
+	{{ form_start(formAction) }}
+ 	<div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox border" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+                                	<a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+								</span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									ACTION - {{ action.id }} {{ action.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Etat :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(action) %}<strong>{{ workflow_metadata(action, 'title', place) ?: ''}}</strong>{% endfor %}
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if action.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : action.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ action.responsable.firstname | default("") }} {{ action.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if action.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : action.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ action.suppleant.firstname | default("") }} {{ action.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							{% if action.people | length >0 %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for peopl in action.people %}
+											<a shref="{{path('people_edit',{'id' : peopl.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ peopl.firstname }} {{ peopl.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+							{% endif %}
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ action.publishedat | date("d M Y")  }} par {{ action.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+								<div class="col-sm-8 text-sm-left">
+									<dd class="mb-1">Passé en {% for place in workflow_marked_places(action) %} {{ workflow_metadata(action, 'title', place)|lower ?: ''}}{% endfor %} le {{ action.validatedat | date("d M Y")  }} par {{ action.validator.firstname | default("n/c") }} </dd>
+
+									<div class="hr-line-dashed"></div>
+
+									<ul class="steps">
+										<li class="step {% if workflow_has_marked_place(action, 'pre_running') or workflow_has_marked_place(action, 'running') or workflow_has_marked_place(action, 'validation') or workflow_has_marked_place(action, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(action, 'draft') %}step-active{% elseif workflow_has_marked_place(action, 'rejected') %}step-error{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">1</span>
+											<span class="step-text">{% if workflow_has_marked_place(action, 'draft') or workflow_has_marked_place(action, 'rejected') %}Brouillon{% else %}Initié{% endif %}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(action, 'validation') or workflow_has_marked_place(action, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(action, 'running') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">2</span>
+											<span class="step-text">{% if workflow_has_marked_place(action, 'pre_running') or workflow_has_marked_place(action, 'running') or workflow_has_marked_place(action, 'draft') or workflow_has_marked_place(action, 'rejected') %}En cours{% else %}Finalisé{% endif%}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(action, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(action, 'validation') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">3</span>
+											<span class="step-text">{% if workflow_has_marked_place(action, 'validation_ok') %}Validé{% else %}Validation{% endif%}</span>
+											</div>
+										</li>
+									</ul>
+
+									<div class="hr-line-dashed"></div>
+
+
+                              
+                                   
+									
+									{% set roles = "" %}{% if action.projet.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "responsableprojet" %}{% endif %}
+									{% set roler = "" %}{% if action.projet.responsable == app.user.people or action.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% endif %}
+									{% for transition in workflow_transitions(action) %}
+										{% if workflow_can(action, transition.name) %}
+											{% if workflow_metadata(action, 'role', transition) in [roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(action, 'ambiance', transition)}} btn-xs adisab" href="{{path('action_workflow', {
+												'id' : action.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(action, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No actions available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+					</div>
+                    
+<br><br>
+					
+		            <div class="row">
+						<div class="col-lg-12">
+		            		<div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+									{% if editMode %}
+									<li><a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+				                            <span style="font-size: 18px;">
+												Synthèse
+											</span>
+										</a>
+									</li>
+									{% endif %}
+		                            <li><a class="nav-link {% if not editMode %}active show{% endif %}" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+		                            <li>
+		                            	<a class="nav-link" data-toggle="tab" href="#jalon"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-calendar"></i>
+											</span>
+										</a>
+									</li>
+		                            <li><a class="nav-link" data-toggle="tab" href="#relation"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li><a class="nav-link" data-toggle="tab" href="#note"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+								<div class="tab-content">
+									{% if editMode %}
+									<div id="introduction" class="tab-pane active show">
+		                                <div class="panel-body">			                                
+											<div class="row">
+												<div class="col-lg-6">
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Status :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1">
+																{% set statutaction = "" %}
+																{% set statutclass = "" %}
+																{% for jalon in action.jalonConnectActions %}
+																	{% if jalon.progression==100 %}
+																	{% set statutaction = "Terminé" %}
+																	{% set statutclass = "badge badge-success small" %}
+																	{% elseif jalon.progression == 0 and jalon.responsable is null %}
+																	{% set statutclass = "badge small" %}
+																	{% set statutaction = "Non démarré" %}
+																	{% elseif jalon.progression < 100 and jalon.daterevue > jalon.date %}
+																	{% set difference = date(jalon.daterevue).diff(date(jalon.date)) %}
+																	{% set leftDays = difference.days %}
+																	{% set statutclass = "badge badge-warning small" %}
+																	{% set statutaction = "En cours !" %}
+																	{% else %}
+																	{% set statutclass = "badge badge-primary small" %}
+																	{% set statutaction = "En cours" %}
+																	{% endif %}
+																{% endfor %}
+																<span class="{{ statutclass }}">
+																	{{ statutaction}}
+																</span>
+															</dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Projet :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1">
+															{% if action.projet is defined and action.projet is not null %}
+																<a class="" href="{{path('projet_edit',{'slug' : action.projet.slug, 'id' : action.projet.id, 'r' : r, 'rr' : rr} ) }}">
+																	{{ formAction.vars.value.projet.designation | default("N/C") }} ({{action.projet.responsable.firstname | default("") }} {{action.projet.responsable.lastname | default("") }})
+																</a>
+															{% endif %}	
+															</dd>
+														</div>
+													</dl>
+
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Charge RH :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span id="etpshow">   {{ formAction.vars.value.etp | default("0") }} j/h</span></dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Budget :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span id="budgetshow">   {{ formAction.vars.value.budget | default("0") }} €</span></dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Jalons / livrables :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1">  {{ formAction.vars.value.jalonConnectActions | length | default("0") }}</dd>
+														</div>
+													</dl>
+												</div>
+												<div class="col-lg-6" id="cluster_info">
+
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Mise à jour :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1">{{ action.PublishedAt | date("d M Y")}}</dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Démarrage :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span id="datedebutshow">   {{ formAction.vars.value.datedebut | date("d M Y") | default("N/C") }}</span></dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Fin planifiée :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span id="datefinshow">  {{ formAction.vars.value.datefin | date("d M Y") | default("N/C") }}</span></dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Outlook :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span id="datefinrevueshow">   
+															{{ formAction.vars.value.datefinrevue | date("d M Y") }}
+															{% set difference = date(formAction.vars.value.datefinrevue ).diff(date(formAction.vars.value.datefin)) %}
+															{% set delayDays = difference.days %}
+															{% if delayDays > 0 %}<small><strong>({{ delayDays }} jours de retard)</strong></small>{% endif %}</span></dd>
+														</div>
+													</dl>
+													<dl class="row mb-0">
+														<div class="col-sm-4 text-sm-right">
+															<dt>Fin réelle :</dt>
+														</div>
+														<div class="col-sm-8 text-sm-left">
+															<dd class="mb-1"><span id="datefinreelleshow">  {{ formAction.vars.value.datefinreelle | date("d M Y") | default("En cours") }}</span></dd>
+														</div>
+													</dl>
+													
+													
+												</div>
+											</div>
+										
+											<div class="row">
+												<div class="col-lg-12">
+													<dl class="row mb-0">
+														<div class="col-sm-2 text-sm-right">
+															<dt>Progression :</dt>
+														</div>
+														<div class="col-sm-10 text-sm-left">
+															<dd>
+																<div class="progress m-b-1" id="barprogressionshow">
+																	<div style="width: {{ action.progression | number_format(0, '.', ' ') }}%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
+																</div>
+																<small>Progression estimée à <strong id="progressionshow">{{ action.progression | number_format(0, '.', ' ') }} %</strong></small>
+															</dd>
+														</div>
+													</dl>
+												</div>
+											</div>
+										
+											<div class="row">
+												<div class="col-lg-12">
+													<dl class="row mb-0">
+														<div class="col-sm-2 text-sm-right">
+															
+														</div>
+														<div class="col-sm-10 text-sm-left">
+															<dd>
+																<ul class="tag-list" style="padding: 0">
+																	{% for conformite in action.typeconformite %}
+																	<li><a href=""><i class="fa fa-sitemap"></i> {{ conformite.designation }}</a></li>
+																	{% endfor %}
+																	{% for processus in action.processuses %}
+																	<li><a href="{{path('processus_edit',{'id' : processus.id} ) }}"><i class="fa fa-sitemap"></i> {{ processus.code }}.{{ processus.designation }}</a></li>
+																	{% endfor %}
+																	{% for axe in action.axes %}
+																	<li><a href="{{path('axe_edit',{'id' : axe.id} ) }}"><i class="fa fa-tag"></i> AXE-{{ axe.id }}</a></li>
+																	{% endfor %}
+																	{% for risque in action.risques %}
+																	<li><a href="{{path('risque_edit',{'id' : risque.id} ) }}"><i class="fa fa-tag"></i> RISQUE-{{ risque.id }}</a></li>
+																	{% endfor %}
+																</ul>
+															</dd>
+														</div>
+													</dl>
+												</div>
+											</div>				
+										</div>        
+		                            </div>
+									{% endif %}
+		                            <div id="information" class="tab-pane {% if not editMode %}active show{% endif %}">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.designation, 'Désignation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.designation)}}</div>
+										    </div>
+										    
+											 <div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.projet, 'Projet') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.projet)}}</div>
+										    </div>
+										    
+										     <div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.phase, 'Phase programme') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.phase)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formAction.responsable)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formAction.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formAction.people)}}</div>
+										            </div>
+										        </div>
+										    </div>
+
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.description)}}</div>
+										    </div>
+										    
+										     <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.reference, 'Référence interne') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.reference)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Statut</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+											            <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formAction.statutaction, 'Statut de l\'action') }}</span>{{ form_widget(formAction.statutaction)}}</div>
+										                <div class="col-md-6"><span class="form-text m-b-none text-navy">{{ form_label(formAction.priorite, 'Priorité') }}</span>{{ form_widget(formAction.priorite)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+		                                </div>
+		                            </div>
+		                            <div id="jalon" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-10"><h3>Planification des jalons et des livrables</h3> <button type='button' id="add-jal" class="btn btn-outline-success btn-sm">+</button>
+												</div>
+											</div>
+											
+											<div class="row">
+												<div class="col-md-12">
+													<table id="dataTables-jalon" class="table table-hover display"  style="width:100%">
+												        <thead>
+												            <tr>
+													            <th scope="col" class="no-show-jalon">ID</th>
+												                <th>Statut</th>
+												                <th>Désignation</th>
+												                <th>Progression</th>
+												                <th>Responsable</th>
+												                <th>Outlook</th>
+												                <th>Météo</th>
+												                <th class="no-sort" ></th>
+												                <th scope="col" class="no-show-jalon">Top jalon</th>
+												                <th scope="col" class="no-show-jalon">Progression</th>
+												                <th scope="col" class="no-show-jalon">Météo</th>
+												                <th scope="col" class="no-show-jalon">Description</th>
+												                <th scope="col" class="no-show-jalon">Cout €</th>
+												                <th scope="col" class="no-show-jalon">J/H</th>
+												                <th scope="col" class="no-show-jalon">Date début</th>
+												                <th scope="col" class="no-show-jalon">Date fin initiale</th>
+												                <th scope="col" class="no-show-jalon">Date fin revue (Outlook)</th>
+												                <th scope="col" class="no-show-jalon">Date fin réelle</th>
+												            </tr>
+												        </thead>
+												        <tbody>
+													        {% for jalonConnectActions in action.jalonConnectActions %}
+														        <tr id="ablock_action_jalonConnectActions_{{loop.index0}}" role="tablist">
+															        <td>
+																       {{jalonConnectActions.id}} 
+															        </td>
+															        <td>
+																		{% if jalonConnectActions.progression==100 %}
+																		<span class="badge badge-success small">
+																  	  	Terminé
+																  	  	</span>
+																  	  	{% elseif jalonConnectActions.progression == 0 and jalonConnectActions.responsable is null %}
+																		<span class="badge small">
+																  	  	Non démarré
+																  	  	</span>
+																		{% elseif jalonConnectActions.progression < 100 and jalonConnectActions.daterevue > jalonConnectActions.date %}
+																		{% set difference = date(jalonConnectActions.daterevue).diff(date(jalonConnectActions.date)) %}
+																		{% set leftDays = difference.days %}
+																		<span class="badge badge-warning small" data-toggle="tooltip" data-placement="right" title="{{leftDays}} jours de retard">
+																  	  	En cours (!)
+																  	  	</span>
+																		{% else %}
+																		<span class="badge badge-primary small">
+																  	  	En cours
+																  	  	</span>
+																		{% endif %}
+																		
+																	</td>
+																	<td class="table-title nav">
+																		<a href="#block_action_jalonConnectActions_{{loop.index0}}" data-toggle="modal" data-target="#block_action_jalonConnectActions_{{loop.index0}}"><span id="desiaction_jalonConnectActions_{{loop.index0}}_jalon">{{jalonConnectActions.jalon}}</span></a>
+																	</td>
+																	<td data-order="{{  jalonConnectActions.progression | default('0')| number_format(0, '.', ' ') }}">
+																		<span id="progaction_jalonConnectActions_{{loop.index0}}_progression">
+																		<small>Progression : {{  jalonConnectActions.progression | default("0") | number_format(0, '.', ' ') }}%</small>
+							                                            <div class="progress progress-mini">
+							                                                <div style="width: {{  jalonConnectActions.progression | default('0')| number_format(0, '.', ' ') }}%;" class="progress-bar"></div>
+							                                            </div>
+							                                            </span>
+																	</td>
+																	<td>
+																		<span id="respaction_jalonConnectActions_{{loop.index0}}_responsable">																										{{ jalonConnectActions.responsable.firstname | default("") }} {{ jalonConnectActions.responsable.lastname | default("") }}
+																		</span>
+																	</td>
+																	<td data-order="{{ jalonConnectActions.daterevue | date("Ymd") }}">
+																		<span id="dateaction_jalonConnectActions_{{loop.index0}}_daterevue">
+																		{{ jalonConnectActions.daterevue | date("d M Y") }}
+																		</span>
+																	</td>
+																	
+																	<td data-order="{{ jalonConnectActions.rag.id | default("") }}">
+																		{% if jalonConnectActions.rag is not null %}			
+																		<span class="badge {{ jalonConnectActions.rag.color | default("") }}"><i class="fa {{ jalonConnectActions.rag.icon | default("N/C") }}"></i></span>
+																		{% endif %}
+																	</td>
+																	<td>
+																		<button id="btnGroupDrop{{ loop.index }}" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																		    <i class="fa fa-wrench"></i>
+																		</button>
+																		<div class="dropdown-menu btn-sm" aria-labelledby="btnGroupDrop1">
+																		    <a href="#block_action_jalonConnectActions_{{loop.index0}}" data-toggle="modal" data-target="#block_action_jalonConnectActions_{{loop.index0}}" id="desiaction_jalonConnectActions_{{loop.index0}}_jalon" class="dropdown-item" >Modifier</a>
+																		    <a class="dropdown-item" data-action="delete" data-target="block_action_jalonConnectActions_{{loop.index0}}"> Supprimer</a>
+																		</div>
+																	</td>
+																	<td>{{ jalonConnectActions.topjalon | default("") }}</td>
+																	<td>{{  jalonConnectActions.progression | default('0')| number_format(0, '.', ' ') }}%</td>
+																	<td>{{ jalonConnectActions.rag.icon | default("") }}</td>
+																	<td>{{ jalonConnectActions.commentaire | default("") }}</td>
+																	<td>{{ jalonConnectActions.budget | default("") }}</td>
+																	<td>{{ jalonConnectActions.etp | default("") }}</td>
+																	<td>{{ jalonConnectActions.datedebut | date("d/m/Y") }}</td>
+																	<td>{{ jalonConnectActions.date | date("d/m/Y") }}</td>
+																	<td>{{ jalonConnectActions.daterevue | date("d/m/Y") }}</td>
+																	<td>{{ jalonConnectActions.datereelle | date("d/m/Y") }}</td>
+																</tr>
+														    {% endfor %}
+												        </tbody>
+												    </table>
+												    {{ form_widget(formAction.jalonConnectActions) }}
+												</div>
+											</div>
+									    
+											<div class="form-group row invisible" style="height: 0px;">
+												<label class="col-sm-2 col-form-label">Planification</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3">
+											                <span class="form-text m-b-none text-navy">Début</span>
+											                {{ form_widget(formAction.datedebut)}}
+											            </div>
+											            <div class="col-md-3">
+											                <span class="form-text m-b-none text-navy">Fin planifiée</span>
+											        		{{ form_widget(formAction.datefin)}}
+											        	</div>
+										                <div class="col-md-3">
+											                <span class="form-text m-b-none text-navy">Fin revue (Outlook)</span>
+											        		{{ form_widget(formAction.datefinrevue)}}
+											        	</div>
+										                <div class="col-md-3">
+											                <span class="form-text m-b-none text-navy">Fin réelle</span>
+												        	{{ form_widget(formAction.datefinreelle)}}
+											            </div>
+										            </div>
+										        </div>
+										    </div>
+										    				    					    
+										    <div class="form-group row invisible" style="height: 0px;">
+											    <label class="col-sm-2 col-form-label">Engagement
+											    <span class="form-text m-b-none text-navy">Calcul automatique</span></label>
+										        <div class="col-sm-10">
+										            <div class="row">
+											            <div class="col-md-4">
+											                <span class="form-text m-b-none text-navy">{{ form_label(formAction.progression, 'Progression en %') }}</span>
+											        		{{ form_widget(formAction.progression) }}
+											        	</div>
+										                <div class="col-md-4">
+											                <span class="form-text m-b-none text-navy">{{ form_label(formAction.budget, 'Budget') }}</span>
+											        		{{ form_widget(formAction.budget)}}
+											        	</div>
+										                <div class="col-md-4">
+											                <span class="form-text m-b-none text-navy">{{ form_label(formAction.etp, 'Charge j/h') }}</span>
+												        	{{ form_widget(formAction.etp)}}
+											            </div>
+										            </div>
+										        </div>
+										    </div>
+								            
+		                                </div>
+		                            </div>
+		                            <div id="relation" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Association</h3></div>
+											</div>
+											<br>
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.typeconformite, 'Domaine de conformité') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.typeconformite)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.domaineprojet, 'Domaine projet') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.domaineprojet)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Relations</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+											            <div class="col-md-12"><span class="form-text m-b-none text-navy">Flux / Traitement</span>{{ form_widget(formAction.fluxes)}}</div>
+										                <div class="col-md-12"><span class="form-text m-b-none text-navy">Processus</span>{{ form_widget(formAction.processuses)}}</div>
+										                <div class="col-md-12"><span class="form-text m-b-none text-navy">Axes stratégiques</span>{{ form_widget(formAction.axes)}}</div>
+										                <div class="col-md-12"><span class="form-text m-b-none text-navy">Risques</span>{{ form_widget(formAction.risques)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.applications, 'Applications') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.applications)}}</div>
+										    </div>
+										    						
+											<div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAction.sites, 'Site') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAction.sites)}}</div>
+										    </div>
+		                                </div>
+		                            </div>
+		                            {% if editMode %}
+		                            <div id="files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Portfolio', 'entryprefix': 'ACT', 'entryid': action.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+			                        {% endif %}
+		                            <div id="note" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formAction.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+								</div>
+		            		</div>
+			            </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formAction) }}
+	
+	
+{% endblock %}
+
+{% block _action_jalonConnectActions_widget %}
+	{{ form_widget(form)}}
+{% endblock %}
+
+{% block _action_jalonConnectActions_entry_widget %}
+
+						<div class="modal fade" id="block_{{id}}" tabindex="-1" role="dialog" aria-modal="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+								        <h4 class="modal-title" id="exampleModalLabel">{{form.vars.value.jalon | default("Nouveau jalon")}}</h4>
+								        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								          <span aria-hidden="true">&times;</span>
+								        </button>
+								    </div>
+                                    <div class="modal-body">
+	                                    
+	                                    <div class="row form-group">
+							                <div class="col-sm-4">
+								                <span class="form-text m-b-none text-navy">Désignation <span class="text-danger">*</span></span>
+								                {{ form_widget(form.jalon, { 'attr': {'class': 'VarDesignation'} })}}
+								            </div>
+								            <div class="col-sm-4">
+								                <span class="form-text m-b-none text-navy">Pilote</span>
+								        		{{ form_widget(form.responsable)}}
+								        	</div>
+							                <div class="col-md-4">
+								        		{{ form_widget(form.topjalon) }}<br>
+								        		{{ form_widget(form.fini, { 'attr': {'class': 'VarJalFini', 'data-action':'show'} })}}
+						        				<div class="invisible" style="height: 0px;">{{ form_widget(form.mcustomer)}}</div>	
+								        	</div>
+							            </div>
+	                                    
+						                <div class="row form-group">
+								            <div class="col-md-12">
+									            <span class="form-text m-b-none text-navy">Description</span>
+									            {{ form_widget(form.commentaire)}}
+									            <span class="form-text m-b-none text-navy">Tendance</span>
+						        				<div class="row">
+									                <div class="col-md-3">
+										                {{ form_widget(form.rag)}}
+										            </div>
+										            <div class="col-md-3">
+											            <div class="input-group mb-2">
+											        		<div class="input-group-prepend">
+															<span class="input-group-addon" style="width: 40px !important;"><strong>%</strong></span>
+								            				</div>
+								            				{% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}
+															{{ form_widget(form.progression, { 'attr': {'class': 'VarProgression Off'} })}}
+															{%else%}
+															{{ form_widget(form.progression, { 'attr': {'class': 'VarProgression'} })}}
+															{%endif%}
+											            </div>
+										        	</div>
+										        	<div class="col-md-3">
+											        	<div class="input-group mb-2">
+											                <div class="input-group-prepend">
+															<span class="input-group-addon" style="width: 40px !important"><strong>€</strong></span>
+								            				</div>
+								            				{% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}
+															{{ form_widget(form.budget, { 'attr': {'class': 'VarBudget Off'} })}}
+															{%else%}
+															{{ form_widget(form.budget, { 'attr': {'class': 'VarBudget'} })}}
+															{%endif%}
+											        	</div>
+										            </div>
+										            <div class="col-md-3">
+											            <div class="input-group mb-2">
+											        		<div class="input-group-prepend">
+															<span class="input-group-addon" style="width:40px !important"><strong>j/h</strong></span>
+								            				</div>
+								            				{% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}
+															{{ form_widget(form.etp, { 'attr': {'class': 'VarEtp Off'} })}}
+															{%else%}
+															{{ form_widget(form.etp, { 'attr': {'class': 'VarEtp'} })}}
+															{%endif%}
+											            </div>
+										        	</div>
+									            </div>
+						        				
+						        				<div class="row form-group">
+									                <div class="col-md-3">
+										                <span class="form-text m-b-none text-navy">Date début <span class="text-danger">*</span></span>
+										                {% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}
+														{{ form_widget(form.datedebut, { 'attr': {'class': 'VarDateDebut Off'} })}}
+														{%else%}
+														{{ form_widget(form.datedebut, { 'attr': {'class': 'VarDateDebut'} })}}
+														{%endif%}
+										            </div>
+										            <div class="col-md-3">
+										                <span class="form-text m-b-none text-navy">Date fin <span class="text-danger">*</span></span>
+										        		{% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}
+														{{ form_widget(form.date, { 'attr': {'class': 'VarDateprevisionnelle Off'} })}}
+														{%else%}
+														{{ form_widget(form.date, { 'attr': {'class': 'VarDateprevisionnelle'} })}}
+														{%endif%}
+										        	</div>
+										        	<div class="col-md-3">
+										                <span class="form-text m-b-none text-navy">Outlook <span class="text-danger">*</span></span>
+										                {% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}
+														{{ form_widget(form.daterevue, { 'attr': {'class': 'VarDateRevue Off'} })}}
+														{%else%}
+														{{ form_widget(form.daterevue, { 'attr': {'class': 'VarDateRevue'} })}}
+														{%endif%}
+										            </div>
+										            <div class="col-md-3">
+										                <span class="form-text m-b-none text-navy">Réelle</span>
+										        		{% if form.vars.value.fini is defined and form.vars.value.fini ==1 %}
+														{{ form_widget(form.datereelle, { 'attr': {'class': 'VarDateReelle On'} })}}
+														{%else%}
+														{{ form_widget(form.datereelle, { 'attr': {'class': 'VarDateReelle Off'} })}}
+														{%endif%}
+										        	</div>
+									            </div>
+									            <span class="text-danger"><small>* information obligatoire</small></span>			
+								            </div>
+						            	</div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-white" data-dismiss="modal">Retour</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+	<script>
+		$(document).ready(function() {
+				
+			$.fn.modal.Constructor.prototype.enforceFocus = function() {};			
+			$('#action_datefin').change(function() {$('#action_datefinrevue').val($(this).val());});
+			
+			CKEDITOR.replace( 'action_commentaire' );
+			CKEDITOR.replace( 'action_description' );
+			/*$('.VarDesignation').keyup(function () {updateDesignation();});*/
+			/*$('.VarResponsable').on('change', function() {updateResponsable();});*/
+			$('.VarBudget').keyup(function () {updateBudget();});
+			$('.VarEtp').keyup(function () {updateETP();});
+			$('.VarProgression').keyup(function () {updateProgression();});
+			$('.VarDateDebut').keyup(function () {updateDateDebut();});
+			$('.VarDateprevisionnelle').keyup(function () {updateDatePrevi();});
+			$('.VarDateRevue').keyup(function () {updateDateRevue();});
+			$('.VarDateReelle').keyup(function () {updateDateReelle();});
+
+			//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+			
+			$('.Off').prop('readonly', true);
+			
+			var tablejalon = $('#dataTables-jalon').DataTable({
+				stateSave: false,
+                responsive: false,
+                autoWidth: false,
+                paging:   false,
+		        info:     false,
+		        bFilter: false,
+                dom: '<"html5buttons"B>lTfgitp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-jalon',visible: false, searchable: false	},
+	             ],
+                buttons: [
+                    {
+		                extend: 'excelHtml5',
+		                title: 'MAPSI {{app.user.customer.designation}} ACT-{{ action.id }} {{ action.designation }}',
+		                exportOptions: {
+		                    columns: [ 0, 1, 2, 4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ]
+		                }
+		            },
+                    {extend: 'pdf', title: 'MAPSI {{app.user.customer.designation}} ACT-{{ action.id }} {{ action.designation }}',exportOptions: {
+		                    columns: [ 0, 1, 2, 4, 8, 9, 12, 13, 16 ]
+		                }
+		             },
+                    {extend: 'print',
+	                    title: 'MAPSI {{app.user.customer.designation}} ACT-{{ action.id }} {{ action.designation }}',
+	                    exportOptions: {
+		                    columns: [ 0, 1, 2, 4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ]
+		                },
+                     customize: function (win){
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ],
+            });
+				
+                $(document).on("click","#add-jal",function(e){
+				const index1 =$('#action_jalonConnectActions div').length;
+				var counter = index1+100;
+				const tmpl =$('#action_jalonConnectActions').data('prototype').replace(/__name__/g, counter);
+				$('#action_jalonConnectActions').append(tmpl);
+				
+
+				$('.VarEtp').keyup(function () {updateETP();});
+				$('.VarBudget').on('change', function () {updateBudget();});
+				$('.VarProgression').on('change', function () {updateProgression();});
+				$('.VarDateDebut').keyup(function () {updateDateDebut();});
+				$('.VarDateprevisionnelle').keyup(function () {updateDatePrevi();});
+				$('.VarDateRevue').on('change', function () {updateDateRevue();});
+				$('.VarDateReelle').keyup(function () {updateDateReelle();});
+				$('.Off').prop('readonly', true);	
+				hidedatefin ();
+				tablejalon.row.add( $('<tr id=\"ablock_action_jalonConnectActions_'+counter+'\">'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td class=\"table-title nav\"><a href=\"\" data-toggle=\"modal\" data-target=\"#block_action_jalonConnectActions_'+counter+'\"><span id="desiaction_jalonConnectActions_'+counter+'_jalon">Nouveau jalon ID</span></a></td>'+
+		            '<td><small>Enregistrer la fiche action pour valider les mises à jour des jalons</small></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td><button id=\"btnGroupDrop'+counter+'\" type=\"button\" class=\"btn btn-outline-secondary btn-sm dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\"><i class=\"fa fa-wrench\"></i></button><div class=\"dropdown-menu btn-sm\" aria-labelledby=\"btnGroupDrop1\"><a href="#block_action_jalonConnectActions_'+counter+'" data-toggle=\"modal\" data-target=\"#block_action_jalonConnectActions_'+counter+'\" id=\"desiaction_jalonConnectActions_'+counter+'_jalon\" class=\"dropdown-item\" >Modifier</a><a class=\"dropdown-item\" data-action=\"delete\" data-target=\"block_action_jalonConnectActions_'+counter+'\"> Supprimer</a></div></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		            '<td></td>'+
+		          '</tr>'
+		        ) ).draw();
+		        
+			        $('.VarDesignation').on('change', function() {
+						var jal = this.id;
+						   $('#desi'+jal).text($(this).val());
+					})
+				   	
+				   	$('.VarResponsable').on('change', function() {
+					   var jalresp = this.id;
+						   $('#resp'+jalresp).text($(this).children("option:selected").text());
+					})	        
+				});	
+				
+			$(document).on('click','a[data-action="delete"]',function(e){				
+				const target = this.dataset.target;
+				console.log(target);
+				$.confirm({
+				     title: 'Attention',
+					    content: 'Voulez vous vraiment supprimer cet élément ?',
+					    buttons: {
+					        supprimer: function () {
+					           $('#'+target).remove();
+					           tablejalon.row( $('#a'+target) )
+					           .remove()
+							   .draw();
+								updateETP();
+								updateBudget();
+								updateProgression();
+								updateDateDebut();
+								updateDatePrevi();
+								updateDateRevue();
+								updateDateReelle();
+					        },
+					        annuler: function () {
+					        }    
+					    }
+						
+					});
+				});
+			
+        });										                
+			
+		
+	
+		function hidedatefin () {
+	        $('input[data-action="show"]').on('click', function () {
+		        var pureid = this.id.replace('action_jalonConnectActions_',''); var pureid = pureid.replace('_fini','');
+	            if ($(this).prop('checked')) {
+		            
+		            const target = this.dataset.target;
+					$.confirm({
+					     title: 'Confirmation',
+						    content: 'Finaliser un jalon et un livrable nécessite une progression à 100% et une date de fin.<br><br>Voulez vous continuer ?',
+						    buttons: {
+						        confirmer: function () {
+						          $('input[id="action_jalonConnectActions_'+pureid+'_datereelle"]').prop('readonly', false);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_daterevue"]').prop('readonly', true);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_datedebut"]').prop('readonly', true);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_date"]').prop('readonly', true);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_progression"]').prop('readonly', true);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_budget"]').prop('readonly', true);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_etp"]').prop('readonly', true);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_progression"]').val('100');
+						          $('.panelaction_jalonConnectActions_'+pureid).addClass("panel-success");
+						          updateProgression()
+						          updateDateReelle()
+						        },
+						        annuler: function () {
+							        $('input[id="action_jalonConnectActions_'+pureid+'_fini"]').prop('checked', false)
+							         $('input[id="action_jalonConnectActions_'+pureid+'_datereelle"]').prop('readonly', true);
+						        }    
+						    }
+					});
+	            } else {
+		            const target = this.dataset.target;
+					$.confirm({
+					     title: 'Confirmation',
+						    content: 'Voulez vous réouvrir ce jalon / livrable ?',
+						    buttons: {
+						        confirmer: function () {
+							      $('input[id="action_jalonConnectActions_'+pureid+'_datereelle"]').val('');  
+						          $('input[id="action_jalonConnectActions_'+pureid+'_datereelle"]').prop('readonly', true);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_daterevue"]').prop('readonly', false);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_datedebut"]').prop('readonly', false);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_date"]').prop('readonly', false);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_progression"]').prop('readonly', false);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_budget"]').prop('readonly', false);
+						          $('input[id="action_jalonConnectActions_'+pureid+'_etp"]').prop('readonly', false);
+						          $('.panelaction_jalonConnectActions_'+pureid).removeClass("panel-success");
+						          updateDateReelle()
+						          updateProgression()
+						        },
+						        annuler: function () {
+							        $('input[id="action_jalonConnectActions_'+pureid+'_fini"]').prop('checked', true)
+							         $('input[id="action_jalonConnectActions_'+pureid+'_datereelle"]').prop('readonly', false);
+						        }    
+						    }
+					});
+	            }
+	        });
+	    };
+	    hidedatefin ();
+
+		$('.VarDesignation').on('change', function() {
+			var jal = this.id;
+			console.log ('yes '+jal);
+			   $('#desi'+jal).text($(this).val());
+			})
+		
+		$('.VarResponsable').on('change', function() {
+		   var jalresp = this.id;
+			   $('#resp'+jalresp).text($(this). children("option:selected"). text());
+		})
+		
+		$('.VarProgression').on('change', function() {
+		   jalprog = this.id;
+			   $('#prog'+jalprog).html('<span id=\"progaction_jalonConnectActions_'+jalprog+'_progression\"><small>Progression : '+$(this).val()+'%</small><div class=\"progress progress-mini\"><div style=\"width: '+$(this).val()+'%;\" class=\"progress-bar\"></div></div></span>'
+		        );
+		})
+		
+		$('.VarDateRevue').on('change', function() {
+		   var jaldate = this.id;
+			   $('#date'+jaldate).text(moment($(this).val()).format("DD MMM YYYY"));
+		})
+		
+		function updateETP() {
+			var sum = 0;
+			$('.VarEtp').each(function() {
+				sum += Number($(this).val().replace(",", "."), 10);
+			 	});
+		    $('#action_etp').val(sum).css("background-color", "#FFCA3A");
+			$('#etpshow').text(sum+' j/h');
+		}
+		
+		function updateBudget() {
+		    var sum = 0;
+		    $('.VarBudget').each(function() {
+		        sum += Number($(this).val());
+		        });
+		    $('#action_budget').val(sum).css("background-color", "#FFCA3A");
+		    $('#budgetshow').text(sum+' €');
+		}
+		
+		function updateProgression() {    
+		    var sum = 0;
+		    var count = 0;
+		    var jalprog
+		    $('.VarProgression').each(function() {
+		        sum += Number($(this).val());
+		        count += 1; 
+		        if ( (jalprog=='')) {}
+				else {$('#resp'+jalprog).text($(this).val());}
+		        });
+		        if ( (sum==0) && (count==0) ) {avg =0}
+				else {avg = sum / count;}
+			var avg = Math.round(avg);	
+		    $('#action_progression').val(avg).css("background-color", "#FFCA3A");
+		    $('#barprogressionshow').html('<div style=\"width: '+avg+'%;\" class=\"progress-bar progress-bar-striped progress-bar-animated\"></div>');
+		    $('#progressionshow').text(avg+'%');
+		}
+		function updateDateDebut() {
+		   var min = '';
+			$('.VarDateDebut').each(function() {
+			  var value = $(this).val();
+			  min = (value < min) ? value : min;
+			});
+			$('#action_datedebut').val(min).css("background-color", "#FFCA3A");
+			var min = new Date(min);
+			var min = moment(min).format("DD MMM YYYY");
+			$('#datedebutshow').text(min);
+		}
+		function updateDatePrevi() {
+		   var max = '';
+			$('.VarDateprevisionnelle').each(function() {
+			  var value = $(this).val();
+			  max = (value > max) ? value : max;
+			});
+			$('#action_datefin').val(max).css("background-color", "#FFCA3A");
+			var max = new Date(max);
+			var max = moment(max).format("DD MMM YYYY");
+			$('#datefinshow').text(max);
+		}
+		function updateDateRevue() {
+		   var max = '';
+			$('.VarDateRevue').each(function() {
+			  var value = $(this).val();
+			  max = (value > max) ? value : max;
+			});
+			$('#action_datefinrevue').val(max).css("background-color", "#FFCA3A");
+			var max = new Date(max);
+			var max = moment(max).format("DD MMM YYYY");
+			$('#datefinrevueshow').text(max);
+		}
+		function updateDateReelle() {
+		   var max = '';
+			$('.VarDateReelle').each(function() {
+			  var value = $(this).val();
+			  max = (value > max) ? value : max;
+			});
+			$('#action_datefinreelle').val(max).css("background-color", "#FFCA3A");
+			var max = new Date(max);
+			var max = moment(max).format("DD MMM YYYY");
+			$('#datefinreelleshow').text(max);
+		}
+		
+	/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+
+	</script>
+{% endblock %}
+
+

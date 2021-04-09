@@ -1,0 +1,450 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formAspectenv  _self %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-8">
+            {% if editMode %}
+			<h2>Suivi des aspects environnementaux (AES)</h2>
+			{% else %}
+			<h2>Créer un nouvel AES</h2>
+			{% endif %} 
+            <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+				<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+				</svg> Retour vers {{ rr }}
+			</a> 
+        </div>
+        <div class="col-sm-4">
+            <div class="title-action">
+               
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+{{ form_start(formAspectenv) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouvel AES
+									{% else %}
+									AES-{{ aspectenv.id }} {{ aspectenv.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Etat :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(aspectenv) %}<strong>{{ workflow_metadata(aspectenv, 'title', place) ?: ''}}</strong>{% endfor %}
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if aspectenv.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : aspectenv.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ aspectenv.responsable.firstname | default("") }} {{ aspectenv.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if aspectenv.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : aspectenv.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ aspectenv.suppleant.firstname | default("") }} {{ aspectenv.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in aspectenv.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ aspectenv.publishedat | date("d M Y")  }} par {{ aspectenv.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                   <dd class="mb-1">Passé en {% for place in workflow_marked_places(aspectenv) %} {{ workflow_metadata(aspectenv, 'title', place)|lower ?: ''}}{% endfor %} le {{ aspectenv.validatedat | date("d M Y")  }} par {{ aspectenv.validator.firstname | default("n/c") }} </dd>
+									{% set rolep = "" %}
+									{% for people in aspectenv.peoples %}{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}{% endfor %}
+									{% set roles = "" %}{% if aspectenv.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% set roler = "" %}{% if aspectenv.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% for transition in workflow_transitions(aspectenv) %}
+										{% if workflow_can(aspectenv, transition.name) %}
+											{% if workflow_metadata(aspectenv, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(aspectenv, 'ambiance', transition)}} btn-xs adisab" href="{{path('aspectenv_workflow', {
+												'id' : aspectenv.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(aspectenv, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No aspectenvs available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+                    </div>
+<br><br>
+					
+					
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#relations"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+									
+									{% if editMode %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#files"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-files-o"></i>
+												</span>
+											</a>
+										</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#commentaire"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+		                            <div id="information" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAspectenv.activites, 'Activités') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAspectenv.activites)}}</div>
+											</div>
+
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formAspectenv.typeaspectenv, 'Aspect environnemental') }}</strong></label>
+												<div class="col-sm-7">{{ form_widget(formAspectenv.typeaspectenv)}}</div>
+											</div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label"><strong>{{ form_label(formAspectenv.designation, 'Designation') }}</strong></label>
+												<div class="col-sm-7">{{ form_widget(formAspectenv.designation)}}</div>
+												<div class="col-sm-3">{{ form_widget(formAspectenv.criticite)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAspectenv.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAspectenv.description)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formAspectenv.responsable)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formAspectenv.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formAspectenv.peoples)}}</div>
+										            </div>
+										        </div>
+										    </div>
+
+                                            <div class="hr-line-dashed"></div>
+
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label"><strong>Impacts</strong> <button type='button' id="add-aesim" class="btn btn-outline-success btn-xs">+</button><br>
+												<small>
+												Mesurer les impacts de vos aspects environnementaux significatifs</small>
+												</label>
+													<div class="col-sm-10">{{ form_widget(formAspectenv.impacts) }}</div>
+										    </div>
+											
+	
+						
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formAspectenv.Actions, 'Actions correctives') }}</label>
+												<div class="col-sm-10">{{ form_widget(formAspectenv.Actions)}}</div>
+											</div>	
+												
+		                                </div>
+		                            </div>
+									 <div id="relations" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Relations</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+									
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+									{% if editMode %}
+		                             <div id="files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Environnement', 'entryprefix': 'AES', 'entryid': aspectenv.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+									{% endif %}
+		                            <div id="commentaire" class="tab-pane">
+		                                <div class="panel-body">
+			                                
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formAspectenv.commentaire)}}
+											       
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formAspectenv) }}
+{% endblock %}
+
+
+{% block _aspect_env_impacts_widget %}
+		{{ form_widget(form)}}
+{% endblock %}
+{% block _aspect_env_impacts_entry_widget %}
+	<div class="row impact" id="block_{{id}}">
+		<div class="col-md-11">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-6"><span class="form-text m-b-none text-navy">Désignation de l'impact</span>{{ form_widget(form.designation)}}</div>
+						<div class="col-md-6"><span class="form-text m-b-none text-navy">Situation évaluée</span>{{ form_widget(form.typesituation)}}</div>
+                        
+					</div>
+                    <br>
+                    <div class="row">
+                        <div class="col-md-3"><span class="form-text m-b-none text-navy">Criticité</span>{{ form_widget(form.criticite)}}</div>
+						<div class="col-md-3"><span class="form-text m-b-none text-navy">&nbsp;</span>{{ form_widget(form.critere)}}</div>
+
+					</div>
+                    <br>
+					<div class="row">
+                        <div class="col-md-3">
+                            <span class="form-text m-b-none text-navy">Gravité</span>{{ form_widget(form.gravite, {'attr': {'class':"range gravite"}})}}
+                        </div>
+                        <div class="col-md-3">
+                            <span class="form-text m-b-none text-navy">Probabilité</span>{{ form_widget(form.probabilite, {'attr': {'class':"range"}})}}
+                        </div>
+                        <div class="col-md-3">
+                            <span class="form-text m-b-none text-navy">Sensibilité de l'environnement</span>{{ form_widget(form.sensibilite, {'attr': {'class':"range"}})}}
+                        </div>
+                        <div class="col-md-3">
+                            <span class="form-text m-b-none text-navy">Maitrise</span>{{ form_widget(form.maitrise, {'attr': {'class':"range"}})}}
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <span class="form-text m-b-none text-navy">Description</span>{{ form_widget(form.description)}}
+                        </div>
+                    </div>
+      
+				</div>
+			</div>
+		</div>
+		<div class="col-md-1">
+			{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+				<button type="button" data-action="delete" data-target="#block_{{id}}" id="del" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>
+			{% endif %}
+		</div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+
+	
+	<script>
+		$(document).ready(function() {
+
+		});
+
+
+        function score() {
+			var sum = 0;
+		    var count = 0;
+			jQuery.each( $( ".impact" ), function( i )
+			 {
+			var pureid = this.id.replace('aspect_env_impacts_',''); var pureid = pureid.replace('block_','');
+			var gravite = $('#aspect_env_impacts_'+pureid+'_gravite').val();
+			var probabilite = $('#aspect_env_impacts_'+pureid+'_probabilite').val();
+			var sensibilite = $('#aspect_env_impacts_'+pureid+'_sensibilite').val();
+			var maitrise = $('#aspect_env_impacts_'+pureid+'_maitrise').val();
+			var scoring = gravite * probabilite * sensibilite / maitrise
+			if (scoring==0) {}
+			else {
+			sum += scoring;
+		    count += 1;
+			}
+			console.log(pureid + ' ' + scoring);
+
+			
+			var color = "#1b998b";
+			if ((scoring < '50')) {var colorcible = "#1b998b"; var colortxtcible = "#000"; var crit = "Peu important";}
+			else if ((scoring >='50') && (scoring < '249')) {var colorcible = "#ffe156"; var colortxtcible = "#000"; var crit = "Important";}
+			else if ((scoring >='249') && (scoring < '500')) {var colorcible = "#F69D5C"; var colortxtcible = "#fff"; var crit = "Très important";}
+			else if ((scoring >='500') && (scoring < '1000')) {var colorcible = "#ed5861"; var colortxtcible = "#fff"; var crit = "Inacceptable";}
+			else if (scoring >='1000') {var colorcible = "#623b5a"; var colortxtcible = "#fff"; var crit = "Extrème";}
+			else {var color = "#1b998b";}
+			$('#aspect_env_impacts_'+pureid+'_criticite').val(scoring).css("background-color", colorcible);
+			$('#aspect_env_impacts_'+pureid+'_criticite').val(scoring).css("color", colortxtcible);
+			$('#aspect_env_impacts_'+pureid+'_critere').val(crit);
+			});
+
+			if ( (sum==0) && (count==0) ) {avg =0}
+			else {avg = sum / count;}
+			var avg = Math.round(avg);
+			var color = "#1b998b";
+			if ((avg < '50')) {var colorcible = "#1b998b"; var colortxtcible = "#000"; var crit = "Peu important";}
+			else if ((avg >='50') && (avg < '249')) {var colorcible = "#ffe156"; var colortxtcible = "#000"; var crit = "Important";}
+			else if ((avg >='249') && (avg < '500')) {var colorcible = "#F69D5C"; var colortxtcible = "#fff"; var crit = "Très important";}
+			else if ((avg >='500') && (avg < '1000')) {var colorcible = "#ed5861"; var colortxtcible = "#fff"; var crit = "Inacceptable";}
+			else if (avg >='1000') {var colorcible = "#623b5a"; var colortxtcible = "#fff"; var crit = "Extrème";}
+			else {var color = "#1b998b";}
+			$('#aspect_env_criticite').val(avg).css("background-color", colorcible);
+			$('#aspect_env_criticite').val(avg).css("color", colortxtcible);;
+        }
+
+		function rangeSlider() {
+        //range slider
+        $(".range").ionRangeSlider({
+        min: 0,
+        max: 15,
+        grid: true,
+        step: 1,
+        onFinish: function () {score();}
+        });
+		 }
+
+		//Ajout / Supp. des impacts
+		$('#add-aesim').click(function(){
+			const index =$('#aspect_env_impacts div.row').length;
+			const tmpl =$('#aspect_env_impacts').data('prototype').replace(/__name__/g, index);
+		
+			$('#aspect_env_impacts').append(tmpl);
+			$('select').select2()
+            rangeSlider();
+			handleDeleteButtons();
+			score();
+		});
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+				score();
+			});
+		}
+		handleDeleteButtons();
+		score();
+		rangeSlider();
+
+
+        
+	</script>
+	
+{% endblock %}
+
+

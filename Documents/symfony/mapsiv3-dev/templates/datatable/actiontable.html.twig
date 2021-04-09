@@ -1,0 +1,193 @@
+<div class="row">
+	<div class="col-lg-12">
+        <form class="form-inline" role="form">
+        <div id="buttondt-action" style="margin-right:8px">
+        </div>
+        <button type="button" class="btn btn-default m-r-sm">
+        Qté <span class="badge badge-light rowcounttot-action"></span>
+        <span class="sr-only">Toutes les entrées de la base pour cette entité</span>
+        </button>
+        <button type="button" class="btn btn-default m-r-sm">
+        Visible <span class="badge badge-light rowcountview-action"></span>
+        <span class="sr-only">Identifie le nombre de lignes visibles</span>
+        </button>
+        <button type="button" class="btn btn-default m-r-sm">
+        Sélect. <span class="badge badge-light rowcountselect-action">0</span>
+        <span class="sr-only">Identifie le nombre de ligne sélectionnées</span>
+        </button>
+        <div class="input-group">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-addon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                    </span>
+                </div>
+                <input type="text" id="searchdt-action" name="searchdt" class="form-control">
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+<table class="hover table table-bordered  dataTables-action" >
+    <thead>
+    <tr>
+        <th scope="col" class="export pdf" style="width:80px">Etat</th>
+        <th scope="col">Désignation</th>
+        <th scope="col">Managers</th>
+        <th scope="col">Progression</th>
+        <th scope="col export">Statut</th>
+        <th scope="col" class="export">Budget</th>
+        <th scope="col">Tâches</th>
+        <th scope="col" class="export pdf">Fin revue</th>
+        <th scope="col" class="no-show export pdf">Fin revue</th>
+        <th scope="col" class="no-sort" style="width:60px"></th>
+        <th scope="col" class="no-show export pdf">Désignation</th>
+        <th scope="col" class="no-show export pdf">Progression</th>
+        <th scope="col" class="no-show export pdf">Responsable</th>
+        <th scope="col" class="no-show export">Suppleant</th>
+        <th scope="col" class="no-show export">Nb jalons</th>
+        <th scope="col" class="no-show export">Jalons</th>
+        <th scope="col" class="no-show export">Budget</th>
+        <th scope="col" class="no-show export">J/H</th>
+        <th scope="col" class="no-show export"></th>
+    </tr>
+    </thead>
+    <tbody>
+        {% set sumbudgettot = 0 %}
+        {% set sumetptot = 0 %}
+    {% for action in actions | sortbyfield('datefin') %}
+            <tr>
+                <td class="text-center">
+                    <span class="badge">
+                        {% for place in workflow_marked_places(action) %}
+                            <strong>{{ workflow_metadata(action, 'title', place) ?: ''}}</strong>
+                        {% endfor %}
+                    </span>
+                </td>
+                <td class="table-title" scope="row">
+                    <a class="" href="{{path('action_edit',{'slug' : action.slug, 'id' : action.id, 'r' : r, 'rr' : rr} ) }}">{{ action.designation }}</a> 
+                    <span class="badge badge-secondary small">AC-{{ action.id }}</span><br>
+                    <small>PROJ{{ action.projet.id | default("N/C")  }}-{{ action.projet.designation | default("N/C")  }}</small>
+                </td>
+                <td scope="row"><b>{{ action.responsable.firstname | default("N/C")  }} {{ action.responsable.lastname | default("")  }}</b><br>
+                    {{ action.suppleant.firstname | default("N/C")  }} {{ action.suppleant.lastname | default("")  }}
+                </td>
+                <td scope="row" class="project-completion" data-order="{{ action.progression }}">
+                    <small>Progression : {{ action.progression | round | default("0")  }}%</small>
+                        <div class="progress progress-mini">
+                            <div style="width: {{ action.progression | round | default("0")  }}%;" class="progress-bar"></div>
+                        </div>
+                </td>
+                <td scope="row">
+                    {% set statutaction = "" %}
+                    {% set statutclass = "" %}
+                    {% for jalon in action.jalonConnectActions %}
+                        {% if jalon.progression==100 %}
+                        {% set statutaction = "Terminé" %}
+                        {% set statutclass = "badge badge-success small" %}
+                        {% elseif jalon.progression == 0 and jalon.responsable is null %}
+                        {% set statutclass = "badge small" %}
+                        {% set statutaction = "Non démarré" %}
+                        {% elseif jalon.progression < 100 and jalon.daterevue > jalon.date %}
+                        {% set difference = date(jalon.daterevue).diff(date(jalon.date)) %}
+                        {% set leftDays = difference.days %}
+                        {% set statutclass = "badge badge-warning small" %}
+                        {% set statutaction = "En cours !" %}
+                        {% else %}
+                        {% set statutclass = "badge badge-primary small" %}
+                        {% set statutaction = "En cours" %}
+                        {% endif %}
+                    {% endfor %}
+                    <span class="{{ statutclass }}">
+                        {{ statutaction}}
+                    </span>
+                </td>
+                <td scope="row"> 
+                    {% set budget = 0 %}
+                    {% for b in action.jalonConnectActions %}
+                        {% set budget = budget + b.budget %}
+                    {% endfor %}
+                    {{ budget | number_format(0, '.', ' ') | default("") }} €
+                </td>
+                <td scope="row" data-order="{{ action.jalonConnectActions | length  }}">
+                    <a  tabindex="0"
+                        role="button" 
+                        id="jalon{{ action.id }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-trigger="focus"
+                        data-title="" 
+                        data-content="
+                            <ul class='list-group'>
+                            {% for jalon in action.jalonConnectActions %}
+                                <li class='list-group-item list-group-item-primary'><span class='small'><a  class='text-secondary' href='{{path('tache_edit',{'id' : jalon.id, 'r' : app.request.get('_route'), 'rr' : conformite })}}'> 
+                                {{ jalon.date | date('M Y')  }} > {{ jalon.jalon | default('')  }}</a> {% if jalon.fini ==1 %} <i class='fa fa-check'></i>{% endif %}</span></li>							
+                            {% endfor %}
+                            </ul">
+                        <span class="badge"><strong>{{ action.jalonConnectActions | length  }}</strong></span>
+                    </a>
+                </td>
+                <td>
+                    {{ action.datefinrevue | date("d M Y") }}
+                    {% set difference = date(action.datefinrevue ).diff(date(action.datefin)) %}
+                    {% set delayDays = difference.days %}
+                    {% if delayDays > 0 %}<br><small><strong>({{ delayDays }} jours de retard)</strong></small>{% endif %}
+                </td>
+                <td>
+                    {{ action.datefinrevue | date("d M Y") }}
+                </td>
+                
+                <td data-order="{{ action.PublishedAt | date("Ymd")}}" class="text-center">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('action_edit',{'slug' : action.slug, 'id' : action.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('action_remove',{'slug' : action.slug, 'id' : action.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                        <a class="dropdown-item">
+                            <small>Modifiée le {{ action.PublishedAt | date("d M Y")}}</small>
+                            <small> {% set today = "now"|date("Y/m/d") %}
+                            {% set difference = date(action.PublishedAt).diff(date(today)) %}
+                            {% set leftDays = difference.days %}
+                            {% if leftDays >= 180 and leftDays < 360 %}
+                            <small class="text-warning">({{ leftDays }}j)</small>
+                            {% elseif leftDays >= 360 %}
+                                <small class="text-danger">({{ leftDays }}j)</small>
+                            {% else %}
+                                <small>({{ leftDays }}j)</small>
+                            {% endif %}
+                            <br>par {{action.publisher.firstname | default("") }} {{ action.publisher.lastname | default("") }}</small>
+                        </a>
+                    </div>
+                </td>
+                <td>{{ action.designation | default("N/C")  }}</td>                
+                <td>{{ action.progression | round | default("0")  }}%</td>
+                <td>{{ action.responsable.firstname | default("")  }} {{ action.responsable.lastname | default("")  }}</td>
+                <td>{{ action.suppleant.firstname | default("")  }} {{ action.suppleant.lastname | default("")  }}</td>
+                <td>{{ action.jalonConnectActions | length  }}</td>
+                
+                <td>{% for jalon in action.jalonConnectActions %}
+                        {{ jalon.date | date('M Y')  }} {{ jalon.jalon | default('')  }}<br>								
+                    {% endfor %}
+                </td>
+                <td>
+                    {% set sumbudget = 0 %}
+                        {% set sumbudgettot = action.budget + sumbudget %}							
+                        {{ sumbudgettot }}
+                </td>
+                <td>{% set sumetp = 0 %}
+                        {% set sumetptot = action.etp + sumetp %}							
+                        {{ sumetptot }}
+                </td>
+                <td>{{ action.publishedat | date("d/m/Y")  }}</td>
+            </tr>
+    {% endfor %}
+    </tbody>
+</table>

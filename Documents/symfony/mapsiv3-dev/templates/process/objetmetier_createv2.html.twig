@@ -1,0 +1,224 @@
+{% extends 'baseform.html.twig' %}
+
+{% form_theme formObjetMetier _self %}
+
+{% block body %}
+	{{ form_start(formObjetMetier) }}
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="ibox" id="printed">
+					<div class="ibox-content">
+						<div class="row">
+							<div class="col-lg-4">
+								<h1>
+								{% if not editMode %}
+								Nouveau objet metier
+								{% else %}
+								Objet Metier
+								{% endif %}
+								</h1>
+							</div>
+							<div class="col-lg-8">
+                                <span class="float-right">
+									{{ include('mod/edit-buttons.html.twig', {entname : 'objet_metier', entid : objetmetier.id }) }}
+								</span>
+								
+									
+								
+							</div>
+						</div>
+						
+						<div class="row">
+							
+							<div class="col-lg-12">
+								<div class="row">
+									<div class="col-lg-12">
+										<br>
+										<div class="form-group row">
+                                            <label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-10">{{ form_widget(formObjetMetier.designation)}}</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-5">
+												{{ form_widget(formObjetMetier.responsable)}}<small id="" class="form-text text-muted">Responsable</small>
+												{{ form_widget(formObjetMetier.suppleant)}}<small id="" class="form-text text-muted">Suppléant</small>
+												{{ form_widget(formObjetMetier.redacteur)}}<small id="" class="form-text text-muted">Rédacteur</small>
+											</div>
+											<div class="col-sm-5">{{ form_widget(formObjetMetier.peoples)}}<small id="" class="form-text text-muted">Contributeurs</small></div>
+											
+										</div>
+								
+										<div class="row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-10 align-middle">Maj le {{ objetmetier.publishedat | date("d M Y")  }} par {{ objetmetier.Publisher.firstname | default("n/c") }}</div>
+										</div>
+										<div class="row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-8 text-sm-left">
+												{{ include('mod/edit-workflow.html.twig', {ent : objetmetier, entname : 'objet_metier', entid : objetmetier.id }) }}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<br><br>
+					
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="tabs-container">
+                                    <ul class="nav nav-tabs noprint">
+                                   
+                                        <li>
+                                        <a class="nav-link active show" data-toggle="tab" href="#information"> 
+                                                <span style="font-size: 18px;">
+                                                    <i class="fa fa-info-circle"></i>
+                                                </span>
+                                            </a>
+                                        </li>
+                                        {% if editMode %}
+                                        <li>
+                                            <a class="nav-link" data-toggle="tab" href="#files"> 
+                                                <span style="font-size: 18px;">
+                                                    <i class="fa fa-files-o"></i>
+                                                </span>
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                        <li>
+                                            <a class="nav-link" data-toggle="tab" href="#commentaire"> 
+                                                <span style="font-size: 18px;">
+                                                    <i class="fa fa-pencil-square-o"></i>
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content">
+                                        
+                                        <div id="information" class="tab-pane active show">
+                                            <div class="panel-body">
+                                                <div class="row">
+                                                    <div class="col-md-12"><h3>Informations générales</h3></div>
+                                                </div>
+                                               
+                                                <div class="form-group  row">
+                                                    <label class="col-sm-2 col-form-label"><strong>{{ form_label(formObjetMetier.description, 'Description') }}</strong></label>
+                                                    <div class="col-sm-10">{{ form_widget(formObjetMetier.description)}}</div>
+                                                </div>
+                                               
+                                                
+                                                <div class="hr-line-dashed"></div>
+                                                
+                                                
+                                                <div class="form-group  row">
+                                                    <label class="col-sm-2 col-form-label"><strong>{{ form_label(formObjetMetier.datas, 'Données associées') }}</strong>
+                                                    <br><small>Sélectionnez les données personnelles contenues dans cet objet</small>
+                                                    </label>
+                                                    <div class="col-sm-10">{{ form_widget(formObjetMetier.datas)}}</div>
+                                                </div>
+                                                
+                                                <div class="hr-line-dashed"></div>
+                                                
+                                                <div class="form-group  row">
+                                                    <label class="col-sm-2 col-form-label"><strong>{{ form_label(formObjetMetier.fluxes, 'Flux / Traitement') }}</strong>
+                                                    <br><small>Quels sont les traitements de données qui utilisent cet objet ?</small>
+                                                    </label>
+                                                    <div class="col-sm-10">{{ form_widget(formObjetMetier.fluxes)}}</div>
+                                                </div>
+                                                
+                                                <div class="hr-line-dashed"></div>
+                                                
+                                                <div class="form-group row {% if app.user.customer.dpo == app.user.people or is_granted('ROLE_ADMIN')  %}{% else %}d-none{% endif %}"><label class="col-sm-2 col-form-label"><strong>Diagnostic RGPD</strong></label>
+                                                    <div class="col-sm-10">
+                                                        <div class="row">
+                                                            <div class="col-md-4"><span class="form-text m-b-none text-navy">DCP</span>{{ form_widget(formObjetMetier.dcp)}}</div>
+                                                            <div class="col-md-4"><span class="form-text m-b-none text-navy">Sensible</span>{{ form_widget(formObjetMetier.dcpsensible)}}</div>
+                                                            <div class="col-md-4"><span class="form-text m-b-none text-navy">Statut RGPD</span>{{ form_widget(formObjetMetier.statutrgpd)}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="hr-line-dashed"></div>
+                                                                        
+                                                <div class="form-group row">
+                                                    <label class="col-sm-2 col-form-label">
+                                                    <strong>Support et stockage</strong>
+                                                    </label>
+                                                    <div class="col-sm-10">
+                                                        <div class="row">
+                                                            <div class="col-md-6"><span class="form-text m-b-none text-navy">Support</span>{{ form_widget(formObjetMetier.type)}}</div>
+                                                            <div class="col-md-6"><span class="form-text m-b-none text-navy">Application</span>{{ form_widget(formObjetMetier.applications)}}</div>
+                                                            
+                                                            <div class="col-md-6"><span class="form-text m-b-none text-navy">Echange</span>{{ form_widget(formObjetMetier.typesupport)}}</div>
+                                                            <div class="col-md-6"><span class="form-text m-b-none text-navy">Mesures de prévention / détection</span>{{ form_widget(formObjetMetier.mesuresprev)}}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="files" class="tab-pane noprint">
+                                            <div class="panel-body">
+                                                <div class="row">
+                                                    <div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+                                                </div>
+                                                <br>			                                
+                                                <div class="form-group row">				
+                                                    <div class="col-sm-12">
+														<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'customername':app.user.customer.designation,  'bigentity': 'Objets métiers', 'entryprefix': 'OM', 'entryid': objetmetier.id, 'entryname': objetmetier.designation}}) }}" width="100%" height="500" frameborder="0"></iframe>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="commentaire" class="tab-pane">
+                                            <div class="panel-body">
+                                                <div class="row">
+                                                    <div class="col-md-12"><h3>Notes</h3></div>
+                                                </div>
+                                                <br>			                                
+                                                <div class="form-group row">				
+                                                    <div class="col-sm-12">
+                                                        {{ form_widget(formObjetMetier.commentaire)}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+							</div>
+						</div>						
+					</div>
+				</div>
+			</div>
+		</div>
+
+    {{ form_end(formObjetMetier) }}
+{% endblock %}
+
+
+
+
+	
+{% block javascripts %}
+
+	<script>
+
+	$(document).ready(function() {		
+		
+        
+		
+
+
+        
+	});	
+
+
+			
+		
+	</script>
+	
+{% endblock %}
+	
+
+
+

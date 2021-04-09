@@ -1,0 +1,43 @@
+<table class="compact table table-bordered dataTables-miniaction" >
+    <thead>
+        <tr>
+            <th scope="col">Désignation</th>
+            <th scope="col">Progression</th>
+            <th scope="col">Jalon</th>
+            <th scope="col">Manager</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for action in actions if action.progression != 100 %}
+        <tr>
+            <td class="table-title" scope="row">
+                <span class="badge badge-secondary small">AC-{{ action.id }}</span> <a class="" href="{{path('action_edit',{'slug' : action.slug, 'id' : action.id, 'r' : r, 'rr' : rr} ) }}">{{ action.designation }}</a></td>
+            <td scope="row" class="project-completion" data-order="{{ action.progression }}">
+                <small>Progression : {{ action.progression | round | default("0")  }}%</small>
+                    <div class="progress progress-mini">
+                        <div style="width: {{ action.progression | round | default("0")  }}%;" class="progress-bar"></div>
+                    </div>
+            </td>
+            <td scope="row" data-order="{{ action.jalonConnectActions | length  }}">
+                <a  tabindex="0"
+                    role="button" 
+                    id="jalon{{ action.id }}"
+                    data-container="body" 
+                    data-toggle="popover"
+                    data-placement="bottom" 
+                    data-html="true"
+                    data-trigger="focus"
+                    data-title="{{ action.designation }}" 
+                    data-content="
+                        {% for jalon in action.jalonConnectActions %}
+                            <span class='small'><b>{% if jalon.fini ==1 %} <i class='fa fa-check'></i>{% endif %} {{ jalon.date | date('M Y')  }}</b> {{ jalon.jalon | default('N/C')  }}</span><br>								
+            {% endfor %}">
+                    {{ action.jalonConnectActions | length  }} tâche{% if action.jalonConnectActions | length > 1 %}s{% endif %}
+                </a>
+            </td>
+                
+            <td scope="row"><b>{{ action.responsable.firstname | default("N/C")  }} {{ action.responsable.lastname | default("")  }}</b>																							    </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+	<article>
+			<h1>Applications </h1>
+			<h2>{{ application.designation }}</h2>
+			<div class="metadata">
+				Créé le {{ application.PublishedAt | date('d/m/y')}}
+				 par {{ application.manager.firstname }} {{ application.manager.lastname }} dans la catégorie 
+				 {{ application.typeappli.designation }}
+				 
+			</div>
+			<div class="content">
+				{{ application.description | raw }}
+			</div>
+			 <a class="btn btn-success" href="{{path('appli_edit',{'id' : application.id} ) }}">Modifier</a>
+	</article>
+	
+{% endblock %}

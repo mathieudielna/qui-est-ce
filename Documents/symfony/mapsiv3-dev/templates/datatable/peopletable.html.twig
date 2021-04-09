@@ -1,0 +1,61 @@
+<table class="hover table table-bordered dataTables-people" >
+    <thead>
+        <tr>
+            <th scope="col">Nom</th>
+            <th scope="col">Site</th>
+            <th scope="col">Utilisateur</th>
+            <th scope="col">Activités</th>
+            <th scope="col">Flux</th>
+            <th scope="col">Actions</th>
+            <th scope="col" class="no-sort"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for people in peoples %}
+        <article>
+            <tr>
+                <td  class="table-title"  scope="row" data-order="{{ people.lastname }}">
+                    <strong><a href="{{path('people_edit',{'id' : people.id} ) }}">{{ people.firstname | default("") }} {{ people.lastname | default("") }}</a></strong><br>
+                    {{ people.metier.designation | default("") }} ({{ people.metier.code| default("") }}) - {{ people.role | default("") }}
+                    <small><span class="badge badge-secondary small">COL-{{ people.id }}</span></small> 
+                </td>
+                <td scope="row">{{ people.site.designation | default("") }}</td>
+                <td scope="row">{% if people.user is not null%}
+                <svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-person-check-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm9.854-2.854a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                </svg>
+                {% endif %}</td>
+                <td><span class="badge badge-primary">{{ people.activites|length }}</span></td>
+                <td><span class="badge badge-primary">{{ people.fluxsresponsable|length }}</span></td>
+                <td><span class="badge badge-primary">{{ people.actionsresponsable|length }}</span></td>
+                <td data-order="{{ people.PublishedAt | date("Ymd")}}">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('people_edit',{'id' : people.id} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                        <a class="dropdown-item del" href="{{path('people_remove',{'id' : people.id} ) }}"> Supprimer</a>
+                        {% endif %}
+                        <a class="dropdown-item">
+                            <small>Modifiée le {{ people.PublishedAt | date("d M Y")}}</small>
+                            <small> {% set today = "now"|date("Y/m/d") %}
+                            {% set difference = date(people.PublishedAt).diff(date(today)) %}
+                            {% set leftDays = difference.days %}
+                            {% if leftDays >= 180 and leftDays < 360 %}
+                            <small class="text-warning">({{ leftDays }}j)</small>
+                            {% elseif leftDays >= 360 %}
+                                <small class="text-danger">({{ leftDays }}j)</small>
+                            {% else %}
+                                <small>({{ leftDays }}j)</small>
+                            {% endif %}
+                            <br>par {{people.publisher.firstname | default("") }} {{ people.publisher.lastname | default("") }}</small>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </article>
+    {% endfor %}
+    
+    </tbody>
+</table>

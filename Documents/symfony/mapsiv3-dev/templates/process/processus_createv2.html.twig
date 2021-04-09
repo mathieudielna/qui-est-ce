@@ -1,0 +1,353 @@
+{% extends 'baseform.html.twig' %}
+
+{% form_theme formProcessus _self %}
+
+{% block body %}
+	{{ form_start(formProcessus) }}
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="ibox" id="printed">
+					<div class="ibox-content">
+						<div class="row">
+							<div class="col-lg-6">
+								<h2>
+								{% if not editMode %}
+								Créer un processus
+								{% else %}
+								P-{{ processus.createdat | date("Y")  }}-{{ processus.id }}
+								{% endif %}
+								</h2>
+							</div>
+							<div class="col-lg-6">
+								<span class="float-right">
+									{{ include('mod/edit-buttons.html.twig', {entname : 'processus', entid : processus.id }) }}
+								</span>
+							</div>
+						</div>
+						
+						<div class="row">
+							
+							<div class="col-lg-12">
+								<div class="row">
+									<div class="col-lg-12">
+										<br>
+										<div class="form-group row">
+											<div class="col-sm-2">{{ form_widget(formProcessus.code)}}</div>
+											<div class="col-sm-10">{{ form_widget(formProcessus.designation)}}</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-5">
+												{{ form_widget(formProcessus.responsable)}}<small id="" class="form-text text-muted">Responsable</small>
+												{{ form_widget(formProcessus.suppleant)}}<small id="" class="form-text text-muted">Suppléant</small>
+												{{ form_widget(formProcessus.redacteur)}}<small id="" class="form-text text-muted">Rédacteur</small>
+											</div>
+											<div class="col-sm-5">{{ form_widget(formProcessus.peoples)}}<small id="" class="form-text text-muted">Contributeurs</small></div>
+											
+										</div>
+								
+										{% if editMode %}
+										<div class="row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-8 text-sm-left">
+												{{ include('mod/edit-workflow.html.twig', {ent : processus, entname : 'processus', entid : processus.id }) }}
+											</div>
+										</div>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						</div>
+						<br><br>
+					
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="tabs-container">
+									<ul class="nav nav-tabs">
+										<li>
+											<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-info-circle"></i>
+												</span>
+											</a>
+										</li>
+										{% if editMode %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#docs"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-files-o"></i>
+												</span>
+											</a>
+										</li>
+										{% endif %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#comment"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-pencil-square-o"></i>
+												</span>
+											</a>
+										</li>
+									</ul>
+									
+									<div class="tab-content">
+										
+										<div id="introduction" class="tab-pane active show">
+											<div class="panel-body">
+												<div class="row">	
+													<div class="col-sm-12">
+													
+														<h2>Description</h2>
+						
+														{% set dcp = "" %}
+														{% for activite in processus.activites %}
+															{% for flux in activite.fluxConnectActivites %}
+															{% set dcp = 'RGPD' %}
+															{% endfor %}
+														{% endfor %}
+														<span class="badge badge-{% if dcp == 'RGPD' %}warning{% else %}gray{% endif %}">{{ dcp }}</span>
+
+														{% set minDima = 1000 %}
+															{% set desiDima = "NC" %}
+															{% set colorDima = "NC" %}
+															{% for activite in processus.activites %}
+																{% if activite.dima1.dureeheure is defined %}
+																	{% set minDima = min(activite.dima1.dureeheure, minDima) %}
+																	{% if activite.dima1.dureeheure == minDima %}
+																		{% set desiDima = activite.dima1.designation %}
+																		{% set colorDima = activite.dima1.color %}
+																	{% endif %}
+																{% endif %}
+															{% endfor %}
+															<span class="badge {{colorDima}}">
+																DIMA {{desiDima | default("N/C")}}
+															</span>
+														{% set minPdma = 1000 %}
+														{% set desiPdma = "NC" %}
+														{% set colorPdma = "NC" %}
+														{% for activite in processus.activites %}
+															{% if activite.Pdma1.dureeheure is defined %}
+																{% set minPdma = min(activite.pdma1.dureeheure, minPdma) %}
+																{% if activite.pdma1.dureeheure == minPdma %}
+																	{% set desiPdma = activite.pdma1.designation %}
+																	{% set colorPdma = activite.pdma1.color %}
+																{% endif %}
+															{% endif %}
+														{% endfor %}
+														<span class="badge {{colorPdma}}">
+															PDMA {{desiPdma | default("N/C")}}
+														</span>
+														
+														<br><br>
+
+														<div class="form-group">
+															{{ form_widget(formProcessus.typeprocessus)}}
+															<small id="" class="form-text text-muted">{{ form_label(formProcessus.typeprocessus, 'Type de processus') }}</small>
+														</div>
+														<div class="form-group">
+															{{ form_widget(formProcessus.metier)}}
+															<small id="" class="form-text text-muted">Métier de rattachement</small>
+														</div>
+														<br>
+														<div class="form-group">
+															<span class="form-text m-b-none">{{ form_label(formProcessus.description, 'Description') }}</span>
+															{{ form_widget(formProcessus.description)}}
+															<small id="" class="form-text text-muted"></small>
+														</div>
+														<div class="form-group">
+															<span class="form-text m-b-none">{{ form_label(formProcessus.finalite, 'Finalité') }}</span>
+															{{ form_widget(formProcessus.finalite)}}
+														</div>
+														<div class="form-group">
+															<span class="form-text m-b-none">{{ form_label(formProcessus.pilotage, 'Pilotage') }}</span>
+															{{ form_widget(formProcessus.pilotage)}}
+															
+														</div>
+													</div>
+													<div class="col-lg-12">
+														<h2>Relations</h2>
+														<div class="row">
+															<div class="col-lg-12">	
+																<div class="form-group">
+																	<span class="form-text m-b-none">Quelles sont les activités du processus ?</span>
+																	{{ form_widget(formProcessus.activites)}}
+																	<small id="" class="form-text text-muted">{{ form_label(formProcessus.activites, 'Activités') }}</small>
+																</div>
+																<div class="form-group">
+																	<span class="form-text m-b-none">Quelles sont les risques du processus ?</span>
+																	{{ form_widget(formProcessus.risques)}}
+																	<small id="" class="form-text text-muted">{{ form_label(formProcessus.risques, 'Risques') }}</small>
+																</div>
+																<div class="form-group">
+																	<span class="form-text m-b-none">Quelles sont les actions du processus ?</span>
+																	{{ form_widget(formProcessus.actions)}}
+																	<small id="" class="form-text text-muted">{{ form_label(formProcessus.actions, 'Actions') }}</small>
+																</div>
+
+																{% if processus.activites|length  >= 1 %}
+																<div class="form-group row">
+																	<div class="col-lg-12">
+																		{% set count = 0 %}
+																		{% for activite in processus.activites %}
+																			{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																				{% if fluxConnectActivite.flux.objetmetiers and fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 1 %}
+																				{% set count = count + 1 %}
+																				{% endif %}
+																			{% endfor %}
+																		{% endfor %}
+																		<span class="form-text m-b-none">Données d'entrée</span>
+																		{% set handledOm = [] %}
+																		<ul class="tag-list" style="padding: 0">
+																		{% for activite in processus.activites %}
+																			{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																				{% for om in fluxConnectActivite.flux.objetmetiers if fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 1 and om not in handledOm %}
+																					{% for o in fluxConnectActivite.flux.objetmetiers if o.id == om.id and o not in handledOm %}
+																						{% set handledOm = handledOm|merge([o]) %}
+																						<small>
+																							<li>
+																								<a class="btn btn-w-m btn-default btn-xs">{{ om.designation }}</a>
+																							</li>
+																						</small>
+																					{% endfor %}
+																				{% endfor %}
+																			{% endfor %}
+																		{% endfor %}
+																		</ul>
+																		
+																	</div>
+																	{% endif %}
+
+																	{% if processus.activites|length  >= 1 %}
+																	
+																	<div class="col-lg-12">
+																		{% set count = 0 %}
+																		{% for activite in processus.activites %}
+																			{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																				{% if fluxConnectActivite.flux.objetmetiers and fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 1 %}
+																				{% set count = count + 1 %}
+																				{% endif %}
+																			{% endfor %}
+																		{% endfor %}
+																		<span class="form-text m-b-none">Données de sortie</span>
+																		{% set handledOm = [] %}
+																		<ul class="tag-list" style="padding: 0">
+																		{% for activite in processus.activites %}
+																			{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																				{% for om in fluxConnectActivite.flux.objetmetiers if fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 2 and om not in handledOm %}
+																					{% for o in fluxConnectActivite.flux.objetmetiers if o.id == om.id and o not in handledOm %}
+																						{% set handledOm = handledOm|merge([o]) %}
+																						<small>
+																							<li>
+																								<a class="btn btn-w-m btn-default btn-xs">{{ om.designation }}</a>
+																							</li>
+																						</small>
+																					{% endfor %}
+																				{% endfor %}
+																			{% endfor %}
+																		{% endfor %}
+																		</ul>
+																	</div>
+																</div>
+																{% endif %}
+															
+																<br>
+																<h2>Objectifs {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type='button' id="add-objectif" class="btn btn-primary btn-sm">+</button>{% endif %}</h2>
+																<div class="form-group row">
+																	<div class="col-sm-12">{{ form_widget(formProcessus.objectifs) }}</div>
+																</div>
+															</div>
+														</div>	
+													</div>
+												</div>
+											</div>
+										</div>
+									
+
+										{% if editMode %}
+										<div id="docs" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'customername':app.user.customer.designation,  'bigentity': 'Processus', 'entryprefix': 'P', 'entryid': processus.id, 'entryname': processus.designation}}) }}" width="100%" height="500" frameborder="0"></iframe>
+													</div>
+												</div>
+											</div>
+										</div>
+										{% endif %}
+										<div id="comment" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Notes</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														{{ form_widget(formProcessus.commentaire)}}
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>						
+					</div>
+				</div>
+			</div>
+		</div>
+
+    {{ form_end(formProcessus) }}
+{% endblock %}
+
+{% block _processus_objectifs_widget %}
+		{{ form_widget(form)}}
+{% endblock %}
+
+{% block _processus_objectifs_entry_widget %}
+    <div class="row card" id="block_{{id}}">
+		<div class="col-sm-12 card-body">	
+			<div class="form-group row">
+				<div class="col-md-6">{{ form_widget(form.designation)}}</div>
+				<div class="col-md-4">{{ form_widget(form.valeurcible)}}</div>
+				<div class="col-md-2">{{ form_widget(form.type)}}</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-md-6">{{ form_widget(form.responsable)}}</div>
+				<div class="col-md-5">{{ form_widget(form.typeconformites)}}</div>
+				<div class="col-1">{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-objectif" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+
+
+	
+{% block javascripts %}
+
+	<script>
+
+	$(document).ready(function() {		
+		
+        
+		
+
+
+        
+	});	
+
+
+			
+		
+	</script>
+	
+{% endblock %}
+	
+
+
+

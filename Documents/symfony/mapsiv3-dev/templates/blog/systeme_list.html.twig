@@ -1,0 +1,400 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<style type="text/css">
+        #mynetworksys {
+            width: 100%;
+            height: 650px;
+            border: 1px solid lightgray;
+        }
+    </style>
+{% endblock %}
+
+{% block header %}
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    <h2>Systèmes ({{ systemes|length }})</h2>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{path('start')}}">Mapsi</a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <strong><a>Systèmes</a></strong>
+                        </li>
+                    </ol>
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-action">
+	                    {% if is_granted('ROLE_ADMIN') %}
+                        <a class="btn btn-primary" href="{{path('systeme_create')}}">+ Nouveau système</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+{% block body %}
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+		                <li><a class="nav-link active show" data-toggle="tab" href="#tab-1"> Architecture SI</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#tab-2"> Liste</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#tab-3"> KPI</a></li>
+	                </ul>
+	                <div class="tab-content">
+		                <div role="tabpanel" id="tab-1" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<div id="mynetworksys"></div>
+										<div class="hr-line-dashed"></div>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="tab-2" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<section class="systeme">							
+											<div class="table-responsive">
+												<table class="table table-striped table-bordered table-hover dataTables-systeme" >
+													<thead>
+													    <tr>
+													      <th scope="col">ID</th>
+													      <th scope="col">Désignation</th>
+													      <th scope="col">Role</th>
+													      <th scope="col">Etat</th>
+													      <th scope="col">Responsable</th>
+													      <th scope="col">Srv Hote</th>
+													      <th scope="col">Type de Plate Forme</th>
+													      <th scope="col">Type de système</th>
+													      <th scope="col">Systèmes connexes</th>
+													      <th scope="col">DIMA / RT0</th>
+													      <th scope="col">PDMA / RPO</th>
+													      <th scope="col">Applications</th>
+													      <th scope="col">Localisation</th>
+													      <th scope="col">MaJ</th>
+													      {% if is_granted('ROLE_ADMIN') %}<th scope="col">Action</th>{% endif %}
+													    </tr>
+													</thead>
+													<tbody>
+													  	{% for systeme in systemes %}
+															<article>
+																<tr>
+																  <th scope="row" data-order="{{ systeme.id }}"><span class="badge badge-secondary">SYS-{{ systeme.id }}</span></th>
+															      <th scope="row"><a class="" href="{{path('systeme_edit',{'id' : systeme.id} ) }}">{{ systeme.designation|upper }}</a></th>
+															      <td>{{ systeme.role | default("N/C")  }}</td>
+															      <td>{{ systeme.statut.designation | default("N/C")  }}</td>
+															      <td scope="row">{{ systeme.responsable.firstname | default("N/C") }} {{ systeme.responsable.lastname | default("N/C") }}</td>
+															      <td scope="row">{{ systeme.srvhote.designation | default("Non") }}</td>
+															      <td scope="row">{{ systeme.plateforme.designation | default("N/C") }}
+																      <h6>
+																  {% if systeme.plateforme.designation is defined %}
+																	  {% if systeme.plateforme.designation =="x86-64" %}
+																	  {{ systeme.modele | default("N/C") }}<br>
+																	  {{ systeme.processeur | default("N/C") }}<br>
+																	  RAM : {{ systeme.ram | default("N/C") }}<br>
+																	  HDD : {{ systeme.partitionnement | default("N/C") }}
+																	  
+																	  {% elseif systeme.plateforme.designation =="VM" %}
+																	   {{ systeme.modele | default("N/C") }}<br>
+																	  {{ systeme.processeur | default("N/C") }}<br>
+																	  RAM : {{ systeme.ram | default("N/C") }}<br>
+																	  HDD : {{ systeme.partitionnement | default("N/C") }}
+																	  {% endif %}
+																{% endif %}
+																      </h6>
+															      </td>
+															      <td scope="row">{{ systeme.typesysteme.designation | default("N/C") }}</td>
+															      <td><small class="badge badge-{% if systeme.systemeconnexes|length > 0 %}primary{% else %}gray{% endif %}"><i class="fa fa-server"></i>  {{ systeme.systemeconnexes|length }}</small>						<h6>
+															      	{% for systemeconnexe in systeme.systemeconnexes %}
+															        {{ systemeconnexe.designation | default("N/C") }}<br>
+															        {% endfor %}
+															      </h6>
+															      </td>
+															      
+															      <td scope="row">
+															      
+															      	{% set minDima = 1000 %}
+													                {% set desiDima = "N/C" %}
+													                {% set colorDima = "N/C" %}
+																	{% for application in systeme.applications %}
+																	{% for activite in application.appConnectActivites %}
+																	{% if activite.dima.dureeheure is not defined %}
+																		{% else %}
+																	    {% set minDima = min(activite.dima.dureeheure, minDima) %}
+																	    {% if activite.dima.dureeheure == minDima %}
+																		    {% set desiDima = activite.dima.designation %}
+																		    {% set colorDima = activite.dima.color %}
+																	    {% endif %}
+																	    {% endif %}
+																	{% endfor %}
+																    {% endfor %}
+																    <span class="badge {{colorDima}}">
+											                            {{desiDima | default("N/C")}}
+											                        </span>
+															      
+															      </td>
+															      <td scope="row">
+																    {% set minPdma = 1000 %}
+																	{% set desiPdma = "NC" %}
+																	{% set colorPdma = "NC" %}
+																	{% for application in systeme.applications %}
+																	{% for activite in application.appConnectActivites %}
+																	{% if activite.pdma.dureeheure is not defined %}
+																		{% else %}
+																		{% set minPdma = min(activite.pdma.dureeheure, minPdma) %}
+																	   	{% if activite.pdma.dureeheure == minPdma %}
+																		    {% set desiPdma = activite.Pdma.designation %}
+																		    {% set colorPdma = activite.Pdma.color %}
+																    {% endif %}
+																    {% endif %}
+																	{% endfor %}
+																	{% endfor %}
+																    <span class="badge {{colorPdma}}">
+											                            {{desiPdma | default("N/C")}}
+											                        </span> 
+																      
+															      </td>
+															      <td><small class="badge badge-{% if systeme.applications|length > 0 %}primary{% else %}gray{% endif %}"><i class="fa fa-desktop"></i>  {{ systeme.applications|length }}</small>							<h6>
+															      	{% for application in systeme.applications %}
+															        {{ application.designation | default("N/C") }}<br>
+															        {% endfor %}
+															      	</h6>
+															      </td>
+															      <td scope="row">{{ systeme.localisation.designation | default("N/C") }}</td>
+															      <td data-order="{{ systeme.PublishedAt | date("Y/m/d")}}">{{ systeme.PublishedAt | date("d/m/Y")}}</td>
+															      {% if is_granted('ROLE_ADMIN') %}<td><a class="btn btn-danger btn-sm del" href="{{path('systeme_remove',{'id' : systeme.id} ) }}"><i class="fa fa-trash"></i></a></td>{% endif %}
+															      
+															    </tr>	
+															</article>
+														{% endfor %}
+													</tbody>
+												</table>
+											</div>
+										</section>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="tab-3" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<div class="row">
+						                    <div class="col-lg-3">
+							                    <div class="panel panel-default">
+			                                        <div class="panel-heading">
+			                                           <h5>Indicateurs clés</h5>
+			                                        </div>
+			                                        <div class="panel-body">
+														<table class="table table-stripped small">
+						                                    <tbody>
+						                                    <tr>
+						                                        <td class="no-borders">
+						                                            <i class="fa fa-circle text-navy"></i>
+						                                        </td>
+						                                        <td class="no-borders">
+						                                           {{ systemes|length }} systèmes
+						                                        </td>
+						                                    </tr>
+						                                    <tr>
+						                                        <td>
+						                                            <i class="fa fa-circle text-navy"></i>
+						                                        </td>
+						                                        <td>
+						                                            {{ applications|length }} applications associées
+						                                        </td>
+						                                    </tr>
+						                                    </tbody>
+						                                </table>			                                        
+													</div>
+			                                    </div>
+											</div>
+						                    <div class="col-lg-9">
+							                    <div class="panel panel-default">
+				                                    <div class="panel-heading">
+				                                        <h5>Répartition par type</h5>
+				                                    </div>
+				                                    <div class="panel-body">
+														<div id=""><canvas id="myChart"></canvas></div>				                                        
+				                                    </div>
+							                    </div>
+						                    </div>
+						              
+						                </div>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                </div>
+				</div>
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+
+	        $('a.del').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous vraiment supprimer cet système ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+	        
+	        	        
+            $('.dataTables-systeme').DataTable({
+	            
+                pageLength: 50,
+                responsive: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'Systemes'},
+                    {extend: 'pdf', title: 'Systeme'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ]
+
+            });
+            
+
+
+        var ctx = document.getElementById('myChart');
+		var myChart = new Chart(ctx, {
+		    type: 'pie',
+		    data: {
+		        labels: [
+		        {% for typesysteme in typesystemes %}
+		        	'{{ typesysteme.designation }}',
+		        	{% endfor %}
+		        	],
+		        
+		        datasets: [{
+			        
+		            label: '# de type',
+		            data: [
+		                
+					    {% for typesysteme in typesystemes %}
+					    {% set count = 0 %}
+						    {% for systeme in systemes %}
+						    {% if systeme.typeSysteme == typesysteme %}
+								{% set count = count + 1 %}
+							
+							{% endif %}
+						    {% endfor %}
+						    {{ count }},
+						{% endfor %}
+		            ],
+		            fill : false,
+		            borderWidth: 1
+		        }]
+		    },
+		    options: {
+			    plugins: {
+			        labels: [
+					    {
+					      render: 'label',
+					      position: 'outside'
+					    },
+					    {
+					      render: 'value'
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    }
+  			}
+		});
+		
+		///////////// CARTO SYSTEMES
+         var nodes = [
+			    {% for systeme in systemes %}
+					    {id: {{ systeme.id }}, label: '{{ systeme.designation }}', shape: 'icon',
+					    {% if systeme.typesysteme.code is defined and systeme.typesysteme.code == 'ROUT' %}icon: {face: 'FontAwesome', code: '\uf0b2', size: 50, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'PCUT' %}icon: {face: 'FontAwesome', code: '\uf108', size: 20, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'FIRE' %}icon: {face: 'FontAwesome', code: '\uf06d', size: 50, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVS' %}icon: {face: 'FontAwesome', code: '\uf0a0', size: 40, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'TELE' %}icon: {face: 'FontAwesome', code: '\uf098', size: 30, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'CLOU' %}icon: {face: 'FontAwesome', code: '\uf0c2', size: 80, color: '#57169a'},
+					    {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVI' %}icon: {face: 'FontAwesome', code: '\uf233', size: 50, color: '#57169a'},
+					    {% else %}icon: {face: 'FontAwesome', code: '\uf233', size: 20, color: '#57169a'},{% endif %}  
+					    url: '{{path('systeme_edit',{'id' : systeme.id} ) }}'}, 
+		        {% endfor %}
+		    ];
+		
+		    // create an array with edges
+		    var edges = [
+			    {% for systeme in systemes %}
+			        {% for hos in systeme.host %}
+			        		{from: {{ systeme.id }}, to: {{ hos.id }} },
+			        {% endfor %}
+		        {% endfor %}
+		    ];
+		
+		    // create a network
+		    var container = document.getElementById('mynetworksys');
+		
+		    // provide the data in the vis format
+		    var data = {
+		        nodes: nodes,
+		        edges: edges
+		    };
+		   var options = {
+			  "edges": {
+			    "smooth": {
+			      "forceDirection": "none",
+			      "roundness": 0.2
+			    }
+			  },
+			  "physics": {
+			    "forceAtlas2Based": {
+			      "springLength": 100
+			    },
+			    "maxVelocity": 40,
+			    "minVelocity": 0.3,
+			    "solver": "forceAtlas2Based",
+			    "timestep": 0.40
+			  }
+			}
+
+		    var network = new vis.Network(container, data, options);
+			        
+	        network.on("selectNode", function (params) {
+			if (params.nodes.length === 1) {
+            var node = nodes.get(params.nodes[0]);
+            window.open(node.url, '_self');
+		        }
+		    });
+
+
+	});
+
+ </script>
+{% endblock %}

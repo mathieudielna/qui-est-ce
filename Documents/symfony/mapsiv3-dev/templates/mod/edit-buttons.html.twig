@@ -1,0 +1,18 @@
+        <button type='button'  class="btn btn-secondary btn-outline btn-sm noprint" onclick="leaveEntity('{{entname}}')"><i class="bi bi-box-arrow-left" style="position: relative; top: -2px;left: -1px;"></i>  Quitter</button>
+{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+    <button type='submit' class="btn btn-primary btn-sm noprint disab" data-id="{{ entid }}" onclick="submitAjax({{ entid | default("undefined") }},'{{entname}}')">
+        {% if editMode %}
+        <i class="bi bi-save2" style="position: relative; top: -2px;left: -1px;"></i> Enregistrer
+        {% else %}
+        <i class="bi bi-save2" style="position: relative; top: -2px;left: -1px;"></i> Ajouter
+        {% endif %}
+    </button>
+    <span class="dropdown">
+    <button class="btn btn-secondary btn-outline dropdown-toggle btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="" data-id="{{ entid }}" onclick="deleteEntity({{ entid | default("undefined") }},'{{entname}}')"><i class="bi bi-trash text-danger" style="position: relative; top: -2px;left: -1px;"></i> Supprimer</a>
+        
+    </div>
+    </span>
+{% endif %}

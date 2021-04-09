@@ -1,0 +1,111 @@
+<table class="hover table table-bordered dataTables-projet" >
+    <thead>
+        <tr>
+            <th scope="col" class"export pdf">Etat</th>
+            <th scope="col" class"export pdf">Désignation</th>
+            <th scope="col" class"export pdf">Progression</th>
+            <th scope="col" class"export pdf">Statut</th>
+            <th scope="col" class"export pdf">Action</th>
+            <th scope="col" class"export pdf">Pilotage</th>
+            <th scope="col" class="no-sort"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for projet in projets %}
+        <article>
+            <tr>
+                <td>
+                    <span class="badge">
+                        {% for place in workflow_marked_places(projet) %}
+                            <strong>{{ workflow_metadata(projet, 'title', place) ?: ''}}</strong>
+                        {% endfor %}
+                    </span>
+                </td>
+                <td class="table-title" scope="row" data-order="{{ projet.id }}">
+                    <a class="" href="{{path('projet_edit',{'id' : projet.id, 'r' : 'portfolio_list', 'rr' : 'SI'} ) }}">{{ projet.designation }}</a> 
+                        <br><span class="badge badge-secondary small">PROJ-{{ projet.id }}</span>  {{ projet.code }}
+                        
+                </td>
+                
+                <td>
+                    {% set sumratings = 0 %}
+                    {% for action in projet.actions if action.id is defined %}																																					
+                    {% set sumratings = sumratings + action.progression %}
+                    {% endfor %}
+                    {% if projet.actions|length >0  %}
+                        {% set sumratings = sumratings / projet.actions|length %}
+                        {% endif  %}
+                    <small>Progression : {{  sumratings | number_format(0, '.', ' ') }}%</small>
+                        <div class="progress progress-mini">
+                            <div style="width: {{  sumratings | number_format(0, '.', ' ') }}%;" class="progress-bar"></div>
+                        </div>
+                </td>
+                <td>
+                    {% set statut = "Terminé" %}
+                    {% set badgec = " badge-primary" %}
+                    {% for action in projet.actions if action.progression != 100 %}																																					
+                    {% set statut = "En cours" %}{% set badgec = " badge-primary" %}
+                    {% endfor %}
+                    {% if projet.actions  | length < 1 %}{% set statut = "Non démarré" %}{% set badgec = "" %}{% endif %}
+                    <span class="badge{{ badgec }}">{{ statut }}</span>
+                </td>
+                
+                <td scope="row">
+                    <a  tabindex="1"
+                        id="action{{ projet.id }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        role="button" 
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-title="" 
+                        data-trigger="focus" 
+                        data-content="
+                            {% set maxValue3 = 0 %}
+                            {% for action in projet.actions %}
+                                {% if action.datefinrevue is defined and action.datefinrevue is not null  %}
+                                    {% set maxValue3 = max(action.datefinrevue|date("Y-m-d"), maxValue3) %}
+                                {% endif %}
+                                <span class='small'><b>{{ maxValue3 | date('M Y') }}</b> {{ action.designation | default('N/C')  }}</span><br>					
+                            {% endfor %}">
+                            <b>
+                                
+                            </b> {{ projet.actions | length  }} action{% if projet.actions | length > 1 %}s{% endif %}
+                    </a>
+                </td>
+            
+                    <td scope="row"><b>{{ projet.metier.code | default("N/C") }}</b> - {{ projet.responsable.firstname | default("")  }} {{ projet.responsable.lastname | default("")  }}
+                </td>
+        
+            
+                <td data-order="{{ projet.PublishedAt | date("Ymd")}}">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('projet_edit',{'slug' : projet.slug, 'id' : projet.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('projet_remove',{'slug' : projet.slug, 'id' : projet.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                        <a class="dropdown-item">
+                            <small>Modifiée le {{ projet.PublishedAt | date("d M Y")}}</small>
+                            <small> {% set today = "now"|date("Y/m/d") %}
+                            {% set difference = date(projet.PublishedAt).diff(date(today)) %}
+                            {% set leftDays = difference.days %}
+                            {% if leftDays >= 180 and leftDays < 360 %}
+                            <small class="text-warning">({{ leftDays }}j)</small>
+                            {% elseif leftDays >= 360 %}
+                                <small class="text-danger">({{ leftDays }}j)</small>
+                            {% else %}
+                                <small>({{ leftDays }}j)</small>
+                            {% endif %}
+                            <br>par {{projet.publisher.firstname | default("") }} {{ projet.publisher.lastname | default("") }}</small>
+                        </a>
+                    </div>
+                </td>
+            
+            </tr>
+        </article>
+        {% endfor %}
+    </tbody>
+</table>

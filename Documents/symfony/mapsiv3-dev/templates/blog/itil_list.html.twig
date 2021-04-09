@@ -1,0 +1,136 @@
+{% extends 'basev2.html.twig' %}
+
+{% block stylesheets %}
+	<style type="text/css">
+    </style>
+{% endblock %}
+
+{% block headertitle %}
+   ITIL
+{% endblock %}	
+{% block headercreate %}
+{% endblock %}
+
+
+
+
+{% block body %}
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+		                <li><a class="nav-link active show" data-toggle="tab" href="#dashboard"> Dashboard</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#incidents"> Incidents</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#problemes"> Problémes</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#changement"> Changements</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#mep"> Mises en production</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#configurations"> Configurations</a></li>
+	                </ul>
+	                <div class="tab-content">
+	                    <div role="tabpanel" id="IT Dashboard" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="incidents" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="problemes" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="changements" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="mep" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="configurations" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+											
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+	                </div>
+				</div>
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+<script>
+	$(document).ready(function(){
+
+        });
+
+        /// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+</script>
+
+    
+{% endblock %}

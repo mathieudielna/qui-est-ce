@@ -1,0 +1,125 @@
+<table class="hover table table-bordered dataTables-jalon" >
+    <thead>
+            <tr>
+                <th class="no-show export">ID</th>
+                <th class="export">Etat</th>
+                <th class="export pdf">Désignation</th>
+                <th class="no-show export">Action</th>
+                <th class="export pdf">Responsable</th>
+                <th class="export pdf">Progression</th>
+                <th class="export pdf">Statut</th>
+                <th class="export">Météo</th>
+                <th class="export">Top jalon</th>
+                <th class="export">Budget</th>
+                <th class="export">J/H</th>
+                <th class="export">Date début</th>
+                <th class="export">Date fin initiale</th>
+                <th class="export pdf">Date fin revue (Outlook)</th>
+                <th class="export">Date fin réelle</th>
+                <th class="no-sort"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for jalon in jalons %}
+                <tr>
+                    <th data-order="{{jalon.id}}">
+                    
+                        T-{{jalon.id}} 
+                    </th>
+                    <td>
+                        {% for place in workflow_marked_places(jalon) %}<strong>{{ workflow_metadata(jalon, 'title', place) ?: ''}}</strong>{% endfor %}
+                    </td>
+                    <td class="table-title nav">
+                        <a class="" href="{{path('tache_edit',{'id' : jalon.id, 'r' : 'portfolio_list', 'rr' : 'SI'} ) }}">{{jalon.jalon}}
+                            <span class="badge badge-secondary small">T-{{ jalon.id }}</span>
+                            <small>Action{{ jalon.action.id | default("")  }}-{{ jalon.action.designation | default("")  }}</small><br>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        ACT-{{jalon.action.id | default("") }} 
+                        {{jalon.action.designation | default("") }}
+                    </td>
+                    <td class="table-title">
+                        <span id="respaction_jalon_{{loop.index0}}_responsable">
+                            <strong>{{ jalon.responsable.firstname | default("") }} {{ jalon.responsable.lastname | default("") }}</strong>
+                        </span>
+                    </td>
+                    <td data-order="{{  jalon.progression | default('0')| number_format(0, '.', ' ') }}">
+                        <span id="progaction_jalon_{{loop.index0}}_progression">
+                        <small>Progression : {{  jalon.progression | default("0") | number_format(0, '.', ' ') }}%</small>
+                        <div class="progress progress-mini">
+                            <div style="width: {{  jalon.progression | default('0')| number_format(0, '.', ' ') }}%;" class="progress-bar"></div>
+                        </div>
+                        </span>
+                    </td>
+                    <td>
+                        {% if jalon.progression==100 %}
+                        <span class="badge badge-success small">
+                        Terminé
+                        </span>
+                        {% elseif jalon.progression == 0 and jalon.responsable is null %}
+                        <span class="badge small">
+                        Non démarré
+                        </span>
+                        {% elseif jalon.progression < 100 and jalon.daterevue > jalon.date %}
+                        {% set difference = date(jalon.daterevue).diff(date(jalon.date)) %}
+                        {% set leftDays = difference.days %}
+                        <span class="badge badge-warning small" data-toggle="tooltip" data-placement="right" title="{{leftDays}} jours de retard">
+                        En cours (!)
+                        </span>
+                        {% else %}
+                        <span class="badge badge-primary small">
+                        En cours
+                        </span>
+                        {% endif %}
+                        
+                    </td>
+                    <td data-order="{{ jalon.rag.id | default("") }}">
+                        {% if jalon.rag is not null %}			
+                        <span class="badge {{ jalon.rag.color | default("") }}"><i class="fa {{ jalon.rag.icon | default("N/C") }}"></i></span>
+                        {% endif %}
+                    </td>
+                    <td>{% if jalon.topjalon == 1  %}
+                    
+                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-bookmark-check" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/>
+                    <path fill-rule="evenodd" d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                    </svg>
+                                                                                    
+                    {% endif %}</td>
+                    <td>{{ jalon.budget | number_format(0, '.', ' ') | default("") }} €</td>
+                    <td>{{ jalon.etp | default("") }}</td>
+                    <td data-order="{{ jalon.datedebut | date("Ymd") }}">{{ jalon.datedebut | date("d M Y") }}</td>
+                    <td data-order="{{ jalon.date | date("Ymd") }}">{{ jalon.date | date("d M Y") }}</td>
+                    <td data-order="{{ jalon.daterevue | date("Ymd") }}">{{ jalon.daterevue | date("d M Y") }}</td>
+                    <td data-order="{{ jalon.datereelle | date("Ymd") }}">{{ jalon.datereelle | date("d M Y") }}</td>
+                    <td data-order="{{ jalon.PublishedAt | date("Ymd")}}">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('tache_edit',{'slug' : jalon.slug, 'id' : jalon.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                            {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                            <a class="dropdown-item del" href="{{path('tache_remove',{'slug' : jalon.slug, 'id' : jalon.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                            {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ jalon.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(jalon.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{jalon.publisher.firstname | default("") }} {{ jalon.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+</table>

@@ -1,0 +1,72 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'objectif' }) }}
+
+<table id="dataTables-objectif" class="table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th class="export pdf" style="width:  80px">Etat</th>
+            <th class="export pdf">Désignation</th>
+            <th class="export pdf">Managers</th>
+            <th class="export pdf">Indicateur</th>
+            <th class="export pdf">Comply</th>
+            <th class="no-sort" style="width:  60px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for objectif in objectifs %}
+                <tr>
+                    <td></td>
+                    <th class="text-center"><span class="badge badge-secondary" style="background-color:{{ aspectenv.statut.color | default("N/C")}}">
+                            {{ objectif.statut | default("Brouillon")|capitalize  }}
+                        </span>
+                    </th>
+                    <td class="table-title" scope="row">
+                        <a class="" href="{{path('objectif_edit',{'slug' : objectif.slug, 'id' : objectif.id, 'r' : r, 'rr' : rr} ) }}">{{ objectif.designation }}</a> <span class="badge badge-secondary small">OBJ-{{ objectif.id }}</span>
+                        <br>
+                        <small>{% if objectif.processus.id is defined %}PROCESSUS {{ objectif.processus.id | default("")  }} - {{ objectif.processus.designation| default("")  }}{% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ objectif.responsable.firstname | default("")  }} {{ objectif.responsable.lastname | default("")  }}</strong><br>
+                        {{ objectif.suppleant.firstname | default("")  }} {{ objectif.suppleant.lastname | default("")  }}
+                    </td>
+                    <td>
+                    {% for indicateur in objectif.indicateurs | sortbyfield('PublishedAt') | slice(0, 1)  if indicateur.PublishedAt is not null %}
+                            <strong>{{ indicateur.valeur }} {{ objectif.type }}</strong> <small>(Cible {{ objectif.valeurcible }})</small>
+                    {% endfor %}<br>
+                    <span class="line">{% for indicateur in objectif.indicateurs | sortbyfield('PublishedAt') %}{{ indicateur.valeur }}{% if loop.last == false  %},{% endif%}{% endfor %}</span>
+                    </td>
+                    <td>
+                        {% for conf in objectif.typeconformite %}
+                            <small><span class="label label-primary">{{ conf.designation | default("") }}</span></small>
+                            
+                        {% endfor %}
+                    </td>
+                    <td data-order="{{ objectif.PublishedAt | date("Ymd")}}" class="text-center">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-info"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <a class="dropdown-item" href="{{path('objectif_edit',{'slug' : objectif.slug, 'id' : objectif.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                            {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                            <a class="dropdown-item del" href="{{path('tache_remove',{'slug' : objectif.slug, 'id' : objectif.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                            {% endif %}
+                            <a class="dropdown-item">
+                                <small>Modifiée le {{ objectif.PublishedAt | date("d M Y")}}</small>
+                                <small> {% set today = "now"|date("Y/m/d") %}
+                                {% set difference = date(objectif.PublishedAt).diff(date(today)) %}
+                                {% set leftDays = difference.days %}
+                                {% if leftDays >= 180 and leftDays < 360 %}
+                                <small class="text-warning">({{ leftDays }}j)</small>
+                                {% elseif leftDays >= 360 %}
+                                    <small class="text-danger">({{ leftDays }}j)</small>
+                                {% else %}
+                                    <small>({{ leftDays }}j)</small>
+                                {% endif %}
+                                <br>par {{objectif.publisher.firstname | default("") }} {{ objectif.publisher.lastname | default("") }}</small>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+        {% endfor %}
+    </tbody>
+</table>

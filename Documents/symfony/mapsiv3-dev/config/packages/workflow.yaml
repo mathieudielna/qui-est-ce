@@ -1,0 +1,1267 @@
+framework:
+    workflows:
+        flux:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Flux
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+        activite:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Activite
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+                        ambiance: 'warning'
+        processus:
+            metadata:
+                title: 'Processus Workflow'
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Processus
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+                        ambiance: 'warning'        
+        objetmetier:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\ObjetMetier
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'redacteur'
+                        ambiance: 'warning'
+        application:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Application
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                validation:
+                    metadata:
+                        title:  'Attente validation'
+                validation_ok:
+                    metadata:
+                        title:  'Valider'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        systeme:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Systeme
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                validation:
+                    metadata:
+                        title:  'Attente validation'
+                validation_ok:
+                    metadata:
+                        title:  'Valider'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        program:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Program
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                validation:
+                    metadata:
+                        title:  'Attente validation'
+                validation_ok:
+                    metadata:
+                        title:  'Valider'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        projet:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Projet
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                validation:
+                    metadata:
+                        title:  'Attente validation'
+                validation_ok:
+                    metadata:
+                        title:  'Valider'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        action:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Action
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Non démarrée'
+                        ambiance: 'secondary'
+                running:
+                    metadata:
+                        title:  'En cours'
+                        ambiance: 'primary'
+                rejected:
+                    metadata:
+                        title:  'Rejetée'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'warning'
+                validation_ok:
+                    metadata:
+                        title:  'Validée'
+                        ambiance: 'success'
+            transitions:
+                pre_running:
+                    from: draft
+                    to:   running
+                    metadata:
+                        title: 'Valider le démarrage'
+                        role: 'people'
+                        ambiance: 'success'
+                bad_running:
+                    from: running
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'Suppleant'
+                        ambiance: 'warning'
+                valid_review:
+                    from: running
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation pour cloture'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider et clôturer'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+        tache:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\JalonConnectAction
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Non démarre'
+                        ambiance: 'secondary'
+                running:
+                    metadata:
+                        title:  'En cours'
+                        ambiance: 'primary'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'warning'
+                validation_ok:
+                    metadata:
+                        title:  'Validée'
+                        ambiance: 'success'
+            transitions:
+                pre_running:
+                    from: draft
+                    to:   running
+                    metadata:
+                        title: 'Valider le démarrage'
+                        role: 'responsableprojet'
+                        ambiance: 'success'
+                bad_running:
+                    from: running
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsableaction'
+                        ambiance: 'warning'
+                valid_review:
+                    from: running
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation pour cloture'
+                        role: 'responsable'
+                        ambiance: 'success'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider et clôturer'
+                        role: 'responsableaction'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsableaction'
+                        ambiance: 'warning'
+        audit:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Audit
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        dysfonctionnement:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Dysfonctionnement
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        aspectenv:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\AspectEnv
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        visitesite:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\VisiteSite
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        objectif:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Objectif
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'
+        reclamation:
+            type: 'state_machine' 
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: single_state
+                arguments:
+                    - statut
+            supports:
+                - App\Entity\Reclamation
+            initial_marking: draft
+            places:
+                draft:
+                    metadata:
+                        title:  'Brouillon'
+                        ambiance: 'primary'
+                review:
+                    metadata:
+                        title:  'Relecture'
+                        ambiance: 'warning'
+                rejected:
+                    metadata:
+                        title:  'Rejeté'
+                        ambiance: 'danger'
+                validation:
+                    metadata:
+                        title:  'Validation'
+                        ambiance: 'info'
+                validation_ok:
+                    metadata:
+                        title:  'Validé'
+                        ambiance: 'success'
+            transitions:
+                to_review:
+                    from: draft
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'success'
+                valid_review:
+                    from: review
+                    to:   validation
+                    metadata:
+                        title: 'Demander une validation'
+                        role: 'suppleant'
+                        ambiance: 'success'
+                reject_review:
+                    from: review
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'suppleant'
+                        ambiance: 'warning'
+                valid_approve:
+                    from: validation
+                    to:   validation_ok
+                    metadata:
+                        title: 'Valider'
+                        role: 'responsable'
+                        ambiance: 'success'
+                reject_valid:
+                    from: validation
+                    to:   rejected
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_maj:
+                    from: validation_ok
+                    to:   draft
+                    metadata:
+                        title: 'Demander une mise à jour'
+                        role: 'responsable'
+                        ambiance: 'warning'
+                redo_rejected:
+                    from: rejected
+                    to:   review
+                    metadata:
+                        title: 'Demander une relecture'
+                        role: 'people'
+                        ambiance: 'warning'

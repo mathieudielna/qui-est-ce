@@ -1,0 +1,69 @@
+security:
+    encoders:
+        App\Entity\User: 
+            algorithm: bcrypt
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        in_memory: { memory: ~ }
+        in_database:
+             entity:
+                class: App\Entity\User
+                property: email
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            anonymous: true
+            
+            provider: in_database
+            
+            form_login:
+                login_path: login
+                check_path: login
+                default_target_path: /
+            
+            logout:
+                path: logout
+                target: login
+            
+            remember_me:
+                secret:   '%kernel.secret%'
+                lifetime: 604800 # 1 week in seconds
+                path:     /
+                # by default, the feature is enabled by checking a
+                # checkbox in the login form (see below), uncomment the
+                # following line to always enable it.
+                #always_remember_me: true
+            # activate different ways to authenticate
+
+            # http_basic: true
+            # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
+
+            # form_login: true
+            # https://symfony.com/doc/current/security/form_login_setup.html
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/app/activite, roles: ROLE_USER_ACTIVITE }
+        - { path: ^/app/flux, roles: ROLE_USER_FLUX }
+        - { path: ^/app/metier, roles: ROLE_USER_METIER }
+        - { path: ^/app/risque, roles: ROLE_USER_RISQUE }
+        - { path: ^/app/site, roles: ROLE_USER_SITE }
+        - { path: ^/app/people, roles: ROLE_USER_PEOPLE }
+        - { path: ^/app/qualite, roles: ROLE_USER_QUALITE }
+        - { path: ^/app/pca, roles: ROLE_USER_PCA }
+        - { path: ^/app/rgpd, roles: ROLE_USER_RGPD }
+        - { path: ^/app/processus, roles: ROLE_USER_PROCESSUS }
+        - { path: ^/app/si, roles: ROLE_USER_SI }
+        - { path: ^/app/objetmetier, roles: ROLE_USER_OBJETMETIER }
+        - { path: ^/app/tier, roles: ROLE_USER_TIER }
+        - { path: ^/app/ressource, roles: ROLE_USER_RESSOURCE }
+        - { path: ^/app/action, roles: ROLE_USER_PORTFOLIO }
+        - { path: ^/app/axe, roles: ROLE_USER_AXE }
+        - { path: ^/app/risque, roles: ROLE_USER_RISQUE }
+        - { path: ^/app, roles: ROLE_USER }
+        - { path: ^/app, roles: ROLE_ADMIN }
+        - { path: ^/app, roles: ROLE_EDITABLE }
+        

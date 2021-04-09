@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20200306141839 extends AbstractMigration
+{
+    public function getDescription() : string
+    {
+        return '';
+    }
+
+    public function up(Schema $schema) : void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+
+        $this->addSql('CREATE TABLE rgpd_violation_tier (rgpd_violation_id INT NOT NULL, tier_id INT NOT NULL, INDEX IDX_B4D65F2E85B35C4 (rgpd_violation_id), INDEX IDX_B4D65F2EA354F9DC (tier_id), PRIMARY KEY(rgpd_violation_id, tier_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('ALTER TABLE rgpd_violation_tier ADD CONSTRAINT FK_B4D65F2E85B35C4 FOREIGN KEY (rgpd_violation_id) REFERENCES rgpd_violation (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE rgpd_violation_tier ADD CONSTRAINT FK_B4D65F2EA354F9DC FOREIGN KEY (tier_id) REFERENCES tier (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE rgpd_violation ADD consequence LONGTEXT DEFAULT NULL');
+    }
+
+    public function down(Schema $schema) : void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+
+        $this->addSql('DROP TABLE rgpd_violation_tier');
+        $this->addSql('ALTER TABLE rgpd_violation DROP consequence');
+    }
+}

@@ -1,0 +1,107 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'activite' }) }}
+
+<table id="dataTables-activite" class="table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th scope="col" class="export pdf">Etat</th>
+            <th scope="col" class=" export pdf">Désignation</th>
+            <th scope="col" class=" export pdf">Processus</th>
+            <th scope="col" class=" export pdf">Managers</th>
+            <th scope="col" class=" export pdf">Relations</th>
+            <th scope="col" class=" export pdf">Comply</th>
+            <th scope="col" class="no-sort"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for activite in activites %}
+        <tr class="gradeX">
+            <td></td>
+            <td>
+                <span class="badge">
+                    {% for place in workflow_marked_places(activite) %}
+                        <strong>{{ workflow_metadata(activite, 'title', place) ?: ''}}</strong>
+                    {% endfor %}
+                </span>
+            </td>
+            <td  class="table-title"  scope="row" data-order="{{ activite.designation }}">
+                <a class="" href="{{path('activite_edit',{'id' : activite.id, 'r' : 'process_list', 'rr' : 'Process'} ) }}">{{ activite.designation }}</a> <span class="badge badge-secondary">A-{{ activite.id }}</span>
+            </td>
+            <td>{{ activite.processus.code | default("") }}.{{ activite.processus.designation | default("") }}</td>
+            <td>
+            <strong>{{ activite.responsable.firstname | default("") }} {{ activite.responsable.lastname | default("") }}</strong><br>
+                {{ activite.suppleant.firstname | default("") }} {{ activite.suppleant.lastname | default("") }}
+
+            </td>
+            <td>
+                <span class="badge badge-{% if activite.AppConnectActivites|length > 0 %}primary{% else %}gray{% endif %}"
+                    tabindex="0"
+                        role="button" 
+                        id="app{{ loop.index }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-trigger="focus"
+                        data-title="Application" 
+                        data-content="
+                        {% for appconnect in activite.AppConnectActivites %}
+                            <a class='text-dark' href='{{path('appli_edit',{'id' : appconnect.id} ) }}'><span class='small'><b>{{loop.index}}. {{ appconnect.application.designation | default('N/C')  }}</span></a><br>	
+                            {% endfor %}">
+                            <i class="fa fa-laptop"></i> {{ activite.AppConnectActivites | length  }}  
+                </span>
+                {% set dcp = "" %}
+                <span class="badge badge-{% if activite.fluxConnectActivites|length > 0 %}primary{% else %}gray{% endif %}"
+                    tabindex="0"
+                        role="button" 
+                        id="flux{{ loop.index }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-trigger="focus"
+                        data-title="Flux" 
+                        data-content="
+                        {% for fluconnect in activite.fluxConnectActivites %}
+                        {% set dcp = 'oui' %}
+                            <span class='small'><b>{{loop.index}}. {{ fluconnect.flux.designation | default('N/C')  }}</span><br>	
+                            {% endfor %}">
+                            <i class="fa fa-arrows"></i> {{ activite.fluxConnectActivites | length  }}  
+                </span>
+            </td>
+            <td>
+                <span class="badge badge-{% if dcp == 'oui' %}danger{% else %}gray{% endif %}">{% if dcp == 'oui' %}RGPD{% endif %}</span>
+                {% if activite.dima1.designation is defined %}
+                <span class="badge {{ activite.dima1.color | default("N/C") }}">PCA {{ activite.dima1.designation | default("") }}</span>
+                {% endif %}
+            </td>
+            <td data-order="{{ activite.PublishedAt | date("Ymd")}}">
+                <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-info"></i>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                    <a class="dropdown-item" href="{{path('activite_edit',{'slug' : activite.slug, 'id' : activite.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                    {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                    <a class="dropdown-item del" href="{{path('activite_remove',{'slug' : activite.slug, 'id' : activite.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                    {% endif %}
+                    <a class="dropdown-item">
+                        <small>Modifiée le {{ activite.PublishedAt | date("d M Y")}}</small>
+                        <small> {% set today = "now"|date("Y/m/d") %}
+                        {% set difference = date(activite.PublishedAt).diff(date(today)) %}
+                        {% set leftDays = difference.days %}
+                        {% if leftDays >= 180 and leftDays < 360 %}
+                        <small class="text-warning">({{ leftDays }}j)</small>
+                        {% elseif leftDays >= 360 %}
+                            <small class="text-danger">({{ leftDays }}j)</small>
+                        {% else %}
+                            <small>({{ leftDays }}j)</small>
+                        {% endif %}
+                        <br>par {{ activite.publisher.firstname | default("") }} {{ activite.publisher.lastname | default("") }}</small>
+                    </a>
+                </div>
+            </td>
+            
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

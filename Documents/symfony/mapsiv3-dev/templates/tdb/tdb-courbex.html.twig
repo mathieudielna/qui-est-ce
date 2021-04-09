@@ -1,0 +1,107 @@
+<div id=""><canvas id="TrackingChart" width="800" height="450"></canvas></div>
+
+<script>
+
+var timeParser = 'DD/MM/YYYY';	    
+		new Chart(document.getElementById("TrackingChart"), {
+			  type: 'line',
+			   data:    {
+            datasets: [
+                {
+                    fill: false,
+                    backgroundColor : '#1ab394',
+                    borderColor: '#1ab394',
+                    label: "Prévisionnel",
+                    data: [
+	                    {% for jalon in alljalons | sortbyfield('date') if jalon.date is not null %}
+						{
+							x: "{{ jalon.date | date("d/m/Y")  }}", y: {{ loop.index}}
+						},
+						{% endfor %}
+                     ]
+                },
+                
+                {
+                    label: "Outlook",
+                    
+                    data: [
+                    {% set maxValue = 0 %}
+                    {% set loopi = 0 %}
+                   {% for jalon in alljalons | sortbyfield('datereelle') if date(jalon.datereelle) < date() and jalon.datereelle is not null %}
+                   {% set maxValue = max(jalon.datereelle|date("Y-m-d"), maxValue) %}
+                    {% set loopi = loop.index %}
+                   {% endfor %}
+					{
+						x: "{{maxValue|date("d/m/Y")}}", y:	{{ loopi}}
+					},
+	                    
+	                    {% for jalon in alljalons | sortbyfield('daterevue') if jalon.daterevue is not null  %}
+	                    {% if date(jalon.daterevue) >= date() %}
+						{
+							x: "{{ jalon.daterevue | date("d/m/Y")  }}", y: 
+							{{ loop.index}}
+						},
+						{% endif %}
+						{% endfor %}
+                     ],
+                    
+                    fill: false,
+                    backgroundColor : '#C8C2AE',
+                    borderColor: '#C8C2AE',
+                    borderDash: [5, 5]
+                },
+                
+                {
+                    label: "Réelle",
+                    data: [
+	                    {% for jalon in alljalons | sortbyfield('datereelle') if date(jalon.datereelle) < date() and jalon.datereelle is not null %}
+	                   
+						{
+							x: "{{ jalon.datereelle | date("d/m/Y")  }}", y: 
+							{{ loop.index}}
+							
+						},
+						{% endfor %}
+                     ],
+                    
+                    fill: true,
+                    backgroundColor : '#0093dc',
+                    borderColor: '#0093dc'
+                }
+               
+            ]
+        },
+		options: {
+            responsive: true,
+            title:      {
+                display: true,
+                text:    "Progression du plan projet"
+                },
+
+			
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    time:       {
+                        parser: timeParser,
+                        tooltipFormat: 'll'
+                    },
+                    scaleLabel: {
+                        display:     false,
+                        labelString: 'Date'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'Livrables'
+                    }
+                }]
+            }
+        }					  
+		
+		
+			
+	});
+
+</script>

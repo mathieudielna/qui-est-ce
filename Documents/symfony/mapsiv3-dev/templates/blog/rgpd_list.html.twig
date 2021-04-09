@@ -1,0 +1,1189 @@
+{% extends 'basev2.html.twig' %}
+
+{% block stylesheets %}
+	<style type="text/css">
+		
+		
+    </style>
+{% endblock %}
+
+{% block title %}RGPD MAPSI{% endblock %}
+
+{% block headertitle %}
+    Réglement général sur la protection des données
+{% endblock %}	
+{% block headercreate %}	
+	<div class="btn-group dropleft buttonnew" role="group">	
+		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			<strong>Créer</strong>
+		</button>
+		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+			<a class="dropdown-item dropdowncreate" href="{{path('flux_create',{'r' : 'rgpd_list', 'rr' : 'RGPD'})}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Traitement</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('objetmetier_create',{'r' : 'rgpd_list', 'rr' : 'RGPD'})}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Objet métier</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('access_create')}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Demande d'accès</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('dysfonctionnement_create', {'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Dysfonctionnement </a>
+			<a class="dropdown-item dropdowncreate" href="{{path('action_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Action</a>
+			<a class="dropdown-item dropdowncreate" href="{{path('tache_create',{'r' : 'rgpd_list', 'rr' : 'RGPD'})}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Tâche</a> 
+			<a class="dropdown-item dropdowncreate" href="{{path('audit_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Audit</a>				          
+		</div>
+	</div>
+{% endblock %}
+
+
+{% block body %}
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="tabs-container">
+					<ul class="nav nav-tabs" role="tablist">
+						<li><a class="nav-link active show" data-toggle="tab" href="#dashboard"> <i class="bi bi-speedometer" style="font-size: 0.8rem;"></i> </a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#traitements"> Traitements <span class="badge">{{ fluxs | length }}</span></a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#om"> Objets métiers <span class="badge">{{ objetmetiers | length }}</span></a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#tier"> Tiers </a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#access"> Demandes d'accès <span class="badge">{{ accesses | length }}</span></a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#dysfonctionnement"> Réclamations <span class="badge">{{ dysfonctionnements | length }}</span></a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#audit"> Audits <span class="badge">{{ audits | length }}</span></a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#action"><i class="bi bi-list-task" style="font-size: 0.8rem;"></i><span class="badge"> {{ actions | length }}</span></a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#files"><i class="bi bi-files" style="font-size: 0.8rem;"></i></a></li>
+					</ul>	
+					<div class="tab-content">
+						<div id="dashboard" role="tabpanel" class="tab-pane fade show active">
+							<div class="panel-body">
+								<div class="row">
+									<div class="col-lg-12">
+										<h2>Indicateurs RGPD 2021</h2>
+										<div class="row">
+											<div class="col-4">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Diagnostic RGPD</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Mesure de l'avancement du diagnostic</h6>
+														<div class="card-text">
+															{% set scoretot = "0" %}
+															{% for flux in fluxs %}
+																{% set score = "0" %}
+																	{% if flux.objetmetiers | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+																	{% if flux.responsable is defined %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+																	{% if flux.finalite is defined %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+																	{% if flux.expin | length > 0 or flux.expout | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+																	{% if flux.destin | length > 0 or flux.destext | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+																	{% if flux.fluxConnectActivites | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+																	{% if flux.applications | length > 0 %}{% set score = score + 10 %}{% set scoretot = scoretot + 10 %}{% endif %}
+																	{% if flux.periodicites | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+																	{% if flux.supports | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+																	{% if flux.dureeconservation is defined %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+																	{% if flux.dcpjuridique | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+																	{% if flux.personneconcerne | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+																	{% if flux.typetraitementrgpds | length > 0 %}{% set score = score + 5 %}{% set scoretot = scoretot + 5 %}{% endif %}
+															{% endfor %}
+															
+															{% set scoretotfull = "0" %}
+															{% for allflux in allfluxs %}
+																{% set scorefull = "0" %}
+																	{% if allflux.objetmetiers | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+																	{% if allflux.responsable is defined %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+																	{% if allflux.finalite is defined %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+																	{% if allflux.expin | length > 0 or allflux.expout | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+																	{% if allflux.destin | length > 0 or allflux.destext | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+																	{% if allflux.fluxConnectActivites | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+																	{% if allflux.applications | length > 0 %}{% set scorefull = scorefull + 10 %}{% set scoretotfull = scoretotfull + 10 %}{% endif %}
+																	{% if allflux.periodicites | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+																	{% if allflux.supports | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+																	{% if allflux.dureeconservation is defined %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+																	{% if allflux.dcpjuridique | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+																	{% if allflux.personneconcerne | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+																	{% if allflux.typetraitementrgpds | length > 0 %}{% set scorefull = scorefull + 5 %}{% set scoretotfull = scoretotfull + 5 %}{% endif %}
+															{% endfor %}
+															
+															<h2 class="font-bold">{% if fluxs | length > 0 %}{% set scoretotgal = scoretot / fluxs | length %}{{ scoretotgal| round | default("0")  }} % {% else %}{% set scoretotgal = 0 %}Pas de données{% endif %}
+																{% if is_granted('ROLE_ADMIN') == false %}<small>({% set scoretotgalfull = scoretotfull / allfluxs | length %}{{ scoretotgalfull| round | default("0") }} %)</small>{% endif %}</h2>
+															<div class="progress progress-small">
+																<div style="width: {{ scoretotgal| round | default('0')  }}%;" class="progress-bar"></div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-4">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Evaluation des objets métiers</h4>
+														<h6 class="card-subtitle mb-2 text-muted">
+															{% set omrgpd = 0 %}	
+															{% set omrgpdready = 0 %}
+															{% set omrgpdnok = 0 %}
+															{% set omrgpdtodo = 0 %}
+															{% for om in objetmetiers %}
+																{% if om.dcp.code is defined and om.dcp.code is not null and om.dcp.code=="1" %}
+																	{% set omrgpd = omrgpd + 1 %}
+																{% endif %}
+																{% if om.statutrgpd.designation is defined and om.statutrgpd.designation is not null and om.statutrgpd.designation=="Conforme"  %}
+																	{% set omrgpdready = omrgpdready + 1 %}
+																{% endif %}
+																{% if om.statutrgpd.designation is defined and om.statutrgpd.designation is not null and om.statutrgpd.designation=="Non conforme"  %}
+																	{% set omrgpdnok = omrgpdnok + 1 %}
+																{% endif %}
+															{% endfor %}
+															{{ omrgpd | default("0")  }}{% if omrgpd == 1 %} objet métier contient des données à caractère personnel.{% else %} objets métiers contiennent des données à caractère personnel.{% endif %}
+														</h6>
+														<div class="card-text">
+															<ul class="list-group">
+																<li class="list-group-item d-flex justify-content-between align-items-center">
+																	Conforme
+																	<span class="badge badge-primary badge-pill">{{ omrgpdready | default("")  }}</span>
+																</li>
+																<li class="list-group-item d-flex justify-content-between align-items-center">
+																	Non conforme
+																	<span class="badge badge-danger badge-pill">{{ omrgpdnok | default("")  }}</span>
+																</li>
+																<li class="list-group-item d-flex justify-content-between align-items-center">
+																	Non évalué
+																	<span class="badge badge-warning badge-pill">{% set omrgpdtodo =  omrgpd - omrgpdready - omrgpdnok %}{{ omrgpdtodo | default("")  }}</span>
+																</li>
+															</ul>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-4">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Evaluation des traitements DCP</h4>
+														<h6 class="card-subtitle mb-2 text-muted">
+															{% set fluxrgpd = fluxs | length  %}	
+															{% set fluxrgpdready = 0 %}
+															{% set fluxrgpdnok = 0 %}
+															{% set fluxrgpdtodo = 0 %}
+															{% for flux in fluxs if flux.objetmetiers is defined %}
+																{% if flux.statutrgpd.designation is defined and flux.statutrgpd.designation is not null and flux.statutrgpd.designation=="Conforme"  %}
+																	{% set fluxrgpdready = fluxrgpdready + 1 %}
+																{% endif %}
+																{% if flux.statutrgpd.designation is defined and flux.statutrgpd.designation is not null and flux.statutrgpd.designation=="Non conforme"  %}
+																	{% set fluxrgpdnok = fluxrgpdnok + 1 %}
+																{% endif %}
+															{% endfor %}
+															{{ fluxrgpd | default("0")  }}{% if fluxrgpd == 1 %} traitement contient des données à caractère personnel.{% else %} traitements contiennent des données à caractère personnel.{% endif %}													
+														</h6>
+														<div class="card-text">
+															<ul class="list-group">
+																<li class="list-group-item d-flex justify-content-between align-items-center">
+																	Conforme
+																	<span class="badge badge-primary badge-pill">{{ fluxrgpdready | default("")  }}</span>
+																</li>
+																<li class="list-group-item d-flex justify-content-between align-items-center">
+																	Non conforme
+																	<span class="badge badge-danger badge-pill">{{ fluxrgpdnok | default("")  }}</span>
+																</li>
+																<li class="list-group-item d-flex justify-content-between align-items-center">
+																	Non évalué
+																	<span class="badge badge-warning badge-pill">{% set omrgpdtodo =  omrgpd - omrgpdready - omrgpdnok %}{{ omrgpdtodo | default("")  }}</span>
+																</li>
+															</ul>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div class="row">
+										<div class="row">
+											<div class="col-lg-8">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Tracking</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Evènements RGPD</h6>
+														<div class="card-text text-center">
+															<canvas id="myTracking" height="70"></canvas>
+															
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-4">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Evaluation des risques RGPD</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Matrice de criticité</h6>
+														<div class="card-text">
+															<canvas id="myRisk"></canvas>
+														</div>
+													</div>
+												</div>	
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-lg-8">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Actions de mise en conformité</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Liste des actions en cours</h6>
+														<div class="card-text">
+															{{ include('datatable/actionminitable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-4">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Traitements sensibles</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Liste des traitements comportant des DCP sensibles</h6>
+														<div class="card-text">
+															{% set handle = [] %}{% set count = 0 %}
+															{% for flux in fluxs if flux not in handle %}
+																{% set dcpsensible = "Non" %}
+																{% for om in flux.objetmetiers if om.dcpsensible.code is defined and om.dcpsensible.code==1 and flux not in handle %}
+																	{% set handle = handle|merge([flux]) %}
+																	{% set dcpsensible = "Oui" %}
+																	{% set count = count + 1 %}
+																	{% if count == 0 %}Il n'y a pas de traitement sensible{% endif %}
+																	<span class="btn btn-sm btn-warning" style="margin-bottom:5px;">{{ flux.designation }}</span>
+																{% endfor %}
+															{% endfor %}
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Finalités juridiques</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Répartition des traitements</h6>
+														<div class="card-text">
+															<canvas id="myChart"></canvas>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Type de traitement</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Répartition des traitements</h6>
+														<div class="card-text">
+															<canvas id="myCharttypetraitement"></canvas>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Personnes concernées</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Répartition des traitements</h6>
+														<div class="card-text">
+															<canvas id="myCharttypeacteur"></canvas>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Données sensibles</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Répartition des traitements</h6>
+														<div class="card-text">
+															<canvas id="myChartdcpsensible"></canvas>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Applications</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Répartition des traitements</h6>
+														<div class="card-text">
+															<canvas id="myChartapp"></canvas>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h4 class="card-title">Diagnostic traitements</h4>
+														<h6 class="card-subtitle mb-2 text-muted">Répartition des traitements</h6>
+														<div class="card-text">
+															{% set fluxmetier = 0 %}
+															{% set scorefull = 0 %}
+															{% for metier in metiers %}
+															{% set scorefull = 0 %}
+															{% set fluxmetier = 0 %}
+																{% for processus in metier.processuses  %}
+																	{% for activite in processus.activites %}
+																		{% for flux in activite.fluxConnectActivites %}
+																		{% set fluxmetier = fluxmetier + 1 %}
+																				{% if flux.flux.objetmetiers is defined and flux.flux.objetmetiers is not null and flux.flux.objetmetiers | length > 0 %}{% set scorefull = scorefull + 10 %}{% endif %}
+																				{% if flux.flux.responsable is defined %}{% set scorefull = scorefull + 10 %}{% endif %}
+																				{% if flux.flux.finalite is defined %}{% set scorefull = scorefull + 10 %}{% endif %}
+																				{% if flux.flux.expin is defined and flux.flux.expin is not null and flux.flux.expin | length > 0 or flux.flux.expout is defined and flux.flux.expout is not null and flux.flux.expout | length > 0 %}{% set scorefull = scorefull + 10 %}{% endif %}
+																				{% if flux.flux.destin is defined and flux.flux.destin is not null and flux.flux.destin | length > 0 or flux.flux.destext is defined and flux.flux.destext is not null and flux.flux.destext | length > 0 %}{% set scorefull = scorefull + 10 %}{% endif %}
+																				{% if flux.flux.fluxConnectActivites is defined and flux.flux.fluxConnectActivites is not null and flux.flux.fluxConnectActivites | length > 0 %}{% set scorefull = scorefull + 10 %}{% endif %}
+																				{% if flux.flux.applications is defined and flux.flux.applications is not null and flux.flux.applications | length > 0 %}{% set scorefull = scorefull + 10 %}{% endif %}
+																				{% if flux.flux.periodicites is defined and flux.flux.periodicites is not null and flux.flux.periodicites | length > 0 %}{% set scorefull = scorefull + 5 %}{% endif %}
+																				{% if flux.flux.supports is defined and flux.flux.supports is not null and flux.flux.supports | length > 0 %}{% set scorefull = scorefull + 5 %}{% endif %}
+																				{% if flux.flux.dureeconservation is defined and flux.flux.dureeconservation is not null and flux.flux.dureeconservation is defined %}{% set scorefull = scorefull + 5 %}{% endif %}
+																				{% if flux.flux.dcpjuridique is defined and flux.flux.dcpjuridique is not null and flux.flux.dcpjuridique | length > 0 %}{% set scorefull = scorefull + 5 %}{% endif %}
+																				{% if flux.flux.personneconcerne is defined and flux.flux.personneconcerne is not null and flux.flux.personneconcerne | length > 0 %}{% set scorefull = scorefull + 5 %}{% endif %}
+																				{% if flux.flux.typetraitementrgpds is defined and flux.flux.typetraitementrgpds is not null and flux.flux.typetraitementrgpds | length > 0 %}{% set scorefull = scorefull + 5 %}{% endif %}
+																		{% endfor %}
+																	{% endfor %}
+																{% endfor %}
+																{% if fluxmetier > 0 %}{% set scoretotgal = scorefull / fluxmetier %}
+																	<div class="row">
+																		<div class="col-lg-2">
+																			<p class="text-right">
+																			{{ metier.code }}
+																			</p>
+																		</div>
+																		<div class="col-lg-10">
+																			<div class="progress" style="height: 22px;">
+																				<div style="width: {{ scoretotgal| round  }}%;" class="progress-bar progress-bar-success"><strong>{{ scoretotgal| round | default("0")  }} %</strong></div>
+																			</div>
+																		</div>
+																	</div>
+																{% endif %}
+															{% endfor %}
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id="traitements" role="tabpanel" class="tab-pane fade">
+							<div class="panel-body">
+								{{ include('datatable/fluxtable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+							</div>
+						</div>
+						<div id="om" role="tabpanel" aria-labelledby="om" class="tab-pane fade">
+							<div class="panel-body">
+								{{ include('datatable/omtable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+							</div>
+						</div>
+						<div id="tier" role="tabpanel" aria-labelledby="visite" class="tab-pane fade">
+							<div class="panel-body">
+								<div class="row">
+									<div class="col-lg-12">
+										<form class="form-inline" role="form">
+										<div id="buttondt-tier" style="margin-right:8px">
+										</div>
+										<button type="button" class="btn btn-default m-r-sm">
+										Qté <span class="badge badge-light rowcounttot-tier"></span>
+										<span class="sr-only">Toutes les entrées de la base pour cette entité</span>
+										</button>
+										<button type="button" class="btn btn-default m-r-sm">
+										Visible <span class="badge badge-light rowcountview-tier"></span>
+										<span class="sr-only">Identifie le nombre de lignes visibles</span>
+										</button>
+										<button type="button" class="btn btn-default m-r-sm">
+										Sélect. <span class="badge badge-light rowcountselect-tier">0</span>
+										<span class="sr-only">Identifie le nombre de ligne sélectionnées</span>
+										</button>
+										<div class="input-group">
+											<div class="input-group">
+												<div class="input-group-prepend">
+													<span class="input-group-addon">
+														<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+															<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+														</svg>
+													</span>
+												</div>
+												<input type="text" id="searchdt-tier" name="searchdt" class="form-control">
+											</div>
+										</div>
+										</form>
+									</div>
+								</div>
+								<table class="hover table table-bordered dataTables-soustraitant" >
+									<thead>
+										<tr>
+											<th scope="col" class="export pdf">ID</th>
+											<th scope="col" class="export pdf">Désignation</th>
+											<th scope="col" class="export pdf">Description</th>
+											<th scope="col" class="export pdf">Type</th>
+											<th scope="col" class="export pdf">Traitement</th>
+										</tr>
+									</thead>
+									<tbody>
+									{% set handledTiers = [] %}
+									{% set handledT = [] %}  
+									{% for om in objetmetiers %}
+										{% for fluxs in om.fluxes if om.dcp.code is defined and om.dcp.code==1 and fluxs not in handledTiers and fluxs %}
+											{% for flux in om.fluxes if flux.id == fluxs.id and flux not in handledTiers  %}
+												{% set handledTiers = handledTiers|merge([flux]) %}
+												{% for expou in flux.expout if expou not in handledT %}
+													{% set handledT = handledT|merge([expou]) %}
+														<tr>
+															<th><span class="badge badge-secondary">FX-{{ expou.id }}</span></th>
+															<td class="table-title">{{ expou.designation }}</td>
+															<td>{{ expou.description | default("N/C")  }}</td>
+															<td>{{ expou.type.designation | default("N/C")  }}</td>
+															<td>
+																
+																{% if expou.fluxes|length > 0 %}
+																	<span class="dropdown tablerelation">
+																		<button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																		<i class="bi bi-app-indicator" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ expou.fluxes|length }}   </strong> 
+																		</button>
+																		<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+																			<h4 class="tablerelation"> Traitements</h4>
+																			{% for flux in expou.fluxes %}
+																			<a class='dropdown-item' href='{{path('flux_edit',{'id' : flux.id, 'r' : 'rgpd'} ) }}'>{{loop.index}}. {{ flux.designation | default('N/C')  }}</a>
+																			{% endfor %}
+																		</div>
+																	</span>
+																{% endif %}
+															</td>
+														</tr>
+												{% endfor %}
+											{% endfor %}
+										{% endfor %}
+									{% endfor %}
+									{% set handledTiers = [] %}
+									{% for om in objetmetiers %}
+										{% for fluxs in om.fluxes if om.dcp.code is defined and om.dcp.code==1 and fluxs not in handledTiers and fluxs %}
+											{% for flux in om.fluxes if flux.id == fluxs.id and flux not in handledTiers  %}
+												{% set handledTiers = handledTiers|merge([flux]) %}
+												{% for destext in flux.destext if destext not in handledT %}
+													{% set handledT = handledT|merge([destext]) %}
+														<tr class="gradeX">
+															<th><span class="badge badge-secondary">FX-{{ destext.id }}</span></th>
+															<td class="table-title">{{ destext.designation }}</th>
+															<td>{{ destext.description | default("N/C")  }}</td>
+															<td>{{ destext.type.designation | default("N/C")  }}</td>
+															<td>
+																{% if destext.fluxes|length > 0 %}
+																	<span class="dropdown tablerelation">
+																		<button class="btn btn-primary dropdown-toggle btn-sm tablerelation" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																		<i class="bi bi-app-indicator" style="font-size: 0.8rem;"></i> <strong class="tablerelation">{{ destext.fluxes|length }}   </strong> 
+																		</button>
+																		<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+																			<h4 class="tablerelation"> Traitements</h4>
+																			{% for flux in destext.fluxes %}
+																			<a class='dropdown-item' href='{{path('flux_edit',{'id' : flux.id, 'r' : 'rgpd'} ) }}'>{{loop.index}}. {{ flux.designation | default('N/C')  }}</a>
+																			{% endfor %}
+																		</div>
+																	</span>
+																{% endif %}
+															</td>
+														</tr>
+												{% endfor %}
+											{% endfor %}
+										{% endfor %}
+									{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div id="access" role="tabpanel" aria-labelledby="access" class="tab-pane fade">
+							<div class="panel-body">
+								<div class="row">
+									<div class="col-lg-12">
+										<form class="form-inline" role="form">
+										<div id="buttondt-access" style="margin-right:8px">
+										</div>
+										<button type="button" class="btn btn-default m-r-sm">
+										Qté <span class="badge badge-light rowcounttot-access"></span>
+										<span class="sr-only">Toutes les entrées de la base pour cette entité</span>
+										</button>
+										<button type="button" class="btn btn-default m-r-sm">
+										Visible <span class="badge badge-light rowcountview-access"></span>
+										<span class="sr-only">Identifie le nombre de lignes visibles</span>
+										</button>
+										<button type="button" class="btn btn-default m-r-sm">
+										Sélect. <span class="badge badge-light rowcountselect-access">0</span>
+										<span class="sr-only">Identifie le nombre de ligne sélectionnées</span>
+										</button>
+										<div class="input-group">
+											<div class="input-group">
+												<div class="input-group-prepend">
+													<span class="input-group-addon">
+														<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+															<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+														</svg>
+													</span>
+												</div>
+												<input type="text" id="searchdt-access" name="searchdt" class="form-control">
+											</div>
+										</div>
+										</form>
+									</div>
+								</div>
+								<table class="hover table table-bordered dataTables-access" >
+									<thead>
+										<tr>
+											<th scope="col" class="export" style="width:60px">ID</th>
+											<th scope="col" class="export pdf">Désignation</th>
+											<th scope="col" class="export pdf">Nom</th>
+											<th scope="col" class="export">Email</th>
+											<th scope="col" class="export pdf">Statut</th>
+											<th scope="col" class="export pdf">Date de demande</th>
+											<th scope="col" class="export">Date de cloture</th>
+											<th scope="col" class="export pdf">Responsable</th>
+											<th scope="col" class="export">Maj</th>
+											<th scope="col" class="no-sort" style="width:60px"></th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for access in accesses %}
+											<article>
+												<tr>
+													<th data-order="{{ access.id }}" class="text-center"><span class="badge badge-secondary">ACCESS-{{ access.id }}</span></th>
+													<td class="table-title"><a class="" href="{{path('access_edit',{'id' : access.id} ) }}">{{ access.designation }}</a></td>
+													<td>{{ access.nom | default("N/C") }}</td>
+													<td>{{ access.email | default("N/C") }}</td>
+													<td>
+														<span class="badge badge-secondary" style="background-color:{{ access.statut.color | default("N/C")}}">
+															{{ access.statut.designation | default("N/C")  }}
+														</span>
+													</td>
+													<td>{{ access.publishedat | date("d M Y")  }}</td>
+													<td>{{ access.closedat | date("d M Y") | default("")  }}</td>
+													<td><strong>{{ access.responsable.firstname | default("") }} {{ access.responsable.lastname | default("") }}</strong><br>
+														{{ access.suppleant.firstname | default("") }} {{ access.suppleant.lastname | default("") }}
+													</td>
+													<td data-order="{{ access.PublishedAt | date("Ymd")}}" class="text-center">{{ access.PublishedAt | date("d M Y")}}
+														{% set today = "now"|date("Y/m/d") %}
+														{% set difference = date(access.PublishedAt).diff(date(today)) %}
+														{% set leftDays = difference.days %}
+														{% if leftDays >= 180 and leftDays < 360 %}
+														<small class="text-warning">({{ leftDays }}j)</small>
+															{% elseif leftDays >= 360 %}
+																<small class="text-danger">({{ leftDays }}j)</small>
+															{% else %}
+																<small>({{ leftDays }}j)</small>
+															{% endif %}
+															<br>
+															<small> {{ access.publisher.firstname | default("") }} {{ access.publisher.lastname | default("") }}</small>
+													</td>
+													
+													<td>
+														<button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+															<i class="fa fa-info"></i>
+														</button>
+														<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+															<a class="dropdown-item" href="{{path('access_edit',{'id' : access.id} ) }}"> Afficher</a>
+															{% if is_granted('ROLE_ADMIN') %}<a class="dropdown-item del" href="{{path('access_remove',{'id' : access.id} ) }}"> Supprimer</a>{% endif %}
+														</div>
+													</td>
+												</tr>
+											</article>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div id="dysfonctionnement" role="tabpanel" aria-labelledby="dysfonctionnement" class="tab-pane fade">
+							<div class="panel-body">
+								{{ include('datatable/dysfonctionnementtable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+							</div>
+						</div>
+						<div id="audit" role="tabpanel" aria-labelledby="audit" class="tab-pane fade">
+							<div class="panel-body">
+							{{ include('datatable/audittable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+							</div>
+						</div>
+						<div id="action" role="tabpanel" aria-labelledby="action" class="tab-pane fade">
+							<div class="panel-body">
+							{{ include('datatable/actiontable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+							</div>
+						</div>
+						<div id="files" role="tabpanel" aria-labelledby="files" class="tab-pane fade">
+							<div class="panel-body">
+								<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entity', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'RGPD'}}) }}" width="100%" height="500" frameborder="0"></iframe>
+							</div>
+						</div>
+
+					</div>
+					<!-- End rounded tabs -->
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+<script>
+	$(document).ready(function(){
+
+            
+            $('.dataTables-soustraitant').DataTable({
+                pageLength: 25,
+                responsive: false,
+                dom: 'tp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-action',visible: false, searchable: false	},
+	             ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_  sous traitants",
+					    "infoEmpty":      "De 0 à 0 sur 0  sous traitants",
+					    "infoFiltered":   "(filtered from _MAX_ total entries)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_  sous traitants",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "<span style='font-size: 18px;'><img src='/bootstrap-icons-1/search.svg' alt='' width='16' height='16' title='Bootstrap'></span>",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        },
+				select: {
+        style: 'multi'
+			},
+			initComplete: function() {
+				var table = $('.dataTables-soustraitant').DataTable();
+				table.on( 'search.dt', function () {
+					var info = table.page.info();
+					var rowsshown = info.recordsDisplay;
+					$('.rowcountview-tier').html( rowsshown );
+				} );
+				table.on( 'select', function () {
+					var rowsselect = table.rows( { selected: true } ).count();
+					$('.rowcountselect-tier').html( rowsselect );
+				} );
+				table.off( 'select', function () {
+					var rowsselect = table.rows( { selected: true } ).count();
+					$('.rowcountselect-tier').html( rowsselect );
+				} );
+				var info = table.page.info();
+				var rowstot = info.recordsTotal;
+				var rowsshown = info.recordsDisplay;
+				const newLocal = '.rowcounttot-tier';
+				const newLocal1 = '.rowcountview-tier';
+				$(newLocal).text(rowstot);
+				$(newLocal1).text(rowsshown);
+				$("#searchdt-tier").keyup(function() {
+					table.search($(this).val()).draw();
+				}); 
+				new $.fn.dataTable.Buttons(table, {
+					buttons: [
+						{
+							extend: 'collection',
+							text: 'Télécharger',
+							buttons: [
+								{
+									extend: 'excelHtml5',
+									exportOptions: {
+										columns: '.export'
+									}
+								},
+								{
+									extend: 'csvHtml5',
+									exportOptions: {
+										columns: '.export'
+									}
+								},
+								{
+									extend: 'pdfHtml5',
+									exportOptions: {
+										columns: '.pdf'
+									}
+								}
+							],
+						}
+					]
+			}).container().appendTo($('#buttondt-tier'));
+        
+    
+    }
+
+            });
+	    
+	    $('.dataTables-access').DataTable({
+                pageLength: 25,
+                responsive: false,
+                dom: 'tp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-action',visible: false, searchable: false	},
+	             ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_  RGPD accès",
+					    "infoEmpty":      "De 0 à 0 sur 0  RGPD accès",
+					    "infoFiltered":   "(filtered from _MAX_ total entries)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_  RGPD accès",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "<span style='font-size: 18px;'><img src='/bootstrap-icons-1/search.svg' alt='' width='16' height='16' title='Bootstrap'></span>",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        },
+				select: {
+        style: 'multi'
+			},
+			initComplete: function() {
+				var table = $('.dataTables-access').DataTable();
+				table.on( 'search.dt', function () {
+					var info = table.page.info();
+					var rowsshown = info.recordsDisplay;
+					$('.rowcountview-access').html( rowsshown );
+				} );
+				table.on( 'select', function () {
+					var rowsselect = table.rows( { selected: true } ).count();
+					$('.rowcountselect-access').html( rowsselect );
+				} );
+				table.off( 'select', function () {
+					var rowsselect = table.rows( { selected: true } ).count();
+					$('.rowcountselect-access').html( rowsselect );
+				} );
+				var info = table.page.info();
+				var rowstot = info.recordsTotal;
+				var rowsshown = info.recordsDisplay;
+				const newLocal = '.rowcounttot-access';
+				const newLocal1 = '.rowcountview-access';
+				$(newLocal).text(rowstot);
+				$(newLocal1).text(rowsshown);
+				$("#searchdt-access").keyup(function() {
+					table.search($(this).val()).draw();
+				}); 
+				new $.fn.dataTable.Buttons(table, {
+					buttons: [
+						{
+							extend: 'collection',
+							text: 'Télécharger',
+							buttons: [
+								{
+									extend: 'excelHtml5',
+									exportOptions: {
+										columns: '.export'
+									}
+								},
+								{
+									extend: 'csvHtml5',
+									exportOptions: {
+										columns: '.export'
+									}
+								},
+								{
+									extend: 'pdfHtml5',
+									exportOptions: {
+										columns: '.pdf'
+									}
+								}
+							],
+						}
+					]
+			}).container().appendTo($('#buttondt-access'));
+        
+    
+    }
+
+            });
+           
+	});
+	
+	
+
+	var ctx = document.getElementById('myChart').getContext('2d');
+	var myChart = new Chart(ctx, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [{% for dcp in dcps if dcp.fluxes|length > 0 %}"{{ dcp.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: [{% for dcp in dcps if dcp.fluxes|length > 0 %}{{ dcp.fluxes|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+		
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+	
+	var ctx = document.getElementById('myCharttypetraitement').getContext('2d');
+	var myChart = new Chart(ctx, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [{% for typetraitement in typetraitements if typetraitement.fluxes|length > 0 %}"{{ typetraitement.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: [{% for typetraitement in typetraitements if typetraitement.fluxes|length > 0  %}{{ typetraitement.fluxes|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+	
+	var ctx = document.getElementById('myCharttypeacteur').getContext('2d');
+	var myChart = new Chart(ctx, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [{% for typeacteur in typeacteurs if typeacteur.fluxes|length > 0 %}"{{ typeacteur.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: [{% for typeacteur in typeacteurs if typeacteur.fluxes|length > 0 %}{{ typeacteur.fluxes|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+	
+	var ctx = document.getElementById('myChartdcpsensible').getContext('2d');
+	var myChart = new Chart(ctx, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [{% for typedcpsensible in typedcpsensibles if typedcpsensible.fluxes|length > 0 %}"{{ typedcpsensible.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: [{% for typedcpsensible in typedcpsensibles if typedcpsensible.fluxes|length > 0 %}{{ typedcpsensible.fluxes|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+	
+	var ctx = document.getElementById('myChartapp').getContext('2d');
+	var myChart = new Chart(ctx, {
+	    type: 'horizontalBar',
+	    data: {
+	        labels: [{% for app in apps if app.fluxes|length > 0 %}"{{ app.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: ' Traitements',
+	            data: [{% for app in apps if app.fluxes|length > 0 %}{{ app.fluxes|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+		    scales: {
+	            xAxes: [{
+	                stacked: true,
+	            ticks: {
+		                beginAtZero: true,
+		                min: 0,					
+					      // forces step size to be 5 units
+					      stepSize: 1 // <----- This prop sets the stepSize
+		            }
+	            }],
+	            yAxes: [{
+	                stacked: true,
+	                
+		            scaleLabel: {
+                                display: true,
+                                labelString: 'Nb.'
+                            }
+	            }]
+	        },	
+		    plugins: {
+			        labels: [
+					    {
+					      render: 'value',
+					    }
+					],
+					colorschemes: {
+				        scheme: 'office.UrbanPop6'
+				      }
+			    },
+					legend: {
+			            display: true,
+			            position:'bottom'
+			    },
+	    }
+	});
+	
+
+	
+	var ctxi = document.getElementById('myTracking').getContext('2d');
+	var myChart = new Chart(ctxi, {
+	    type: 'horizontalBar',
+	    data: {
+	        labels: [{% if accesses|length > 0 %}'Demandes d\'accès',{% endif%} {% if dysfonctionnements|length > 0 %}'Dysfonctionnement',{% endif%}{% if actions|length > 0 %}  'Actions conformité'{% endif%}],
+	        datasets: [{
+				label: 'En cours',
+				data: [
+					{% if accesses|length > 0 %}{% set accesscount = 0 %}{% for access in accesses if access.statut is not null and access.statut.code is defined and access.statut.code!=1 %}{% set accesscount = accesscount + 1 %}{% endfor %}{{accesscount}},{% endif%}
+					{% if dysfonctionnements|length > 0 %}{% set dysfonctionnementcount = 0 %}{% for dysfonctionnement in dysfonctionnements if dysfonctionnement.statut is not null and dysfonctionnement.statut is defined and dysfonctionnement.statut!="validation_ok" %}{% set dysfonctionnementcount = dysfonctionnementcount + 1 %}{% endfor %}{{dysfonctionnementcount}},{% endif%}
+					{% if actions|length > 0 %}{% set count = 0 %}{% for action in actions if action.progression != 100 %}{% for typeconformit in action.typeconformite if typeconformit.designation == "RGPD" %}{% set count = count + 1 %}{% endfor %}{% endfor %}{{ count }}{% endif%}
+				]
+			}, {
+				label: 'Terminé',
+				data: [
+					{% if accesses|length > 0 %}{% set accesscount = 0 %}{% for access in accesses if access.statut is not null and  access.statut is defined and access.statut.code==1 %}{% set accesscount = accesscount + 1 %}{% endfor %}{{accesscount}},{% endif%}
+					{% if dysfonctionnements|length > 0 %}{% set dysfonctionnementcount = 0 %}{% for dysfonctionnement in dysfonctionnements if dysfonctionnement.statut is not null and dysfonctionnement.statut is defined and dysfonctionnement.statut=="validation_ok" %}{% set dysfonctionnementcount = dysfonctionnementcount + 1 %}{% endfor %}{{dysfonctionnementcount}},{% endif%}
+					{% if actions|length > 0 %}{% set count = 0 %}{% for action in actions if action.progression == 100 %}{% for typeconformit in action.typeconformite if typeconformit.designation == "RGPD" %}{% set count = count + 1 %}{% endfor %}{% endfor %}{{ count }}{% endif%}
+				]
+			}]
+	    },
+	    options: {
+			tooltips: {
+				callbacks: {
+					labelTextColor:function(tooltipItem, chart){
+						return '#ffffff';
+					}
+				}
+			},
+		    scales: {
+	            xAxes: [{
+	                stacked: true,
+	                ticks: {
+		                beginAtZero: true,
+		                min: 0,					
+					      // forces step size to be 5 units
+					    stepSize: 1 // <----- This prop sets the stepSize
+						
+		            },
+		            scaleLabel: {
+                                display: true,
+                                labelString: 'Nb.'
+                            },
+					gridLines: {
+						display:false
+                				}
+	            }],
+	            yAxes: [{
+	                stacked: true, 
+				    gridLines: {
+					display:false
+                				}
+	            }]
+	        },	
+		    plugins: {
+			        labels: [
+					    {
+					      render: 'value'
+					    }
+					],
+					colorschemes: {
+				        scheme: 'tableau.Tableau20'
+				      }
+			    },
+					legend: {
+			            display: true,
+			            position:'bottom'
+			    }
+	    }
+	});
+
+
+		///////////// NUAGE RISQUE
+	var ctxa = document.getElementById('myRisk').getContext('2d');
+	var scatterChart = new Chart(ctxa, {
+    type: 'bubble',
+    data: {
+        datasets: [
+			  {% for risque in allrisques %}
+				{% for typeconformit in risque.typeconformite if typeconformit.designation == "RGPD" %}
+			 	{
+            	label: ['R{{ risque.id }} {{ risque.designation }}'],
+				backgroundColor: "{% if risque.score < 20 %}#1b998b{% elseif risque.score >= 20 and risque.score < 40 %}#ffe156{% elseif risque.score >= 40 and risque.score < 60 %}#F69D5C{% elseif risque.score >= 60 and risque.score < 80 %}#ed5861{% elseif risque.score >= 80 and risque.score < 100 %}#683B5A{% endif %}",
+            	data: [{
+		            x:{{ risque.probabilite }},
+		            y:{{ risque.impact }},
+		            r:5,
+		            }]
+				},
+			{% endfor %}
+				{% endfor %}
+		],
+    },
+    options: {
+		title: {
+				display: true,
+				text: 'Scoring des risques'
+			},
+
+        scales: {
+            xAxes: [{
+				scaleLabel: {
+                    display: true,
+                    labelString: 'Probabilité'
+                            },
+                 ticks: {
+	                beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                },
+
+            }],
+            yAxes: [{
+				scaleLabel: {
+                                display: true,
+                                labelString: 'Impact'
+                            },
+                ticks: {
+                    beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                }
+            }]
+        },
+        plugins: {
+			        labels: [
+					    {
+					      render: 'value',
+					      fontSize: '20',
+					    }
+					]
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+    }
+    
+	});
+	
+
+
+
+/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+	
+	
+	
+</script>
+ 
+{% endblock %}

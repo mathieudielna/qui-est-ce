@@ -1,0 +1,164 @@
+{% extends 'basev2.html.twig' %}
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+		<div class="col-sm-8">
+			<h2>Utilisateurs ({{ users|length }})</h2>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="{{path('start')}}">Mapsi</a>
+				</li>
+				<li class="breadcrumb-item active">
+					<strong><a>Utilisateurs</a></strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-sm-4">
+			<div class="title-action">
+				{% if is_granted('ROLE_SUPER_ADMIN') %}<a class="btn btn-primary" href="{{path('security_registration')}}">+ Nouvel utilisateur</a>{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+
+{% block body %}
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="tabs-container">
+				<ul class="nav nav-tabs" role="tablist">
+					<li><a class="nav-link active show" data-toggle="tab" href="#tab-1"> Liste</a></li>
+				</ul>
+				<div class="tab-content">
+						<div role="tabpanel" id="tab-1" class="tab-pane active show">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-12">
+									<section class="user">
+										<div class="table-responsive">
+											<table class="table table-hover dataTables-user" >
+												<thead>
+													<tr>
+														<th scope="col">ID</th>
+														<th scope="col">Username / Email</th>
+														<th scope="col">Nom</th>
+														<th scope="col">Rôles</th>
+														<th scope="col">Compte</th>
+														<th scope="col">Collaborateur associé</th>
+														{% if is_granted('ROLE_SUPER_ADMIN') %}<th scope="col">Action</th> {% endif %}
+													</tr>
+												</thead>
+												<tbody>
+												{% for user in users %}
+												<article>
+													<tr class="gradeX">
+														<th scope="row"><span class="badge badge-secondary">USR-{{ user.id }}</span></th>
+														<th scope="row"><a class="" href="{{path('security_edit',{'id' : user.id} ) }}">{{ user.email }}</a></th>
+														<th scope="row"><a class="" href="{{path('security_edit',{'id' : user.id} ) }}">{{ user.nom }} {{ user.prenom }}</a></th>
+														<td>
+															<a  tabindex="1"
+																	id="role{{ user.id }}"
+																	data-container="body" 
+																	data-toggle="popover"
+																	role="button" 
+																	data-placement="bottom" 
+																	data-html="true"
+																	data-title="Roles" 
+																	data-trigger="focus" 
+																	data-content="
+																		{% for role in user.userRoles %}
+																		{{ role.designation | default("N/C") }} <br>
+																		{% endfor %}">
+																		{{ user.userRoles| length }} rôle{% if user.userRoles | length > 1 %}s{% endif %}
+															</a>
+														</td>
+														<td>{{ user.customer.designation | default("N/C") }}</td>
+														<td>{% if user.people.firstname is not defined %}
+															<span class="text-secondary">{{ user.people.firstname | default("Non rattaché") }}</span>
+															{% else %}
+															{{ user.people.firstname | default("Non rattaché") }}
+															{% endif %}
+															{{ user.people.lastname | default("") }}</td>
+														{% if is_granted('ROLE_ADMIN') %}
+														<td>
+														<a class="btn btn-danger btn-sm del" href="{{path('security_remove',{'id' : user.id} ) }}"><i class="fa fa-trash"></i></a>
+														<a class="btn btn-danger btn-sm resetpassword" href="{{path('security_initpassword',{'id' : user.id} ) }}"><i class="fa fa-unlock-alt"></i></a>
+														{% if is_granted('ROLE_SUPER_ADMIN') %}
+														<a class="btn btn-danger btn-sm" href="{{path('security_editrole',{'id' : user.id} ) }}"><i class="fa fa-user-circle"></i></a>
+														{% endif %}
+														</td>
+														{% endif %}
+													</tr>
+												</article>
+												{% endfor %}
+												</tbody>
+											</table>
+										</div>
+									</section>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+	        
+	        
+	        $('a.del').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous vraiment supprimer cet utilisateur ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+			
+			$('a.resetpassword').confirm({
+			    title: 'Information',
+			    content: 'Voulez vous vraiment réinitialiser le mot de passe utilisateur ?',
+			    buttons: {
+			        reinitialiser: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+
+            $('.dataTables-user').DataTable({
+                pageLength: 25,
+                responsive: false,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'Mapsi file'},
+                    {extend: 'pdf', title: 'Mapsi file'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ]
+
+            });
+
+        });
+
+    </script>
+{% endblock %}

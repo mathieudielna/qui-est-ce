@@ -1,0 +1,163 @@
+{% extends 'basev2.html.twig' %}
+
+{% block stylesheets %}
+	<style type="text/css">
+    </style>
+{% endblock %}
+
+{% block headertitle %}
+   Contrôle interne
+{% endblock %}	
+{% block headercreate %}
+	<a class="dropdown-item dropdowncreate" href="{{path('controle_create')}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b> Contrôle</a>
+	<a class="dropdown-item dropdowncreate" href="{{path('anomalie_create')}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Incident</a>
+	<a class="dropdown-item dropdowncreate" href="{{path('audit_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Audit</a>
+	<a class="dropdown-item dropdowncreate" href="{{path('dysfonctionnement_create', {'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Dysfonctionnement </a>
+	<a class="dropdown-item dropdowncreate" href="{{path('action_create',{'r' : app.request.get('_route'), 'rr' : conformite })}}"><b class="bi bi-plus-circle" style="font-size: 1.2rem;"></b>  Action</a>	
+{% endblock %}
+
+{% block body %}
+	<div class="wrapper wrapper-content animated fadeIn">
+		<div class="row">
+	        <div class="col-lg-12">
+				<div class="tabs-container">
+	                <ul class="nav nav-tabs" role="tablist">
+		                <li><a class="nav-link active show" data-toggle="tab" href="#processus"> Processus</a></li>
+	                    <li><a class="nav-link" data-toggle="tab" href="#controles"> Contrôles</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#dysfonctionnements"> Dysfonctionnements</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#actions"> Actions</a></li>
+						<li><a class="nav-link" data-toggle="tab" href="#audits"> Audits</a></li>
+						
+	                </ul>
+	                <div class="tab-content">
+	                    <div role="tabpanel" id="processus" class="tab-pane active show">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										{{ include('datatable/processustable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                    <div role="tabpanel" id="controles" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										<div class="table-responsive">
+											<table class="table table-hover dataTables-controle" >
+												<thead>
+													<tr>
+												   		<th scope="col">ID</th>
+												   		<th scope="col">Désignation</th>
+												   		<th scope="col">Statut</th>
+												   		<th scope="col">Relations</th>
+												   		<th scope="col">Maj</th>
+												   		<th scope="col" class="no-sort"></th>
+												    </tr>
+												</thead>
+												<tbody>
+													{% for controle in controles %}
+														<article>
+															<tr>
+														      <td data-order="{{ controle.id }}"><span class="badge badge-secondary">CTRL-{{ controle.id }}</span></td>
+														      <td class="table-title"><a class="" href="{{path('controle_edit',{'id' : controle.id} ) }}">{{ controle.designation }}</a></td>
+														      <td></td>
+															  <td></td>
+														      <td></td>
+															  <td></td>
+														    </tr>
+														</article>
+													{% endfor %}
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+	                    
+						<div role="tabpanel" id="reclamations" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										
+
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						
+						<div role="tabpanel" id="dysfonctionnements" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										{{ include('datatable/dysfonctionnementtable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="actions" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										{{ include('datatable/actiontable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+						<div role="tabpanel" id="audits" class="tab-pane">
+	                        <div class="panel-body">
+		                        <div class="row">
+									<div class="col-lg-12">
+										{{ include('datatable/audittable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+
+									</div>
+								</div>
+	                        </div>
+	                    </div>
+	                </div>
+				</div>
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+
+{% block javascripts %}
+<script>
+	$(document).ready(function(){
+		
+		$('.dataTables-controle').DataTable({
+                pageLength: 25,
+                responsive: false,
+                dom: '<"html5buttons"B>lTfgitp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-action',visible: false, searchable: false	},
+	             ],
+                buttons: [
+                    {extend: 'copy'},
+                    {extend: 'csv', title: 'MAPSI {{app.user.customer.designation}} Controle'},
+                    {extend: 'excel', title: 'MAPSI {{app.user.customer.designation}} Controle'},
+                    {extend: 'pdf', title: 'MAPSI {{app.user.customer.designation}} Controle'},
+                    {extend: 'print', title: 'MAPSI {{app.user.customer.designation}} Conntrole',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ]
+            });
+            
+
+        });
+
+</script>
+    
+{% endblock %}

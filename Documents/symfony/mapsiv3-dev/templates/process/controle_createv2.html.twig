@@ -1,0 +1,189 @@
+{% extends 'baseform.html.twig' %}
+
+{% form_theme formControle _self %}
+
+{% block body %}
+	{{ form_start(formControle) }}
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="ibox" id="printed">
+					<div class="ibox-content">
+						<div class="row">
+							<div class="col-lg-4">
+								<h1>
+								{% if not editMode %}
+								Nouveau controle
+								{% else %}
+								controle
+								{% endif %}
+								</h1>
+							</div>
+							<div class="col-lg-8">
+                                <span class="float-right">
+                                    <a class="btn btn-white btn-sm noprint" onclick="leaveEntity('controle')">Quitter</a>
+                                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+                                        <button type='submit' class="btn btn-primary btn-sm noprint disab" data-id="{{ controle.id }}" onclick="deleteEntity({{ controle.id | default("undefined") }},'controle')">X</button>
+                                        <button type='submit' class="btn btn-primary btn-sm noprint disab" data-id="{{ controle.id }}" onclick="submitAjax({{ controle.id | default("undefined") }},'controle')">
+                                        {% if editMode %}
+                                        Enregistrer <span class="change-message">
+                                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+                                        </svg>
+                                        </span>
+                                        {% else %}
+                                        Ajouter
+                                        {% endif %}
+                                        </button>
+                                    {% endif %}
+                                </span>
+							</div>
+						</div>
+						
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="row">
+									<div class="col-lg-12">
+										<br>
+										<div class="form-group row">
+											<div class="col-sm-2"></div>
+											<div class="col-sm-10">{{ form_widget(formControle.designation)}}</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-2 col-form-label text-sm-right"><strong></strong></label>
+											<div class="col-sm-5">
+												{{ form_widget(formControle.responsable)}}<small id="" class="form-text text-muted">Responsable</small>
+												{{ form_widget(formControle.suppleant)}}<small id="" class="form-text text-muted">Suppléant</small>
+											</div>
+											<div class="col-sm-5">{{ form_widget(formControle.peoples)}}<small id="" class="form-text text-muted">Contributeurs</small></div>
+											
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<br><br>
+					
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="tabs-container">
+									<ul class="nav nav-tabs">
+										<li>
+											<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-info-circle"></i>
+												</span>
+											</a>
+										</li>
+										{% if editMode %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#docs"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-files-o"></i>
+												</span>
+											</a>
+										</li>
+										{% endif %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#comment"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-pencil-square-o"></i>
+												</span>
+											</a>
+										</li>
+									</ul>
+									
+									<div class="tab-content">
+										
+										<div id="introduction" class="tab-pane active show">
+											<div class="panel-body">
+												<div class="row">	
+													<div class="col-sm-12">
+													
+														<h2>Description</h2>
+
+                                                        <div class="form-group  row">
+                                                            <label class="col-sm-2 col-form-label">{{ form_label(formControle.description, 'Description') }}</label>
+                                                            <div class="col-sm-10">{{ form_widget(formControle.description)}}</div>
+                                                            <div class="col-sm-3"></div>
+                                                        </div>
+
+                                                        
+														
+													</div>
+													<div class="col-lg-12">
+														<h2>Relations</h2>
+
+                                                        
+															
+													</div>
+												</div>
+											</div>
+										</div>
+									
+
+										{% if editMode %}
+										<div id="docs" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Controle', 'entryprefix': 'AU', 'entryid': controle.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+													</div>
+												</div>
+											</div>
+										</div>
+										{% endif %}
+										<div id="comment" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Notes</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														{{ form_widget(formControle.commentaire)}}
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>						
+					</div>
+				</div>
+			</div>
+		</div>
+
+    {{ form_end(formControle) }}
+{% endblock %}
+
+
+
+	
+{% block javascripts %}
+
+	<script>
+
+	$(document).ready(function() {		
+		
+        
+		
+
+
+        
+	});	
+
+
+			
+		
+	</script>
+	
+{% endblock %}
+	
+
+
+

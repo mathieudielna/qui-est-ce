@@ -1,0 +1,556 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formTache _self %}
+
+{% block stylesheets %}
+	<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+		.change-message {
+		display: none;
+		}
+    </style>
+{% endblock %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    {% if editMode %}
+					<h2>Fiche tâche</h2>
+					{% else %}
+					<h2>Créer une nouvelle tâche</h2>
+					{% endif %} 
+                    <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+						<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+						</svg> Retour vers {{ rr }}
+					</a> 
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-program">
+                       
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+{% block body %}
+
+	{{ form_start(formTache) }}
+ 	<div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox border" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+                                	<a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+								</span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									Task - {{ tache.id }} {{ tache.jalon | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Statut :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% if tache.progression==100 %}
+										<span class="badge badge-success small">
+										Terminé
+										</span>
+										{% elseif tache.progression == 0 and tache.responsable is null %}
+										<span class="badge small">
+										Non démarré
+										</span>
+										{% elseif tache.progression < 100 and tache.daterevue > tache.date %}
+										{% set difference = date(tache.daterevue).diff(date(tache.date)) %}
+										{% set leftDays = difference.days %}
+										<span class="badge badge-warning small" data-toggle="tooltip" data-placement="right" title="{{leftDays}} jours de retard">
+										En cours (!)
+										</span>
+										{% else %}
+										<span class="badge badge-primary small">
+										En cours
+										</span>
+										{% endif %}
+									</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Etat :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(tache) %}<strong>{{ workflow_metadata(tache, 'title', place) ?: ''}}</strong>{% endfor %}
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if tache.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : tache.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ tache.responsable.firstname | default("") }} {{ tache.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if tache.suppleant is not null %}
+									<a href="{{path('people_edit',{'id' : tache.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ tache.suppleant.firstname | default("") }} {{ tache.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							{% if tache.peoples | length >0 %}
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in tache.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+							{% endif %}
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ tache.publishedat | date("d M Y")  }} par {{ tache.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+
+
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+								<div class="col-sm-8 text-sm-left">
+									<dd class="mb-1">Passé en {% for place in workflow_marked_places(tache) %} {{ workflow_metadata(tache, 'title', place)|lower ?: ''}}{% endfor %} le {{ tache.validatedat | date("d M Y")  }} par {{ tache.validator.firstname | default("n/c") }} </dd>
+
+									<div class="hr-line-dashed"></div>
+
+									<ul class="steps">
+										<li class="step {% if workflow_has_marked_place(tache, 'pre_running') or workflow_has_marked_place(tache, 'running') or workflow_has_marked_place(tache, 'validation') or workflow_has_marked_place(tache, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(tache, 'draft') %}step-active{% elseif workflow_has_marked_place(tache, 'rejected') %}step-error{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">1</span>
+											<span class="step-text">{% if workflow_has_marked_place(tache, 'draft') or workflow_has_marked_place(tache, 'rejected') %}Brouillon{% else %}Initié{% endif %}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(tache, 'validation') or workflow_has_marked_place(tache, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(tache, 'running') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">2</span>
+											<span class="step-text">{% if workflow_has_marked_place(tache, 'pre_running') or workflow_has_marked_place(tache, 'running') or workflow_has_marked_place(tache, 'draft') or workflow_has_marked_place(tache, 'rejected') %}En cours{% else %}Finalisé{% endif%}</span>
+											</div>
+										</li>
+										<li class="step {% if workflow_has_marked_place(tache, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(tache, 'validation') %}step-active{% endif %}">
+											<div class="step-content">
+											<span class="step-circle">3</span>
+											<span class="step-text">{% if workflow_has_marked_place(tache, 'validation_ok') %}Validé{% else %}Validation{% endif%}</span>
+											</div>
+										</li>
+									</ul>
+
+									<div class="hr-line-dashed"></div>
+
+                                   
+									
+									{% set roles = "" %}{% if tache.action.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "responsableaction" %}{% endif %}
+									{% set roler = "" %}{% if tache.action.responsable == app.user.people or tache.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% endif %}
+									{% for transition in workflow_transitions(tache) %}
+										{% if workflow_can(tache, transition.name) %}
+											{% if workflow_metadata(tache, 'role', transition) in [roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(tache, 'ambiance', transition)}} btn-xs adisab" href="{{path('tache_workflow', {
+												'id' : tache.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(tache, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No actions available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+					</div>
+
+                    {% if editMode %}
+                    <div class="row">
+                        <div class="col-lg-6">
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Progression :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd>
+                                        <div class="progress m-b-1" id="barprogressionshow">
+                                            <div style="width: {{ formTache.vars.value.progression | number_format(0, '.', ' ') }}%;" class="progress-bar progress-bar-striped progress-bar-animated"></div>
+                                        </div>
+                                        <small>Progression estimée à <strong id="progressionshow">{{ formTache.vars.value.progression | number_format(0, '.', ' ') }} %</strong></small>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+					<br><br>
+					
+		            <div class="row">
+						<div class="col-lg-12">
+		            		<div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#tab-info"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+		                            <li>
+		                            	<a class="nav-link" data-toggle="tab" href="#tab-files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+		                            <li><a class="nav-link" data-toggle="tab" href="#tab-note"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+								<div class="tab-content">
+		                            <div id="tab-info" class="tab-pane active show">
+		                                <div class="panel-body">
+											<div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formTache.jalon, 'Désignation') }}</label>
+												<div class="col-sm-5">{{ form_widget(formTache.jalon, { 'attr': {'class': 'VarDesignation'} })}}</div>
+												<div class="col-sm-5">
+													{{ form_widget(formTache.topjalon) }}<br>
+													{{ form_widget(formTache.fini, { 'attr': {'class': 'VarJalFini', 'data-action':'show'} })}}
+													<div class="invisible" style="height: 0px;">{{ form_widget(formTache.mcustomer)}}</div>	
+												</div>
+										    </div>
+										
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formTache.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formTache.description)}}</div>
+										    </div>
+
+											<div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formTache.action, 'Action parente') }}</label>
+												<div class="col-sm-10">{{ form_widget(formTache.action)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Responsale</span>{{ form_widget(formTache.responsable, { 'attr': {'class': 'VarResponsable'} })}}</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Suppleant</span>{{ form_widget(formTache.suppleant, { 'attr': {'class': 'VarSuppleant'} })}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formTache.peoples, { 'attr': {'class': 'select2'} })}}</div>
+										            </div>
+										        </div>
+										    </div>
+
+											<div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Tracking</label>
+										        <div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Tendance</span>
+															{{ form_widget(formTache.rag)}}
+														</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Progression</span>
+															{% if formTache.vars.value.fini is defined and formTache.vars.value.fini ==1 %}
+															{{ form_widget(formTache.progression, { 'attr': {'class': 'VarProgression Off'} })}}
+															{%else%}
+															{{ form_widget(formTache.progression, { 'attr': {'class': 'VarProgression'} })}}
+															{%endif%}
+														</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Budget</span>
+															{% if formTache.vars.value.fini is defined and formTache.vars.value.fini ==1 %}
+															{{ form_widget(formTache.budget, { 'attr': {'class': 'VarBudget Off'} })}}
+															{%else%}
+															{{ form_widget(formTache.budget, { 'attr': {'class': 'VarBudget'} })}}
+															{%endif%}
+														</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">J/H</span>
+															{% if formTache.vars.value.fini is defined and formTache.vars.value.fini ==1 %}
+															{{ form_widget(formTache.etp, { 'attr': {'class': 'VarEtp Off'} })}}
+															{%else%}
+															{{ form_widget(formTache.etp, { 'attr': {'class': 'VarEtp'} })}}
+															{%endif%}
+														</div>
+										            </div>
+										        </div>
+										    </div>
+
+											<div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Planification</label>
+										        <div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Démarrage</span>
+															{% if formTache.vars.value.fini is defined and formTache.vars.value.fini ==1 %}
+															{{ form_widget(formTache.datedebut, { 'attr': {'class': 'VarDateDebut Off'} })}}
+															{%else%}
+															{{ form_widget(formTache.datedebut, { 'attr': {'class': 'VarDateDebut'} })}}
+															{%endif%}
+														</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Fin planifiée</span>
+															{% if formTache.vars.value.fini is defined and formTache.vars.value.fini ==1 %}
+															{{ form_widget(formTache.date, { 'attr': {'class': 'VarDateprevisionnelle Off'} })}}
+															{%else%}
+															{{ form_widget(formTache.date, { 'attr': {'class': 'VarDateprevisionnelle'} })}}
+															{%endif%}
+														</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Outlook</span>
+															{% if formTache.vars.value.fini is defined and formTache.vars.value.fini ==1 %}
+															{{ form_widget(formTache.daterevue, { 'attr': {'class': 'VarDateRevue Off'} })}}
+															{%else%}
+															{{ form_widget(formTache.daterevue, { 'attr': {'class': 'VarDateRevue'} })}}
+															{%endif%}
+														</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">J/H</span>
+															{% if formTache.vars.value.fini is defined and formTache.vars.value.fini ==1 %}
+															{{ form_widget(formTache.datereelle, { 'attr': {'class': 'VarDateReelle On'} })}}
+															{%else%}
+															{{ form_widget(formTache.datereelle, { 'attr': {'class': 'VarDateReelle Off'} })}}
+															{%endif%}
+														</div>
+										            </div>
+										        </div>
+										    </div>
+											<span class="text-danger"><small>* information obligatoire</small></span>
+						            	</div>
+		                            </div>
+									<div id="tab-files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Portfolio', 'entryprefix': 'T', 'entryid': tache.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="tab-note" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formTache.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+								</div>
+		            		</div>
+			            </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formTache) }}	
+	
+{% endblock %}
+
+
+
+{% block javascripts %}
+	<script>
+		$(document).ready(function() {
+		
+			
+			$('.Off').prop('readonly', true);
+
+			//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+	
+		
+		});
+
+		function hidedatefin () {
+	        $('input[data-action="show"]').on('click', function () {
+				var pureid = this.id.replace('action_jalonConnectActions_',''); var pureid = pureid.replace('_fini','');
+	            if ($(this).prop('checked')) {
+		            
+		            const target = this.dataset.target;
+					$.confirm({
+					     title: 'Confirmation',
+						    content: 'Finaliser une tâche nécessite une progression à 100% et une date de fin.<br><br>Voulez vous continuer ?',
+						    buttons: {
+						        confirmer: function () {
+						          $('input[id="jalon_connect_action_datereelle"]').prop('readonly', false);
+						          $('input[id="jalon_connect_action_daterevue"]').prop('readonly', true);
+						          $('input[id="jalon_connect_action_datedebut"]').prop('readonly', true);
+						          $('input[id="jalon_connect_action_date"]').prop('readonly', true);
+						          $('input[id="jalon_connect_action_progression"]').prop('readonly', true);
+						          $('input[id="jalon_connect_action_budget"]').prop('readonly', true);
+						          $('input[id="jalon_connect_action_etp"]').prop('readonly', true);
+						          $('input[id="jalon_connect_action_progression"]').val('100');
+
+						        },
+						        annuler: function () {
+							        $('input[id="action_jalonConnectActions_'+pureid+'_fini"]').prop('checked', false)
+							         $('input[id="action_jalonConnectActions_'+pureid+'_datereelle"]').prop('readonly', true);
+						        }    
+						    }
+					});
+	            } else {
+		            const target = this.dataset.target;
+					$.confirm({
+					     title: 'Confirmation',
+						    content: 'Voulez vous réouvrir ce jalon / livrable ?',
+						    buttons: {
+						        confirmer: function () {
+							      $('input[id="jalon_connect_action_datereelle"]').val('');  
+						          $('input[id="jalon_connect_action_datereelle"]').prop('readonly', true);
+						          $('input[id="jalon_connect_action_daterevue"]').prop('readonly', false);
+						          $('input[id="jalon_connect_action_datedebut"]').prop('readonly', false);
+						          $('input[id="jalon_connect_action_date"]').prop('readonly', false);
+						          $('input[id="jalon_connect_action_progression"]').prop('readonly', false);
+						          $('input[id="jalon_connect_action_budget"]').prop('readonly', false);
+						          $('input[id="jalon_connect_action_etp"]').prop('readonly', false);
+
+						        },
+						        annuler: function () {
+							        $('input[id="jalon_connect_action_fini"]').prop('checked', true)
+							         $('input[id="jalon_connect_action_datereelle"]').prop('readonly', false);
+						        }    
+						    }
+					});
+	            }
+	        });
+	    };
+	    hidedatefin ();
+		
+		function saveLeave (){
+				$('button[data-action="leave"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+						    buttons: {
+						        quitter: function () {
+						           $(location).attr('href', target);
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		saveLeave();
+	
+		
+			/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+	</script>
+{% endblock %}
+
+

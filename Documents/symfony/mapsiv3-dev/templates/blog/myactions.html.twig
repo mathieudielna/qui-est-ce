@@ -1,0 +1,348 @@
+<div class="profile-info">
+							<div class="">
+								{% if app.user.people %}
+								<h2 class="no-margins">
+									{{ app.user.people.firstname | capitalize }} {{ app.user.people.lastname | capitalize }}
+								</h2>
+								<h4>{{ app.user.people.role| default("") }}</h4>
+								<small>
+									{{ app.user.people.metier.designation | default("Le métier n\'est pas défini") }}
+								</small>
+								{% endif %}
+								<br><br>
+								<h5>Mes composants MAPSI</h5>
+								{% if sites|length == 0 and 
+									processuses|length == 0 and 
+									activites|length == 0 and 
+									fluxes|length == 0 and 
+									objetmetiers|length == 0 and 
+									applications|length == 0 and 
+									actions|length == 0 and 
+									jalons|length == 0 and
+									risques|length == 0 %}
+									<small>Aucun composant à afficher</small>
+								{% endif %}
+								{% if sites|length > 0 %}<button class="btn btn-primary btn-sm" type="button" style="margin-bottom:5px;">{{ sites|length }} Site{% if sites|length > 1 %}s{% endif %}</button>{% endif %}
+								{% if processuses|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Processus ({{ processuses|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for processus in allprocessuses if processus.responsable == app.user.people and processus.statut == "validation" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for processus in allprocessuses if processus.suppleant == app.user.people or processus.responsable == app.user.people and processus.statut == "review"%}		
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for processus in allprocessuses if processus.suppleant == app.user.people or processus.responsable == app.user.people or processus.peoples == app.user.people and processus.statut == "rejeté" or processus.statut == "brouillon" %}																		
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if activites|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Activités ({{ activites|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for activite in allactivites if activite.responsable == app.user.people and activite.statut == "validation" %}																				
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for activite in allactivites if activite.suppleant == app.user.people or activite.responsable == app.user.people and activite.statut == "review" %}
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for activite in allactivites if activite.suppleant == app.user.people or activite.responsable == app.user.people or activite.peoples == app.user.people and activite.statut == "rejeté" or activite.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if fluxes|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Traitements ({{ fluxes|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for flux in allfluxes if flux.responsable == app.user.people and flux.statut == "validation" %}																				
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for flux in fluxes if flux.suppleant == app.user.people or flux.responsable == app.user.people and flux.statut == "review" %}
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for flux in fluxes if flux.suppleant == app.user.people or flux.responsable == app.user.people or flux.peoples == app.user.people and flux.statut == "rejeté" or flux.statut == "brouillon"  %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if objetmetiers|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Objets métiers ({{ objetmetiers|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for objet in allobjetmetiers if objet.responsable == app.user.people and objet.statut == "validation" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for objet in allobjetmetiers if objet.suppleant == app.user.people or objet.responsable == app.user.people and objet.statut == "review" %}	
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for objet in allobjetmetiers if objet.suppleant == app.user.people or objet.responsable == app.user.people or objet.peoples == app.user.people and objet.statut == "rejeté" or objet.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if applications|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Applications ({{ applications|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for application in allapplications if application.responsable == app.user.people and application.statut == "validation" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for application in allapplications if application.suppleant == app.user.people or application.responsable == app.user.people and application.statut == "review" %}		
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for application in allapplications if application.suppleant == app.user.people or application.responsable == app.user.people or application.peoples == app.user.people and application.statut == "rejeté" or application.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if systemes|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Systemes ({{ systemes|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for systeme in allsystemes if systeme.responsable == app.user.people and systeme.statut == "validation" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for systeme in allsystemes if systeme.suppleant == app.user.people or systeme.responsable == app.user.people and systeme.statut == "review" %}	
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for systeme in allsystemes if systeme.suppleant == app.user.people or systeme.responsable == app.user.people or systeme.peoples == app.user.people and systeme.statut == "rejeté" or systeme.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if jalons|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Tâches ({{ jalons|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for jalon in alljalons if jalon.responsable == app.user.people and jalon.statut == "validation" %}																				
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for jalon in alljalons if jalon.suppleant == app.user.people or jalon.responsable == app.user.people and jalon.statut == "review" %}	
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for jalon in alljalons if jalon.suppleant == app.user.people or jalon.responsable == app.user.people or jalon.peoples == app.user.people and jalon.statut == "rejeté" or jalon.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if actions|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Actions ({{ actions|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for action in allactions if action.responsable == app.user.people and action.statut == "validation" %}																				
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for action in allactions if action.suppleant == app.user.people or action.responsable == app.user.people and action.statut == "review" %}		
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for action in allactions if action.suppleant == app.user.people or action.responsable == app.user.people or action.people == app.user.people and action.statut == "rejeté" or action.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if projets|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Projets ({{ projets|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for projet in allprojets if projet.responsable == app.user.people and projet.statut == "validation" %}																				
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for projet in projets if projet.suppleant == app.user.people or projet.responsable == app.user.people and projet.statut == "review" %}	
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for projet in allprojets if projet.suppleant == app.user.people or projet.responsable == app.user.people or projet.peoples == app.user.people and projet.statut == "rejeté" or projet.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if programs|length > 0 %}
+									<span class="dropdown">
+										<button class="btn btn-primary dropdown-toggle btn-sm" style="margin-bottom:5px;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											<i class="bi bi-arrow-down-up" style="font-size: 0.9rem;"></i> Programmes ({{ programs|length }})
+										</button>
+										<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+											{% set counti = "0" %}
+											{% for program in allprograms if program.responsable == app.user.people and program.statut == "validation" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à valider</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for program in programs if program.suppleant == app.user.people or program.responsable == app.user.people and program.statut == "review" %}		
+											{% set counti = counti + 1 %}																			
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à relire</span>
+											{% endif %}
+
+											{% set counti = "0" %}
+											{% for program in allprograms if program.suppleant == app.user.people or program.responsable == app.user.people or program.peoples == app.user.people and program.statut == "rejeté" or program.statut == "brouillon" %}																			
+											{% set counti = counti + 1 %}
+											{% endfor %}
+											{% if counti > 0 %}
+											<span class="badge badge-pill badge-warning m-1">{{ counti }} à rédiger</span>
+											{% endif %}
+										</div>
+									</span>								
+								{% endif %}
+								{% if risques|length > 0 %}<button class="btn btn-primary btn-sm" type="button" style="margin-bottom:5px;">{{ risques|length }} Risque{% if risques|length > 1 %}s{% endif %}</button>{% endif %}
+							</div>
+						</div>

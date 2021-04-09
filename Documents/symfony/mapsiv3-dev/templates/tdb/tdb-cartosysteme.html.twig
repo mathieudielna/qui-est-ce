@@ -1,0 +1,79 @@
+<style type="text/css">
+	#mynetworksys {
+		width: 100%;
+		height: 600px;
+		border: 1px solid lightgray;
+	}
+</style>
+
+<div id="mynetworksys"></div>
+
+<script>
+///////////// CARTO SYSTEMES
+    var nodes = [
+        {% for systeme in allsystemes %}
+                {id: {{ systeme.id }}, label: '{{ systeme.designation }}', shape: 'icon',
+                {% if systeme.typesysteme.code is defined and systeme.typesysteme.code == 'ROUT' %}icon: {face: 'FontAwesome', code: '\uf0b2', size: 50, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SWIT' %}icon: {face: 'FontAwesome', code: '\uf0b2', size: 80, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'PCUT' %}icon: {face: 'FontAwesome', code: '\uf108', size: 20, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'FIRE' %}icon: {face: 'FontAwesome', code: '\uf06d', size: 50, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVS' %}icon: {face: 'FontAwesome', code: '\uf0a0', size: 40, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'TELE' %}icon: {face: 'FontAwesome', code: '\uf098', size: 30, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'CLOU' %}icon: {face: 'FontAwesome', code: '\uf0c2', size: 80, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'SRVI' %}icon: {face: 'FontAwesome', code: '\uf233', size: 50, color: '#57169a'},
+                {% elseif systeme.typesysteme.code is defined and systeme.typesysteme.code == 'INTE' %}icon: {face: 'FontAwesome', code: '\uf233', size: 50, color: '#57169a'},
+                {% else %}icon: {face: 'FontAwesome', code: '\uf233', size: 20, color: '#57169a'},{% endif %}  
+                url: '{{path('systeme_edit',{'id' : systeme.id} ) }}'}, 
+        {% endfor %}
+    ];
+
+    // create an array with edges
+    var edges = [
+        {% for systeme in allsystemes %}
+            {% for systemeconnexe in systeme.systemeconnexes %}
+                    {from: {{ systeme.id }}, to: {{ systemeconnexe.id }}, color:{color:'#ff0000', opacity:0.3} },
+            {% endfor %}
+            {% for hos in systeme.host %}
+                    {from: {{ systeme.id }}, to: {{ hos.id }} },
+            {% endfor %}
+            {% for storage in systeme.storages %}
+                    {from: {{ systeme.id }}, to: {{ storage.id }}, color:{color:'#ffff00', opacity:1} },
+            {% endfor %}
+        {% endfor %}
+    ];
+
+    // create a network
+    var container = document.getElementById('mynetworksys');
+
+    // provide the data in the vis format
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {
+        "edges": {
+        "smooth": {
+            "forceDirection": "none",
+            "roundness": 0.2
+        }
+        },
+        "physics": {
+        "forceAtlas2Based": {
+            "springLength": 100
+        },
+        "maxVelocity": 40,
+        "minVelocity": 0.3,
+        "solver": "forceAtlas2Based",
+        "timestep": 0.40
+        }
+    }
+
+    var network = new vis.Network(container, data, options);
+            
+    network.on("selectNode", function (params) {
+    if (params.nodes.length === 1) {
+    var node = nodes.get(params.nodes[0]);
+    window.open(node.url, '_self');
+        }
+    });
+</script>

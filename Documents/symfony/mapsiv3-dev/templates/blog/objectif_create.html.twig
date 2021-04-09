@@ -1,0 +1,298 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formObjectif _self %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block headertitle %}
+    Système de management environnemental<br><br>
+{% endblock %}	
+
+{% block body %}
+{{ form_start(formObjectif) }}
+	 <div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouvel objectif
+									{% else %}
+									OBJECTIF-{{ objectif.id }} {{ objectif.designation }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Etat :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(objectif) %}<strong>{{ workflow_metadata(objectif, 'title', place) ?: ''}}</strong>{% endfor %}
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if objectif.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : objectif.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ objectif.responsable.firstname | default("") }} {{ objectif.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if objectif.suppleant is not null %}
+									<a href="{{path('people_edit',{'id' : objectif.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ objectif.suppleant.firstname | default("") }} {{ objectif.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+								
+									</dd>
+								</div>
+                            </dl>
+							
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ objectif.publishedat | date("d M Y")  }} par {{ objectif.publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                   <dd class="mb-1">Passé en {% for place in workflow_marked_places(objectif) %} {{ workflow_metadata(objectif, 'title', place)|lower ?: ''}}{% endfor %} le {{ objectif.validatedat | date("d M Y")  }} par {{ objectif.validator.firstname | default("n/c") }} </dd>
+									{% set rolep = "" %}
+									{% for people in objectif.peoples %}{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}{% endfor %}
+									{% set roles = "" %}{% if objectif.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% set roler = "" %}{% if objectif.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% for transition in workflow_transitions(objectif) %}
+										{% if workflow_can(objectif, transition.name) %}
+											{% if workflow_metadata(objectif, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(objectif, 'ambiance', transition)}} btn-xs adisab" href="{{path('objectif_workflow', {
+												'id' : objectif.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(objectif, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No objectifs available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+                    </div>
+<br><br>
+					
+					
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#tab-info"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#tab-comment"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+		                            <div id="tab-info" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formObjectif.designation, 'Designation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formObjectif.designation)}}</div>
+											</div>
+
+
+											<div class="hr-line-dashed"></div>
+										     
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formObjectif.responsable)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formObjectif.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formObjectif.peoples)}}</div>
+										            </div>
+										        </div>
+										    </div>
+
+
+											<div class="hr-line-dashed"></div>
+					    
+										    <div class="form-group row">
+												<label class="col-sm-2 col-form-label">Objectif cible</label>
+										        <div class="col-sm-5">
+													<span class="form-text m-b-none text-navy">Valeur cible</span>
+										            {{ form_widget(formObjectif.valeurcible)}}
+										        </div>
+										        <div class="col-sm-5">
+													<span class="form-text m-b-none text-navy">Type de valeur</span>
+										            {{ form_widget(formObjectif.type)}}
+										        </div>
+										    </div>
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formObjectif.typeconformite, 'Domaines de conformité') }}</label>
+												<div class="col-sm-10">{{ form_widget(formObjectif.typeconformite)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Valeur indicateur {% if is_granted('ROLE_ADMIN') %}<button type='button' id="add-indicateur" class="btn btn-outline-success btn-xs">+</button>{% endif %}
+												</label>
+												<div class="col-sm-10">{{ form_widget(formObjectif.indicateurs) }}</div>
+											</div>
+											
+											
+		                                </div>
+		                            </div>
+	
+		                             <div id="tab-files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'QUALITE', 'entryprefix': 'QUAL', 'entryid':  objectif.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+		                            <div id="tab-comment" class="tab-pane">
+		                                <div class="panel-body">
+			                                
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        
+										    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formObjectif) }}
+{% endblock %}
+
+{% block _objectif_indicateurs_widget %}
+		{{ form_widget(form)}}
+{% endblock %}
+{% block _objectif_indicateurs_entry_widget %}
+    <div class="row" id="block_{{id}}">
+		<div class="col-6"><span class="form-text m-b-none text-navy">Valeur à date</span>{{ form_widget(form.valeur)}}</div>
+		<div class="col-3"><span class="form-text m-b-none text-navy">Date de publication</span>{{ form_widget(form.PublishedAt)}}</div>
+		<div class="col-1"><span class="form-text m-b-none text-white">.</span>{% if is_granted('ROLE_ADMIN') %}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+    </div>
+{% endblock %}
+
+
+{% block javascripts %}
+
+	
+	<script>
+		$(document).ready(function() {
+			$('#objectif_responsable').select2();
+
+		
+		function saveLeave (){
+				$('button[data-action="leave"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+						    buttons: {
+						        quitter: function () {
+						           $(location).attr('href', target);
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		saveLeave();
+		});
+
+		//Ajout des objectifs
+		$('#add-indicateur').click(function(){
+			const index =$('#objectif_indicateurs div.row').length;
+			const tmpl =$('#objectif_indicateurs').data('prototype').replace(/__name__/g, index);
+		
+			$('#objectif_indicateurs').append(tmpl);
+			handleDeleteButtons();
+		});
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+	</script>
+	
+{% endblock %}
+
+

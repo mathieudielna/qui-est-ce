@@ -1,0 +1,302 @@
+<div class="row">
+    <div class="col-lg-12">
+    <h2>Indicateurs environnementaux 2021</h2>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Tracking</h4>
+                        <h6 class="card-subtitle mb-2 text-muted">Evènements Environnement</h6>
+                        <div class="card-text">
+                            <canvas id="myTracking" height="80"></canvas>
+                            
+                        </div>
+                    </div>
+                </div>
+
+				<div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">PLANNING</h4>
+                        <h6 class="card-subtitle mb-2 text-muted">Audits et événements environementaux</h6>
+                        <div class="card-text text-center">
+                            <div id="planningaudit"></div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Tracking</h4>
+                        <h6 class="card-subtitle mb-2 text-muted">Suivi des objectifs</h6>
+                        <div class="card-text">
+                            <table class="table table-hover no-margins">
+                                {% for objectif in objectifs %}
+                                <tr>
+                                    <td class="table-title"><a class="" href="">{{ objectif.designation }}</a></td>
+                                    <td>
+                                    {% for indicateur in objectif.indicateurs | sortbyfield('PublishedAt') | slice(0, 1)  if indicateur.PublishedAt is not null %}
+                                            <strong>{{ indicateur.valeur }} {{ objectif.type }}</strong> <small>(Cible {{ objectif.valeurcible }})</small>
+                                    {% endfor %}<br>
+                                    <span class="sparklines" sparkType="bar" sparkBarColor="green">{% for indicateur in objectif.indicateurs | sortbyfield('PublishedAt') %}{{ indicateur.valeur }}{% if loop.last == false  %},{% endif%}{% endfor %}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+				<div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">AES</h4>
+                        <h6 class="card-subtitle mb-2 text-muted">Aspects environementaux significatifs</h6>
+                        <div class="card-text">
+                            <table class="table table-hover no-margins">
+                                {% for aes in aspectenvs %}
+                                <tr>
+                                    <td class="table-title"><a class="" href="">{{ aes.designation }}</a></td>
+                                    <td class="text-center">
+                                        <strong><span class="badge scoreaes">{{ aes.criticite | default("")  }}</span></strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <canvas id="myCharttypeaes"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                
+            </div>
+            <div class="col-lg-4">
+                
+            </div>
+        </div>
+        {# <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">PLAN DE MISE EN CONFORMITE</h4>
+                        <h6 class="card-subtitle mb-2 text-muted">Suivi des actions</h6>
+                        <div class="card-text">
+                            {{ include('datatable/actionminitable.html.twig', {r : app.request.get('_route'), rr : conformite }) }}
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> #}
+        {# <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">PLAN DE MISE EN CONFORMITE</h4>
+                        <h6 class="card-subtitle mb-2 text-muted">Suivi des actions</h6>
+                        <div class="card-text">
+                            {{ app.user.customer.designation }} CONTEXTE<br>
+                            Tableaux de bord environnementale<br>
+                            Contexte de l'entreprise, définition des enjeux internes et externes, identification des partis interessés<br>
+                            Cartographie des processus avec des indicateurs supplementaires de performance envinementale<br>
+                            Gestion de projet Programme, plan d'action SME avec suivi budgétaire<br>
+                            Gestion ds risques<br>
+                            Rôles et responsabilités<br>
+                            Politique Environementale<br>
+                            Liste des aspects environementaux et des impacts AES (Activités, domaine, site, impact en situation normale, anormale ou d'urgence)(Gravité, fréquence, sensibilité, avant maitrise maitrise finale) flag AES<br>
+                            Documentation et procédures opérationnelles et de test<br>
+                            Tracking des tests<br>
+                            Audits<br>
+                            Revue de direction (Résultats Audit, Planification)<br>
+                            Incidents<br>
+                            Problèmes<br>
+                            Réclamations<br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> #}
+    </div>
+</div>
+
+<script>
+
+$('.sparklines').sparkline('html', { enableTagOptions: true });
+
+
+		///////////// Graphique type aspect environnementaux
+
+		
+
+
+	var ctx = document.getElementById('myCharttypeaes').getContext('2d');
+	var myChart = new Chart(ctx, {
+	    type: 'doughnut',
+	    data: {
+	        labels: [{% for typeaes in typeaspectenvs if typeaes.aspectEnvs|length > 0 %}"{{ typeaes.designation }}",{% endfor %}],
+	        datasets: [{
+	            label: 'Occurences',
+	            data: [{% for typeaes in typeaspectenvs if typeaes.aspectEnvs|length > 0  %}{{ typeaes.aspectEnvs|length }},{% endfor %}]
+	      }]
+	    },
+	    options: {
+		    plugins: {
+					labels: [
+						{
+							render: 'value',
+							fontSize: 15,
+							fontStyle: 'bold',
+							fontColor:'#fff',
+						},
+						{
+							render: 'label',
+							fontSize: 10,
+							fontStyle: 'bold',
+							position: 'outside',
+						},
+					],
+					colorschemes: {
+				        scheme: 'tableau.Classic10'
+				      }
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+	    }
+	});
+
+
+		///////////// GANTT
+
+			// create a dataset with items
+			// note that months are zero-based in the JavaScript Date object, so month 3 is April
+			var items = new vis.DataSet([
+			
+					{% for audit in audits  %}
+					  {
+					    id: 'aud{{ audit.id }}',
+					    content: "{{ audit.designation }}",
+					    start: new Date({{audit.startedat|date_modify("-1 month")|date("Y, m, d")}}),
+						type: "box",
+						className: "orange",
+					  },
+					{% endfor %}
+			]);
+			// create visualization
+			var container = document.getElementById("planningaudit");
+			var options = {
+			  editable: false,
+			};
+
+			var timeline = new vis.Timeline(container);
+			timeline.setOptions(options);
+			timeline.setItems(items);
+
+
+
+		///////////// TRACKING RGPD
+		var ctxi = document.getElementById('myTracking').getContext('2d');
+		var myChart = new Chart(ctxi, {
+			type: 'horizontalBar',
+			data: {
+				labels: ['Visites', 'Dysfonctionnements', 'Réclamations', 'Actions conformité'],
+				datasets: [{
+					label: 'En cours',
+					data: [
+						{% set visitecount = 0 %}{% for visite in visites if visite.statut is null or visite.statut == "" or visite.statut=="draft" %}{% set visitecount = visitecount + 1 %}{% endfor %}{{visitecount}},
+						{% set dyscount = 0 %}{% for dysfonctionnement in dysfonctionnements if dysfonctionnement.statut is not null or dysfonctionnement.statut == "" or dysfonctionnement.statut =="draft" %}{% set dyscount = dyscount + 1 %}{% endfor %}{{dyscount}},
+						{% set reccount = 0 %}{% for reclamation in reclamations if reclamation.statut is not null or reclamation.statut  == "" or reclamation.statut == "draft" %}{% set reccount = reccount + 1 %}{% endfor %}{{reccount}},
+						{% if actions|length > 0 %}{% set count = 0 %}{% for action in actions if action.progression != 100 %}{% for typeconformit in action.typeconformite if typeconformit.designation == "Environnement" %}{% set count = count + 1 %}{% endfor %}{% endfor %}{{ count }}{% endif%}
+					]
+				}, {
+					label: 'Terminé',
+					data: [
+						{% set visitecount = 0 %}{% for visite in visites if visite.statut is not null and visite.statut != ""  and visite.statut!="draft" %}{% set visitecount = visitecount + 1 %}{% endfor %}{{visitecount}},
+						{% set dyscount = 0 %}{% for dysfonctionnement in dysfonctionnements if dysfonctionnement.statut is not null and dysfonctionnement.statut != "" and dysfonctionnement.statut !="draft" %}{% set dyscount = dyscount + 1 %}{% endfor %}{{dyscount}},
+						{% set reccount = 0 %}{% for reclamation in reclamations if reclamation.statut is not null and reclamation.statut != "" and reclamation.statut != "draft" %}{% set reccount = reccount + 1 %}{% endfor %}{{reccount}},
+						{% set count = 0 %}{% for action in actions if action.statut is not null and action.statut.code is defined and action.statut.code==1 %}{% for typeconformit in action.typeconformite if typeconformit.designation == "Environnement" %}{% set count = count + 1 %}{% endfor %}{% endfor %}{{ count }}
+					]
+				}]
+			},
+			options: {
+				tooltips: {
+				callbacks: {
+					labelTextColor:function(tooltipItem, chart){
+						return '#ffffff';
+					}
+				}
+				},
+				scales: {
+					xAxes: [{
+						stacked: true,
+						ticks: {
+							beginAtZero: true,
+							min: 0,					
+							// forces step size to be 5 units
+							stepSize: 1 // <----- This prop sets the stepSize
+							
+						},
+						scaleLabel: {
+									display: true,
+									labelString: 'Nb.'
+								},
+						gridLines: {
+							display:false
+									}
+					}],
+					yAxes: [{
+						stacked: true, 
+						gridLines: {
+						display:false
+									}
+					}]
+				},	
+				plugins: {
+						labels: [
+							{
+							render: 'value'
+							}
+						],
+						colorschemes: {
+							scheme: 'tableau.Tableau20'
+						}
+					},
+						legend: {
+							display: true,
+							position:'bottom'
+				}
+			}
+		}); 
+		
+
+
+		$(function () {
+
+		$(".scoreaes").each(function(index){
+			var score = parseInt($(this).text().trim());
+			var classaes = '';
+			if (!isNaN(score)) {
+				if (score <= 99) {
+					classaes = 'badge-primary';
+				}
+				if (score >= 101) {
+					classaes = 'badge-danger';
+				}
+				$(this).addClass(classaes);
+			}
+			})
+		});
+
+		
+
+  
+
+</script>
+
+    

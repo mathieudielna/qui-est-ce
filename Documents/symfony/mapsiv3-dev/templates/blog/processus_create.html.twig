@@ -1,0 +1,655 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formProcessus _self %}
+
+{% block stylesheets %}
+	<style type="text/css">
+            
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+
+		.change-message {
+				display: none;
+			}
+    </style>
+
+{% endblock %}
+
+{% block header %}
+
+	<div class="row wrapper border-bottom white-bg page-heading">
+		<div class="col-sm-8">
+			{% if editMode %}
+			<h2>Fiche processus</h2>
+			{% else %}
+			<h2>Créer une nouveau processus</h2>
+			{% endif %} 
+			<a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+				<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+				</svg> Retour vers {{ rr }}
+			</a>
+		</div>
+		<div class="col-sm-4">
+			<div class="title-action">
+				
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block body %}
+	{{ form_start(formProcessus) }}
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="ibox" id="printed">
+					<div class="ibox-content">
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="m-b-md">
+									<span class="float-right">
+										<a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+										{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+										<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										{% if editMode %}
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+										</span>
+										{% else %}
+										Ajouter
+										{% endif %}
+										</button>
+										{% endif %}
+									</span>
+									<h2>
+										{% if not editMode %}
+										Nouvelle fiche
+										{% else %}
+										p-{{ processus.id }} {{ processus.designation | capitalize }}
+										{% endif %}
+									</h2>
+								</div>
+							</div>
+							{% if editMode %}
+							<div class="col-lg-6">
+								<dl class="row mb-0">
+									<div class="col-sm-4 text-sm-right">
+										<dt>Statut :</dt>
+									</div>
+									<div class="col-sm-8 text-sm-left">
+										<dd class="mb-1">
+										{% for place in workflow_marked_places(processus) %}<strong>{{ workflow_metadata(processus, 'title', place) ?: ''}}</strong>{% endfor %}
+										
+										</dd>
+									</div>
+								</dl>
+								<dl class="row mb-0">
+									<div class="col-sm-4 text-sm-right">
+										<dt>Managers :</dt>
+									</div>
+									<div class="col-sm-8 text-sm-left">
+										<dd class="mb-1">
+										{% if processus.responsable is not null %}
+										<a href="{{path('people_edit',{'id' : processus.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+										{{ processus.responsable.firstname | default("") }} {{ processus.responsable.lastname | default("N/C") }}
+										</a>
+										{% endif %}
+										{% if processus.suppleant is not null %}
+										<a shref="{{path('people_edit',{'id' : processus.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+										{{ processus.suppleant.firstname | default("") }} {{ processus.suppleant.lastname | default("N/C") }}
+										</a>
+										{% endif %}
+										</dd>
+									</div>
+								</dl>
+								<dl class="row mb-0">
+									<div class="col-sm-4 text-sm-right">
+										<dt>Contributeurs :</dt>
+									</div>
+									<div class="col-sm-8 text-sm-left">
+										<dd class="mb-1">
+											{% for people in processus.peoples %}
+												<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+												{{ people.firstname }} {{ people.lastname }} 
+												</a>
+											{% endfor %}
+										</dd>
+									</div>
+								</dl>
+								
+							</div>
+							<div class="col-lg-6" id="cluster_info">
+								<dl class="row mb-0">
+									<div class="col-sm-4 text-sm-right">
+										<dt>Mise à jour :</dt>
+									</div>
+									<div class="col-sm-8 text-sm-left">
+										<dd class="mb-1">le {{ processus.publishedat | date("d M Y")  }} par {{ processus.Publisher.firstname | default("n/c") }} </dd>
+									</div>
+								</dl>
+								<dl class="row mb-0">
+									<div class="col-sm-4 text-sm-right">
+										<dt>Workflow :</dt>
+									</div>
+									
+									<div class="col-sm-8 text-sm-left">
+										<dd class="mb-1">Passé en {% for place in workflow_marked_places(processus) %} {{ workflow_metadata(processus, 'title', place)|lower ?: ''}}{% endfor %} le {{ processus.validatedat | date("d M Y")  }} par {{ processus.validator.firstname | default("n/c") }} </dd>
+										{% set rolep = "" %}
+										{% for people in processus.peoples %}
+											{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}
+										{% endfor %}
+										{% set roles = "" %}{% if processus.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+										{% set roler = "" %}{% if processus.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+										{% for transition in workflow_transitions(processus) %}
+											{% if workflow_can(processus, transition.name) %}
+												{% if workflow_metadata(processus, 'role', transition) in [rolep, roles, roler] %}
+													<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(processus, 'ambiance', transition)}} btn-xs adisab" href="{{path('processus_workflow', {
+													'id' : processus.id,
+													'statut' : transition.name, 
+													'r' : r,
+													'rr' : rr
+													})}}">
+													{{ workflow_metadata(processus, 'title', transition) ?: 'n-a'}}
+													</a>
+												{% endif %}
+											{% endif %}
+										{% else %}
+											No actions available.
+										{% endfor %}
+									</div>
+
+									
+								</dl>
+							</div>
+							{% endif %}
+						</div>
+						<br><br>
+					
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="tabs-container">
+									<ul class="nav nav-tabs">
+										{% if editMode %}
+										<li>
+											<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+												<span style="font-size: 18px;">
+													Synthèse
+												</span>
+											</a>
+										</li>
+										{% endif %}
+										<li><a class="nav-link {% if not editMode %}active show{% endif %}" data-toggle="tab" href="#information"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-info-circle"></i>
+												</span>
+											</a>
+										</li>
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#relations"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-link"></i>
+												</span>
+											</a>
+										</li>
+										{% if editMode %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#files"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-files-o"></i>
+												</span>
+											</a>
+										</li>
+										{% endif %}
+										<li>
+											<a class="nav-link" data-toggle="tab" href="#comment"> 
+												<span style="font-size: 18px;">
+													<i class="fa fa-pencil-square-o"></i>
+												</span>
+											</a>
+										</li>
+									</ul>
+									
+									<div class="tab-content">
+										{% if editMode %}
+										<div id="introduction" class="tab-pane active show">
+											<div class="panel-body">
+												<div class="row">				
+													<div class="col-sm-8">
+														<strong>{{ processus.metier.designation | default("N/C") }}, processus de {{ processus.typeprocessus.designation | default("N/C") }}</strong>
+														<p>
+														{{ processus.description | raw}}
+														</p>
+														{% if processus.finalite is not null and processus.finalite is defined %}
+															<h5>Finalité</h5>
+															<p>{{ processus.finalite | raw}}</p>
+														{% endif %}
+														{% if processus.pilotage is not null and processus.pilotage is defined %}
+															<h5>Modalités de pilotage</h5>
+															<p>{{ processus.finalite | raw}}</p>
+														{% endif %}
+
+														{% if processus.activites | length >1 %}
+														<div class="mermaid">
+															graph TD
+
+															subgraph Processus
+															P((Processus-{{ processus.id}}))
+		
+															end
+
+															subgraph Act
+															{% for activite in processus.activites if processus.activites | length >1 %}
+																
+																	ACT{{ loop.index}}[{{ activite.designation|length > 25 ? activite.designation|slice(0, 25) ~ '...' : activite.designation }}] --> P
+																
+															{% endfor %}
+														
+															end
+														</div>
+													{% endif %}
+													</div>
+													<div class="col-lg-4">
+														<div class="row">
+															<div class="col-lg-12">	
+																<h5>Comply</h5>
+																{% set dcp = "" %}
+																{% for activite in processus.activites %}
+																	{% for flux in activite.fluxConnectActivites %}
+																	{% set dcp = 'RGPD' %}
+																	{% endfor %}
+																{% endfor %}
+																<span class="badge badge-{% if dcp == 'RGPD' %}warning{% else %}gray{% endif %}">{{ dcp }}</span>
+
+																{% set minDima = 1000 %}
+																	{% set desiDima = "NC" %}
+																	{% set colorDima = "NC" %}
+																	{% for activite in processus.activites %}
+																		{% if activite.dima1.dureeheure is defined %}
+																			{% set minDima = min(activite.dima1.dureeheure, minDima) %}
+																			{% if activite.dima1.dureeheure == minDima %}
+																				{% set desiDima = activite.dima1.designation %}
+																				{% set colorDima = activite.dima1.color %}
+																			{% endif %}
+																		{% endif %}
+																	{% endfor %}
+																	<span class="badge {{colorDima}}">
+																		DIMA {{desiDima | default("N/C")}}
+																	</span>
+																{% set minPdma = 1000 %}
+																	{% set desiPdma = "NC" %}
+																	{% set colorPdma = "NC" %}
+																	{% for activite in processus.activites %}
+																		{% if activite.Pdma1.dureeheure is defined %}
+																			{% set minPdma = min(activite.pdma1.dureeheure, minPdma) %}
+																			{% if activite.pdma1.dureeheure == minPdma %}
+																				{% set desiPdma = activite.pdma1.designation %}
+																				{% set colorPdma = activite.pdma1.color %}
+																			{% endif %}
+																		{% endif %}
+																	{% endfor %}
+																	<span class="badge {{colorPdma}}">
+																		PDMA {{desiPdma | default("N/C")}}
+																	</span> 
+															</div>
+															
+															{% if processus.activites|length  >= 1 %}
+															<div class="col-lg-12">
+																<h5 style="margin-top: 18px">Activités</h5>
+																<ul class="tag-list" style="padding: 0">
+																	{% for a in processus.activites %}
+																	<li><a href="{{path('processus_edit',{'id' : a.id, 'r' : 'process_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																	{{ a.designation|length > 50 ? a.designation|slice(0, 50) ~ '...' : a.designation  }}</a></li>
+																	{% endfor %}
+																</ul>
+															</div>
+															{% endif %}
+															{% if processus.objectifs|length  >= 1 %}
+															<div class="col-lg-12">
+																<h5 style="margin-top: 18px">Objectifs</h5>
+																<ul class="tag-list" style="padding: 0">
+																	{% for o in processus.objectifs %}
+																	<li><a class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																	{{ o.designation|length > 42 ? o.designation|slice(0, 42) ~ '...' : o.designation  }}</a></li>
+																	{% endfor %}
+																</ul>
+															</div>
+															{% endif %}
+		
+															{% if processus.activites|length  >= 1 %}
+															<div class="col-lg-12">
+																{% set count = 0 %}
+																{% for activite in processus.activites %}
+																	{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																		{% if fluxConnectActivite.flux.objetmetiers and fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 1 %}
+																		{% set count = count + 1 %}
+																		{% endif %}
+																	{% endfor %}
+																{% endfor %}
+																{% if count >=1 %}<h5 style="margin-top: 18px">Données d'entrée</h5>{% endif %}
+																{% set handledOm = [] %}
+																<ul class="tag-list" style="padding: 0">
+																{% for activite in processus.activites %}
+																	{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																		{% for om in fluxConnectActivite.flux.objetmetiers if fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 1 and om not in handledOm %}
+																			{% for o in fluxConnectActivite.flux.objetmetiers if o.id == om.id and o not in handledOm %}
+																				{% set handledOm = handledOm|merge([o]) %}
+																				<small>
+																					<li>
+																						<a class="btn btn-w-m btn-default btn-xs">{{ om.designation }}</a>
+																					</li>
+																				</small>
+																			{% endfor %}
+																		{% endfor %}
+																	{% endfor %}
+																{% endfor %}
+																</ul>
+															</div>
+															{% endif %}
+
+															{% if processus.activites|length  >= 1 %}
+															<div class="col-lg-12">
+																{% set count = 0 %}
+																{% for activite in processus.activites %}
+																	{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																		{% if fluxConnectActivite.flux.objetmetiers and fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 1 %}
+																		{% set count = count + 1 %}
+																		{% endif %}
+																	{% endfor %}
+																{% endfor %}
+																{% if count >=1 %}<h5 style="margin-top: 18px">Données de sortie</h5>{% endif %}
+																{% set handledOm = [] %}
+																<ul class="tag-list" style="padding: 0">
+																{% for activite in processus.activites %}
+																	{% for fluxConnectActivite in activite.fluxConnectActivites if fluxConnectActivite.flux.objetmetiers is defined and fluxConnectActivite.flux.objetmetiers is not null  %}
+																		{% for om in fluxConnectActivite.flux.objetmetiers if fluxConnectActivite.direction.code is defined and fluxConnectActivite.direction.code is not null and fluxConnectActivite.direction.code == 2 and om not in handledOm %}
+																			{% for o in fluxConnectActivite.flux.objetmetiers if o.id == om.id and o not in handledOm %}
+																				{% set handledOm = handledOm|merge([o]) %}
+																				<small>
+																					<li>
+																						<a class="btn btn-w-m btn-default btn-xs">{{ om.designation }}</a>
+																					</li>
+																				</small>
+																			{% endfor %}
+																		{% endfor %}
+																	{% endfor %}
+																{% endfor %}
+																</ul>
+															</div>
+															{% endif %}
+
+															{% if processus.risques|length  >= 1 %}
+															<div class="col-lg-12">
+																<h5 style="margin-top: 18px">Risques</h5>
+																<ul class="tag-list" style="padding: 0">
+																	{% for risque in processus.risques %}
+																	<li><a href="{{path('risque_edit',{'id' : risque.id, 'r' : 'risque_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																	{{ risque.designation|length > 42 ? risque.designation|slice(0, 42) ~ '...' : risque.designation  }}</a></li>
+																	{% endfor %}
+																</ul>
+															</div>
+															{% endif %}
+															{% if processus.actions|length  >= 1 %}
+															<div class="col-lg-12">
+																<h5 style="margin-top: 18px">Actions</h5>
+																<ul class="tag-list" style="padding: 0">
+																	{% for action in processus.actions %}
+																	<li><a href="{{path('action_edit',{'id' : action.id, 'r' : 'process_list'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																	{{ action.designation|length > 42 ? action.designation|slice(0, 42) ~ '...' : action.designation  }}</a></li>
+																	{% endfor %}
+																</ul>
+															</div>
+															{% endif %}
+															
+															
+														
+														</div>	
+													</div>
+												</div>
+											</div>
+										</div>
+										{% endif %}
+										<div id="information" class="tab-pane {% if not editMode %}active show{% endif %}">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Informations générales</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														<div class="form-group row"><label class="col-sm-2 col-form-label">Identification</label>
+															<div class="col-sm-10">
+																<div class="row">
+																	<div class="col-md-3"><span class="form-text m-b-none text-navy">{{ form_label(formProcessus.code, 'Code') }}</span>{{ form_widget(formProcessus.code)}}</div>
+																	<div class="col-md-9"><span class="form-text m-b-none text-navy">{{ form_label(formProcessus.designation)}}</span>{{ form_widget(formProcessus.designation)}}</div>
+																</div>
+															</div>
+														</div>
+													
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.description, 'Description') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.description)}}</div>
+														</div>
+														
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.finalite, 'Finalite') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.finalite)}}</div>
+														</div>
+													
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.metier, 'Métier pilote') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.metier)}}</div>
+														</div>
+														
+														<div class="hr-line-dashed"></div>
+														
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.pilotage, 'Description du mode de pilotage') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.pilotage)}}</div>
+														</div>
+														
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+															<div class="col-sm-10">
+																<div class="row">
+																	<div class="col-md-3"><span class="form-text m-b-none text-navy">Pilote</span>{{ form_widget(formProcessus.responsable)}}</div>
+																	<div class="col-md-3"><span class="form-text m-b-none text-navy">Co-pilote</span>{{ form_widget(formProcessus.suppleant)}}</div>
+																	<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formProcessus.peoples)}}</div>
+																</div>
+															</div>
+														</div>
+													
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.typeprocessus, 'Type de processus') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.typeprocessus)}}</div>
+														</div>
+
+													</div>
+												</div>
+											</div>
+										</div>
+										<div id="relations" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Relations</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">Objectifs<br>{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type='button' id="add-objectif" class="btn btn-primary btn-sm">+</button>{% endif %}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.objectifs) }}</div>
+														</div>
+														
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.activites, 'Activités') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.activites)}}</div>
+														</div>
+														
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.risques, 'Risques') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.risques)}}</div>
+														</div>
+														
+														<div class="hr-line-dashed"></div>
+														
+														<div class="form-group  row">
+															<label class="col-sm-2 col-form-label">{{ form_label(formProcessus.actions, 'Actions') }}</label>
+															<div class="col-sm-10">{{ form_widget(formProcessus.actions)}}</div>
+														</div>
+														
+													
+														
+														
+													</div>
+												</div>
+											</div>
+										</div>
+										{% if editMode %}
+										<div id="files" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														<iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'ProcessusActivites', 'entryprefix': 'P', 'entryid': processus.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+													</div>
+												</div>
+											</div>
+										</div>
+										{% endif %}
+										<div id="comment" class="tab-pane">
+											<div class="panel-body">
+												<div class="row">
+													<div class="col-md-12"><h3>Notes</h3></div>
+												</div>
+												<br>			                                
+												<div class="form-group row">				
+													<div class="col-sm-12">
+														{{ form_widget(formProcessus.commentaire)}}
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>						
+					</div>
+				</div>
+			</div>
+		</div>
+
+    {{ form_end(formProcessus) }}
+{% endblock %}
+
+{% block _processus_objectifs_widget %}
+		{{ form_widget(form)}}
+{% endblock %}
+{% block _processus_objectifs_entry_widget %}
+    <div class="row" id="block_{{id}}">
+        <div class="col-md-4"><span class="form-text m-b-none text-navy">Désignation</span>{{ form_widget(form.designation)}}</div>
+        <div class="col-md-2"><span class="form-text m-b-none text-navy">Valeur cible</span>{{ form_widget(form.valeurcible)}}</div>
+		<div class="col-md-2"><span class="form-text m-b-none text-navy">Type de données</span>{{ form_widget(form.type)}}</div>
+        <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(form.responsable)}}</div>
+        <div class="col-1"><span class="form-text m-b-none text-white">.</span>{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-objectif" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+    </div>
+{% endblock %}
+
+
+
+	
+{% block javascripts %}
+
+	<script>
+	$(document).ready(function() {		
+
+		mermaid.initialize({startOnLoad:true});
+
+		CKEDITOR.replace( 'processus_commentaire' );
+		CKEDITOR.replace( 'processus_description' );
+	});	
+	
+	function saveLeave (){
+				$('button[data-action="leave"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+						    buttons: {
+						        quitter: function () {
+						           $(location).attr('href', target);
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		saveLeave();
+	
+	//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+	
+	//Ajout des objectifs
+		$('#add-objectif').click(function(){
+			
+			const index =$('#processus_objectifs div.row').length;
+			const tmpl =$('#processus_objectifs').data('prototype').replace(/__name__/g, index);
+		
+			$('#processus_objectifs').append(tmpl);
+			$('.select22').select2();
+			handleDeleteButtons();
+		});
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+		
+	</script>
+	
+{% endblock %}
+	
+
+
+

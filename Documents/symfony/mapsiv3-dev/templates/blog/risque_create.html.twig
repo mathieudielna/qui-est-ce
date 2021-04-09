@@ -1,0 +1,553 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formRisque 'bootstrap_4_layout.html.twig' %}
+
+{% block stylesheets %}
+	<style type="text/css">
+		span.select2 {
+			display         : table;
+			table-layout    : fixed;
+			width           : 100% !important;
+		}
+	</style>
+{% endblock %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    {% if editMode %}
+					<h2>Fiche risque RI-{{ risque.id }}</h2>
+					{% else %}
+					<h2>Créer une nouveau risque</h2>
+					{% endif %} 
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{path('start')}}">Mapsi</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{path('risque_list')}}">Risques
+                            </a>
+                        </li>
+                        {% if editMode %}
+                        <li class="breadcrumb-item active">
+                            <strong><a>RI-{{ risque.id }} {{ risque.designation | capitalize }}</a></strong>
+                        </li>
+                        {% else %}
+                        <li class="breadcrumb-item active">
+                            <strong><a>Nouveau risque</a></strong>
+                        </li>
+						{% endif %}
+                    </ol>
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-action">
+	                   
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+
+
+{% block body %}
+{{ form_start(formRisque) }}
+ 	<div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <button type='button'  class="btn btn-white" data-target="{{path('risque_list')}}"  data-action="leave">Quitter</button>
+				                    {% if is_granted('ROLE_ADMIN') %}
+									<button type='submit' class="btn btn-primary">
+									{% if editMode %}
+									Enregistrer
+									{% else %}
+									Ajouter
+									{% endif %}
+									</button>
+									{% endif %}
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouveau risque
+									{% else %}
+									R-{{ risque.id }} {{ risque.designation }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Status :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+	                                    {{ risque.statut.designation | default("") }}
+                                    </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Score :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{{ risque.impact * risque.probabilite}}
+									</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Responsable :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{{ risque.responsable.firstname | default("") }} {{ risque.responsable.lastname | default("") }}
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Création :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+									<dd class="mb-1">
+									{{ risque.CreatedAt | date("D d M Y") }}
+									</dd>
+                                </div>
+                            </dl>
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+									<dd class="mb-1">
+									{{ risque.PublishedAt | date("D d M Y") }}
+									</dd>
+                                </div>
+                            </dl>
+
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+							<canvas id="thisrisque"></canvas>
+                        </div>
+                        {% endif %}
+                    </div>
+
+					
+
+					<div class="row">
+						<div class="col-lg-12">
+		                    <div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#relation"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#file"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									<li>
+										<a class="nav-link" data-toggle="tab" href="#comment"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+		                        <div class="tab-content">
+									<div id="information" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12">
+													<h3>Informations générales</h3>
+												</div>
+											</div>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRisque.designation, 'Désignation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRisque.designation)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRisque.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRisque.description)}}</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">Statut du risque</label>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">Statut</span>{{ form_widget(formRisque.statut)}}</div>
+												<div class="col-sm-5"><span class="form-text m-b-none text-navy">Risque acceptable</span>{{ form_widget(formRisque.acceptation)}}</div>
+											</div>  
+											
+											<div class="hr-line-dashed"></div>
+
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Scoring</label>
+												<div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-4">
+															<div class="row">
+																<div class="col-md-12">
+																	<span class="form-text m-b-none text-navy">Score / criticité</span>
+																	{{ form_widget(formRisque.score, {'attr': {}})}}  
+																</div>
+															</div>
+															<div class="row">
+																<div class="col-md-6">
+																	<span class="form-text m-b-none text-navy">Impact</span>{{ form_widget(formRisque.impact, {'attr': {'class':"range"}})}}
+																</div>
+																<div class="col-md-6">
+																	<span class="form-text m-b-none text-navy">Probabilité</span>{{ form_widget(formRisque.probabilite, {'attr': {'class':"range"}})}}
+																</div>
+															</div>
+														</div>
+														<div class="col-md-8">
+															<span class="form-text m-b-none text-navy">Evaluation du risque</span>
+															{{ form_widget(formRisque.evaluation)}}
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Scoring cible</label>
+												<div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-4">
+															<div class="row">
+																<div class="col-md-12">
+																	<span class="form-text m-b-none text-navy">Score cible</span>
+																	{{ form_widget(formRisque.scorecible, {'attr': {}})}}  
+																</div>
+															</div>
+															<div class="row">
+																<div class="col-md-6">
+																	<span class="form-text m-b-none text-navy">Impact cible</span>{{ form_widget(formRisque.impactcible, {'attr': {'class':"range"}})}}
+																</div>
+																<div class="col-md-6">
+																	<span class="form-text m-b-none text-navy">Probabilité cible</span>{{ form_widget(formRisque.probabilitecible, {'attr': {'class':"range"}})}}
+																</div>
+															</div>
+														</div>
+														<div class="col-md-8">
+															<span class="form-text m-b-none text-navy">Plan de réduction du risque</span>
+															{{ form_widget(formRisque.reduction)}}
+															<br>
+															<span class="form-text m-b-none text-navy">Actions de réduction du risque</span>
+															{{ form_widget(formRisque.actions)}}
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+																
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRisque.controle, 'Contrôles clés') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRisque.controle)}}</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+																	
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRisque.typerisque, 'Catégorie de risque') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRisque.typerisque)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+												<div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-5"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formRisque.responsable)}}</div>
+														<div class="col-md-5"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formRisque.suppleant)}}</div>
+													</div>
+												</div>
+											</div>
+		                                </div>
+		                            </div>
+									<div id="relation" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12">
+													<h3>Relations</h3>
+												</div>
+											</div>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRisque.processuses, 'Processus associés') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRisque.processuses)}}</div>
+											</div>
+											
+											<div class="hr-line-dashed"></div>
+												
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRisque.metiers, 'Métiers associés') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRisque.metiers)}}</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formRisque.typeconformite, 'Domaine de conformité') }}</label>
+												<div class="col-sm-10">{{ form_widget(formRisque.typeconformite)}}</div>
+											</div>
+											
+		                                </div>
+		                            </div>
+									<div id="file" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Risque', 'entryprefix': 'R', 'entryid': risque.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+									<div id="comment" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Commentaire</h3></div>
+											</div>
+		                                </div>
+		                            </div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<br><br>
+		            <div class="row">
+						<div class="col-12">
+		                    <span class="float-right">
+			                    <button type='button'  class="btn btn-white" data-target="{{path('risque_list')}}"  data-action="leave">Quitter</button>
+			                    {% if is_granted('ROLE_ADMIN') %}
+								<button type='submit' class="btn btn-primary">
+								{% if editMode %}
+								Enregistrer
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+								{% endif %}
+		                    </span>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+{{ form_end(formRisque) }}
+{% endblock %}
+{% block _risque_RisqueConnectAction_widget %}
+	{{ form_widget(form)}}
+{% endblock %}
+{% block _risque_RisqueConnectAction_entry_widget %}
+		<div class="row"  id="block_{{id}}">
+            <div class="col-md-7">
+	            <span class="form-text m-b-none text-navy">Action</span>
+	            {{ form_widget(form.designation)}}
+	        </div>
+            <div class="col-1"><span class="form-text m-b-none text-navy">.</span>{% if is_granted('ROLE_ADMIN') %}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-flux" class="btn btn-outline-secondary btn-sm"><i class="fa fa-trash"></i></button>{% endif %}</div>	
+        </div>
+{% endblock %}
+
+{% block javascripts %}
+
+	<script>
+	$(document).ready(function() {
+			$('#risque_responsable').select2();
+			$('#risque_suppleant').select2();
+			$('#risque_processuses').select2();
+			$('#risque_metiers').select2();
+			$('#risque_statut').select2();
+			$('#risque_actions').select2({
+				tags: true,
+				tokenSeparators: [',', ' ']
+			});
+			$('#risque_typeconformite').select2();
+			CKEDITOR.replace( '.ckeditor' );
+
+			scoreColor();
+			scoreCibleColor();
+
+			function saveLeave (){
+				$('button[data-action="leave"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+						    buttons: {
+						        quitter: function () {
+						           $(location).attr('href', target);
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+			saveLeave();
+
+	});
+		function scoreColor() {
+		var impact = $('#risque_impact').val();
+				var probabilite = $('#risque_probabilite').val();
+				var impact = $('#risque_impact').val();
+				var score = impact * probabilite;
+				var color = "#1b998b";
+				if ((score < '15')) {var color = "#1b998b"; var colortxt = "#000";}
+				else if ((score >='15') && (score < '40')) {var color = "#ffe156"; var colortxt = "#000";}
+				else if ((score >='40') && (score < '60')) {var color = "#F69D5C"; var colortxt = "#fff";}
+				else if ((score >='60') && (score < '80')) {var color = "#ed5861"; var colortxt = "#fff";}
+				else if ((score >='80') && (score <= '100')) {var color = "#623b5a"; var colortxt = "#fff";}
+				$('#risque_score').val(score).css("background-color", color);
+				$('#risque_score').val(score).css("color", colortxt);
+				}
+
+		function scoreCibleColor() {
+		var impact = $('#risque_impactcible').val();
+				var probabilitecible = $('#risque_probabilitecible').val();
+				var impactcible = $('#risque_impactcible').val();
+				var scorecible = impactcible * probabilitecible;
+				var color = "#1b998b";
+				if ((scorecible < '15')) {var colorcible = "#1b998b"; var colortxtcible = "#000";}
+				else if ((scorecible >='15') && (scorecible < '40')) {var colorcible = "#ffe156"; var colortxtcible = "#000";}
+				else if ((scorecible >='40') && (scorecible < '60')) {var colorcible = "#F69D5C"; var colortxtcible = "#fff";}
+				else if ((scorecible >='60') && (scorecible < '80')) {var colorcible = "#ed5861"; var colortxtcible = "#fff";}
+				else if ((scorecible >='80') && (scorecible <= '100')) {var colorcible = "#623b5a"; var colortxtcible = "#fff";}
+				else {var color = "#1b998b";}
+				$('#risque_scorecible').val(scorecible).css("background-color", colorcible);
+				$('#risque_scorecible').val(scorecible).css("color", colortxtcible);
+				}
+		
+		//Ajout des flux
+		$('#add-action').click(function(){
+			const index1 =$('#risque_RisqueConnectAction div.row').length;
+			const tmpl =$('#risque_RisqueConnectAction').data('prototype').replace(/__name__/g, index1);
+			$('#risque_RisqueConnectAction').append(tmpl);
+			$( "#msgrisque" ).hide();
+			$('.risquefield').select2();
+			handleDeleteButtons();
+		});
+
+		//range slider
+		$(".range").ionRangeSlider({
+        min: 0,
+        max: 10,
+		grid: true,
+		step: 0.5,
+        onFinish: function () {scoreColor(); scoreCibleColor();}
+    	});
+
+
+
+		///////////// NUAGE RISQUE
+	var ctxa = document.getElementById('thisrisque').getContext('2d');
+	var scatterChart = new Chart(ctxa, {
+    type: 'bubble',
+    data: {
+         datasets: [{
+            label: ['Risques'],
+            data: [
+		            {
+		            x:{% if risque.probabilite is defined and risque.probabilite is not null %}{{ risque.probabilite }}{% else %}0{% endif %},
+		            y:{% if risque.impact is defined and risque.impact is not null %}{{ risque.impact }}{% else %}0{% endif %},
+		            r:15,
+		            },
+					{
+		            x:{% if risque.probabilitecible is defined and risque.probabilitecible is not null %}{{ risque.probabilitecible }}{% else %}0{% endif %},
+		            y:{% if risque.impactcible is defined and risque.impactcible is not null %}{{ risque.impactcible }}{% else %}0{% endif %},
+		            r:15,
+		            },
+            ],
+			backgroundColor: [
+					'#112233',
+					'#445566'
+				],
+     		borderColor: '#777'
+        }]
+    },
+    options: {
+		title: {
+				display: true,
+				text: 'Scoring des risques'
+			},
+		legendCallback: function(chart) {
+            'hello'
+        },
+        scales: {
+            xAxes: [{
+				scaleLabel: {
+                    display: true,
+                    labelString: 'Probabilité'
+                            },
+                 ticks: {
+	                beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                },
+
+            }],
+            yAxes: [{
+				scaleLabel: {
+                                display: true,
+                                labelString: 'Impact'
+                            },
+                ticks: {
+                    beginAtZero: true,
+		            min: 0,	
+                    max: 10,					
+					stepSize: 2
+                }
+            }]
+        },
+        plugins: {
+			        labels: [
+					    {
+					      render: 'value',
+					      fontSize: '20',
+					    }
+					]
+			    },
+					legend: {
+			            display: false,
+			            position:'bottom'
+			    }
+    }
+    
+	});
+
+
+	</script>
+	
+{% endblock %}
+
+

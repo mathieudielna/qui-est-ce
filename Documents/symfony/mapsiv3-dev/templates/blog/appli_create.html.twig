@@ -1,0 +1,729 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formApplication _self %}
+
+{% block stylesheets %}
+<style type="text/css">
+        .mermaid {
+            width: 100%;
+            border: 0px solid lightgray;
+            text-align: center;
+        }
+        span.select2 {
+		    display         : table;
+		    table-layout    : fixed;
+		    width           : 100% !important;
+		}
+		.change-message {
+			display: none;
+		}
+    </style>
+{% endblock %}
+
+{% block header %}
+	    <div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    {% if editMode %}
+					<h2>Fiche application</h2>
+					{% else %}
+					<h2>Créer une nouvelle application</h2>
+					{% endif %} 
+                    <a type="button" class="btn btn-w-m btn-default" href="{{path(r)}}">
+						<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-bar-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"/>
+						</svg> Retour vers {{ rr }}
+					</a> 
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-systeme">
+                       
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+
+
+{% block body %}
+{{ form_start(formApplication) }}
+ 	<div class="row" id="printed">
+        <div class="col-lg-12">
+            <div class="ibox" id="printed">
+                <div class="ibox-content">
+	                <div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                 <span class="float-right">
+                                	<a class="btn btn-white btn-sm noprint" href="{{path(r)}}">Quitter</a>
+									{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+									<button type='submit' class="btn btn-primary btn-sm noprint disab">
+										Enregistrer <span class="change-message">
+										<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cloud-arrow-up-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 1 0V6.707l1.146 1.147a.5.5 0 0 0 .708-.708z"/>
+										</svg>
+									</span>
+									</button>
+									{% endif %}
+								</span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									APP-{{ application.id }} {{ application.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+						{% if editMode %}
+                        <div class="col-lg-6">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Statut :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% for place in workflow_marked_places(application) %}<strong>{{ workflow_metadata(application, 'title', place) ?: ''}}</strong>{% endfor %}
+									
+									</dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Managers :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+									{% if application.responsable is not null %}
+									<a href="{{path('people_edit',{'id' : application.responsable.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ application.responsable.firstname | default("") }} {{ application.responsable.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									{% if application.suppleant is not null %}
+									<a shref="{{path('people_edit',{'id' : application.suppleant.id} ) }}" class="btn btn-outline btn-primary btn-xs">
+									{{ application.suppleant.firstname | default("") }} {{ application.suppleant.lastname | default("N/C") }}
+									</a>
+									{% endif %}
+									</dd>
+								</div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Contributeurs :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">
+										{% for people in application.peoples %}
+											<a shref="{{path('people_edit',{'id' : people.id} ) }}" class="btn btn-outline btn-primary btn-xs" style="margin-top:2px">
+											{{ people.firstname }} {{ people.lastname }} 
+											</a>
+										{% endfor %}
+									</dd>
+								</div>
+                            </dl>
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ application.publishedat | date("d M Y")  }} par {{ application.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+							<dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Workflow :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                   <dd class="mb-1">Passé en {% for place in workflow_marked_places(application) %} {{ workflow_metadata(application, 'title', place)|lower ?: ''}}{% endfor %} le {{ application.validatedat | date("d M Y")  }} par {{ application.validator.firstname | default("n/c") }} </dd>
+									{% set rolep = "" %}
+									{% for people in application.peoples %}{% if people == app.user.people %}{% set rolep = "people" %}{% endif %}{% endfor %}
+									{% set roles = "" %}{% if application.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% set roler = "" %}{% if application.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roler = "responsable" %}{% set roles = "suppleant" %}{% set rolep = "people" %}{% endif %}
+									{% for transition in workflow_transitions(application) %}
+										{% if workflow_can(application, transition.name) %}
+											{% if workflow_metadata(application, 'role', transition) in [rolep, roles, roler] %}
+												<a type='button' style="margin: 2px" class="btn btn-{{ workflow_metadata(application, 'ambiance', transition)}} btn-xs adisab" href="{{path('application_workflow', {
+												'id' : application.id,
+												'statut' : transition.name, 
+												'r' : r,
+												'rr' : rr
+												})}}">
+												{{ workflow_metadata(application, 'title', transition) ?: 'n-a'}}
+												</a>
+											{% endif %}
+										{% endif %}
+									{% else %}
+										No actions available.
+									{% endfor %}
+                                </div>
+                            </dl>
+                        </div>
+                    	{% endif %}
+					</div>
+	                <br><br>
+	                
+					
+					<div class="row">
+						<div class="col-lg-12">
+		            		<div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            {% if editMode %}
+									<li>
+										<a class="nav-link active show" data-toggle="tab" href="#introduction"> 
+				                            <span style="font-size: 18px;">
+												Synthèse
+											</span>
+										</a>
+									</li>
+									{% endif %}
+		                            <li>
+									<a class="nav-link {% if not editMode %}active show{% endif %}" data-toggle="tab" href="#information"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									<li>
+		                            	<a class="nav-link" data-toggle="tab" href="#relation"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-link"></i>
+											</span>
+										</a>
+									</li>
+									<li>
+		                            	<a class="nav-link" data-toggle="tab" href="#pci"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-superpowers"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+		                            <li>
+		                            	<a class="nav-link" data-toggle="tab" href="#files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+		                            <li><a class="nav-link" data-toggle="tab" href="#note"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+								<div class="tab-content">
+									{% if editMode %}
+									<div id="introduction" class="tab-pane active show">
+			                            <div class="panel-body">
+			                                <div class="row">	
+												<div class="col-lg-8">
+													<p>
+														{{ application.description | raw}}
+													</p>
+													{% if editMode %}
+													<div class="row">
+														<div class="col-lg-8">	
+															<dl class="row mb-0">
+																<div class="col-sm-4 text-sm-right"><dt>Etat : </dt> </div>
+																<div class="col-sm-8 text-sm-left">
+																	<dd class="mb-1">
+																		<strong>{{ application.statutrun.designation | default("N/C")  }}</strong>
+																	</dd>
+																</div>
+															</dl>			
+															<dl class="row mb-0">
+																<div class="col-sm-4 text-sm-right"><dt>Editeur : </dt> </div>
+																<div class="col-sm-8 text-sm-left">
+																	<dd class="mb-1">
+																		{{ application.editeur | default("N/C")  }}
+																	</dd>
+																</div>
+															</dl>
+															<dl class="row mb-0">
+																<div class="col-sm-4 text-sm-right"><dt>Type : </dt> </div>
+																<div class="col-sm-8 text-sm-left">
+																	<dd class="mb-1">
+																		{{ application.typeappli.designation | default("")  }}
+																	</dd>
+																</div>
+															</dl>
+															<dl class="row mb-0">
+																<div class="col-sm-4 text-sm-right"><dt>RTO / DIMA : </dt> </div>
+																<div class="col-sm-8 text-sm-left">
+																	<dd class="mb-1">
+																		{% set minDima = 1000 %}
+																			{% set desiDima = "NC" %}
+																			{% set colorDima = "NC" %}
+																			{% for activite in application.appConnectActivites %}
+																			{% if activite.dima.dureeheure is not defined %}
+																					{% else %}
+																				{% set minDima = min(activite.dima.dureeheure, minDima) %}
+																				{% if activite.dima.dureeheure == minDima %}
+																					{% set desiDima = activite.dima.designation %}
+																					{% set colorDima = activite.dima.color %}
+																				{% endif %}
+																				{% endif %}
+																			{% endfor %}
+																			<span class="badge {{colorDima}}">
+																			{{desiDima | default("N/C")}}
+																			</span>
+																	</dd>
+																</div>
+															</dl>
+															<dl class="row mb-0">
+																<div class="col-sm-4 text-sm-right"><dt>RPO / PDMA : </dt> </div>
+																<div class="col-sm-8 text-sm-left">
+																	<dd class="mb-1">
+																		{% set minPdma = 1000 %}
+																			{% set desiPdma = "NC" %}
+																			{% set colorPdma = "NC" %}
+																			{% for activite in application.appConnectActivites %}
+																			{% if activite.pdma.dureeheure is not defined %}
+																					{% else %}
+																				{% set minPdma = min(activite.pdma.dureeheure, minPdma) %}
+																				{% if activite.pdma.dureeheure == minPdma %}
+																					{% set desiPdma = activite.pdma.designation %}
+																					{% set colorPdma = activite.pdma.color %}
+																					{% endif %}
+																				{% endif %}
+																		{% endfor %}
+																			<span class="badge {{colorPdma}}">
+																			{{desiPdma | default("N/C")}}
+																			</span>
+																	</dd>
+																</div>
+															</dl>
+														</div> 
+														
+														<div class="mermaid">
+														  	graph LR
+														  	
+														  	A({{ application.designation | capitalize }})
+															subgraph Application
+														  	{% for applink in application.applicationlink %}
+																	A --- ACT{{ loop.index }}({{ applink.designation | default("") }})
+															{% endfor %}
+														  	end
+								
+														  	subgraph Systèmes
+															  	{% for systeme in application.systemes %}
+																	APP{{ loop.index }}(fa:fa-server {{ systeme.designation | default("N/C") }}) -- "{{ systeme.role | default("n/c") }}" --> A
+																	click APP{{ loop.index }} "{{path('systeme_edit',{'id' : systeme.id} ) }}"
+																	style APP{{ loop.index }} fill:#fff,stroke:#000,stroke-width:1px
+																{% endfor %}
+															end
+															
+															subgraph Processus
+															  	{% for appConnectActivite in application.appConnectActivites %}
+																	A -- "{{ appConnectActivite.activite.designation | default("") }}" --> PROCESS{{ loop.index }}(fa:fa-server {{ appConnectActivite.activite.processus.designation | default("N/C") }})
+																{% endfor %}
+															end
+															
+															style A fill:#OO93DC,stroke:#333,stroke-width:0px
+														</div>                 
+													</div>
+													{% endif %}
+												</div>
+												<div class="col-lg-4">
+													<div class="row">
+														<div class="col-lg-12">	
+															<h5>Comply</h5>
+																{% set dcp = "" %}
+																{% for om in application.objetmetiers %}
+																	{% if om.dcp.code is defined and om.dcp.code == 1 %}{% set dcp = 'RGPD' %}{% endif %}
+																{% endfor %}
+																<span class="badge badge-{% if dcp == 'RGPD' %}warning{% else %}gray{% endif %}">{{ dcp }}</span>
+																{% set minDima = 1000 %}
+																{% set desiDima = "NC" %}
+																{% set colorDima = "NC" %}
+																{% set heureDima = "" %}
+																{% for activite in application.appConnectActivites %}
+																	{% if activite.dima.dureeheure is defined %}
+																		{% set minDima = min(activite.dima.dureeheure, minDima) %}
+																		{% if activite.dima.dureeheure == minDima %}
+																			{% set desiDima = activite.dima.designation %}
+																			{% set colorDima = activite.dima.color %}
+																			{% set heureDima = activite.dima.dureeheure %}
+																		{% endif %}
+																	{% endif %}
+																{% endfor %}	
+																{% if desiDima != "NC" %}			                 
+																	<span class="badge {{colorDima}}">
+																		PCA {{desiDima | default("N/C")}}
+																	</span>
+																{% endif %}														
+														</div>
+														{% if application.systemes|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Flux</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for sys in application.systemes %}
+																<li><a href="{{path('systeme_edit',{'id' : sys.id, 'r' : 'si_list', 'rr' : 'SI'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ sys.designation|length > 50 ? sys.designation|slice(0, 50) ~ '...' : sys.designation  }}
+																</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if application.appConnectActivites|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Activités métier</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for ac in application.appConnectActivites %}
+																<li><a href="{{path('activite_edit',{'id' : ac.activite.id, 'r' : 'si_list', 'rr' : 'SI'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ ac.activite.designation|length > 50 ? ac.activite.designation|slice(0, 50) ~ '...' : ac.activite.designation  }}</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if application.actions|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Actions</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for as in application.actions %}
+																<li><a href="{{path('action_edit',{'id' : as.id, 'r' : 'si_list', 'rr' : 'SI'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ as.designation|length > 50 ? as.designation|slice(0, 50) ~ '...' : as.designation  }}
+																</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+														{% if application.objetmetiers|length  >= 1 %}
+														<div class="col-lg-12">
+															<h5 style="margin-top: 18px">Objets métier</h5>
+															<ul class="tag-list" style="padding: 0">
+																{% for objetmetier in application.objetmetiers %}
+																<li><a href="{{path('action_edit',{'id' : objetmetier.id, 'r' : 'objetmetier_list', 'rr' : 'SI'} ) }}" class="btn btn-w-m btn-default btn-xs"><i class="fa fa-paste"></i>&nbsp;&nbsp;
+																{{ objetmetier.designation|length > 50 ? objetmetier.designation|slice(0, 50) ~ '...' : objetmetier.designation  }}
+																</a></li>
+																{% endfor %}
+															</ul>
+														</div>
+														{% endif %}
+													</div>	
+												</div>
+											</div>
+			                            </div>
+			                        </div>
+									{% endif %}
+
+		                            <div id="information" class="tab-pane {% if not editMode %}active show{% endif %}">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>	
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.designation, 'Désignation') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.designation)}}</div>
+										    </div>
+										    
+										     <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group row"><label class="col-sm-2 col-form-label">Run</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+											            <div class="col-md-5"><span class="form-text m-b-none text-navy">Etat</span>{{ form_widget(formApplication.statutrun)}}</div>
+										            </div>
+										        </div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+										    
+										    <div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.description, 'Description') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.description)}}</div>
+										    </div>
+										
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.editeur, 'Editeur') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.editeur)}}</div>
+										    </div>
+										
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.typeappli, 'Type application') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.typeappli)}}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Managers</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formApplication.responsable)}}</div>
+										                <div class="col-md-3"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formApplication.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formApplication.peoples)}}</div>
+
+										            </div>
+										        </div>
+										    </div>
+										   			    
+		                                </div>
+		                            </div>
+		                            
+		                            <div id="relation" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Relations</h3></div>
+											</div>
+											<br>
+											<div class="form-group row">
+												<label class="col-sm-2 col-form-label">Activités<br>{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}<button type='button' id="add-act" class="btn btn-primary btn-sm">+</button>{% endif %}</label>
+													<div class="col-sm-10">
+										                        {{ form_widget(formApplication.appConnectActivites) }}
+											    	</div>
+										    </div>
+										
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.applicationlink, 'Relation application') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.applicationlink) }}</div>
+										    </div>
+										
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.systemes, 'Systèmes') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.systemes) }}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.actions, 'Actions') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.actions) }}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.fluxes, 'Flux') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.fluxes) }}</div>
+										    </div>
+										    
+										    <div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.objetMetiers, 'Objets Métier') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.objetMetiers) }}</div>
+										    </div>
+														                                
+		                                </div>
+		                            </div>
+		                            <div id="pci" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Plan de continuité</h3></div>
+											</div>
+											<br>
+											{% if editMode %}
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Criticité</label>
+										        <div class="col-sm-10">
+										            <div class="row">
+										                <div class="col-md-5">
+											                {% set minDima = 1000 %}
+											                {% set desiDima = "NC" %}
+											                {% set colorDima = "NC" %}
+															{% for activite in application.appConnectActivites %}
+															{% if activite.dima.dureeheure is not defined %}
+																	{% else %}
+															    {% set minDima = min(activite.dima.dureeheure, minDima) %}
+															    {% if activite.dima.dureeheure == minDima %}
+																    {% set desiDima = activite.dima.designation %}
+																    {% set colorDima = activite.dima.color %}
+															    {% endif %}
+															    {% endif %}
+														    {% endfor %}
+														    <span class="form-text m-b-none text-navy">Durée d'Indisponibilité Maximale Admissible (DIMA / RTO)</span>
+														    <div class="widget style1 navy-bg">
+										                        <div class="row vertical-align">
+										                            <div class="col-3">
+											                            {% if minDima < 48 %}
+										                                <i class="fa fa-warning fa-3x"></i>
+										                                {% endif %}
+										                            </div>
+										                            <div class="col-9 text-right">
+											                            <span class="badge {{colorDima}}">
+										                                <h2 class="font-bold">{{desiDima | default("N/C")}}</h2>
+											                            </span>
+										                            </div>
+										                        </div>
+										                    </div>
+										             
+										
+										                </div>
+										                
+										                <div class="col-md-5">
+											                {% set minPdma = 1000 %}
+											                {% set desiPdma = "NC" %}
+											                {% set colorPdma = "NC" %}
+															{% for activite in application.appConnectActivites %}
+															{% if activite.pdma.dureeheure is not defined %}
+																	{% else %}
+															    {% set minPdma = min(activite.pdma.dureeheure, minPdma) %}
+															    {% if activite.pdma.dureeheure == minPdma %}
+																    {% set desiPdma = activite.pdma.designation %}
+																    {% set colorPdma = activite.pdma.color %}
+																    {% endif %}
+															    {% endif %}
+														    {% endfor %}
+														    <span class="form-text m-b-none text-navy">Durée d'Indisponibilité Maximale Admissible (PDMA / RTO)</span>
+														    <div class="widget style1 navy-bg">
+										                        <div class="row vertical-align">
+										                            <div class="col-3">
+											                            {% if minPdma < 48 %}
+										                                <i class="fa fa-warning fa-3x"></i>
+										                                {% endif %}
+										                            </div>
+										                            <div class="col-9 text-right">
+											                            <span class="badge {{colorPdma}}">
+										                                <h2 class="font-bold">{{desiPdma | default("N/C")}}</h2>
+											                            </span>
+										                            </div>
+										                        </div>
+										                    </div>
+										
+										
+										                </div>
+										                
+										            </div>
+										        </div>
+										    </div>
+											<div class="hr-line-dashed"></div>
+											{% endif %}
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.prerequisite, 'Conditions au redémarrage') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.prerequisite) }}</div>
+										    </div>
+											<div class="form-group  row">
+												<label class="col-sm-2 col-form-label">{{ form_label(formApplication.ressources, 'Ressources') }}</label>
+												<div class="col-sm-10">{{ form_widget(formApplication.ressources) }}</div>
+										    </div>
+											
+											<div class="hr-line-dashed"></div>			                                
+		                                </div>
+		                            </div>
+		                            {% if editMode %}
+		                            <div id="files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'SI', 'entryprefix': 'APP', 'entryid': application.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+			                        {% endif %}
+		                            <div id="note" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formApplication.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+		                            
+								</div>
+		            		</div>
+			            </div>
+					</div>	
+                </div> 
+            </div>
+        </div>
+    </div>
+{{ form_end(formApplication) }}	
+{% endblock %}
+
+{% block _application_appConnectActivites_widget %}
+	{{ form_widget(form)}}
+{% endblock %}
+
+{% block _application_appConnectActivites_entry_widget %}
+            <div class="row" id="block_{{id}}">
+	            <div class="col-md-5">{{ form_widget(form.activite)}}</div>
+                <div class="col-md-2">{{ form_widget(form.dima)}}</div>
+                <div class="col-md-2">{{ form_widget(form.pdma)}}</div>
+                <div class="col-1">{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE') %}<button type="button" data-action="delete" data-target="#block_{{id}}" id="del-act" class="btn btn-danger btn-circle"><i class="fa fa-trash"></i></button>{% endif %}</div> 
+            </div>
+{% endblock %}
+
+{% block javascripts %}
+		<script>
+		$(document).ready(function() {
+
+			mermaid.initialize({startOnLoad:true});
+
+	        $('.printzone').click(function(){
+			$("#printed").print(
+			);
+				});
+
+			//Vérification des modifications du form pour affichage des boutons adéquates
+			var $form = $('form'),origForm = $form.serialize();
+			// Enable or disable button
+			$('form :input').on('change input', function() {
+				$('.change-message').toggle($form.serialize() !== origForm);
+				$('.adisab').addClass('disabled');
+			});
+
+			//Prevent leave if unsaved change
+			var isSubmitting = false
+			$('form').submit(function(){isSubmitting = true})
+			$('form').data('initial-state', $('form').serialize());
+			$(window).on('beforeunload', function() {
+				if (!isSubmitting && $('form').serialize() != $('form').data('initial-state')){
+					return 'You have unsaved changes which will not be saved.'
+				}
+			});
+				
+			var doc = new jsPDF();
+			var specialElementHandlers = {
+			};
+				$('#pdfzone').click(function () {   
+				    doc.fromHTML($('.pdf').html(), 15, 15, {
+				        'width': 170,
+				            'elementHandlers': specialElementHandlers
+				    });
+				    doc.save('FicheApplication.pdf');
+				});
+			
+			CKEDITOR.replace( 'application_commentaire' );
+			CKEDITOR.replace( 'application_description' );
+			CKEDITOR.replace( 'application_prerequisite' );
+			
+		});
+		
+			$('#add-act').click(function(){
+			const index1 =$('#application_appConnectActivites div.row').length;
+			const tmpl1 =$('#application_appConnectActivites').data('prototype').replace(/__name__/g, index1);
+			$('#application_appConnectActivites').append(tmpl1);
+			handleDeleteButtons();
+			$('select').select2();
+		});
+		
+		function handleDeleteButtons (){
+			$('button[data-action="delete"]').click(function(){
+				const target = this.dataset.target;
+				$(target).remove();
+			});
+		}
+		handleDeleteButtons();
+		
+	</script>
+{% endblock %}
+

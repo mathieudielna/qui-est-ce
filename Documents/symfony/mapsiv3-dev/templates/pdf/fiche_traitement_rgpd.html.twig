@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>MAPSI | PDF</title>
+
+    <link type="text/css" media="all"  href="inspinia/css/bootstrap.min.css" rel="stylesheet" />
+    <link type="text/css" media="all"  href="inspinia/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <link type="text/css" media="all"  href="inspinia/css/animate.css" rel="stylesheet" />
+    <link type="text/css" media="all"  href="inspinia/css/style.css" rel="stylesheet" />
+    
+    <style type="text/css">
+	    @page { margin: 80px 50px; }
+	    @font-face {
+		  font-family: 'Open Sans';
+		  font-style: normal;
+		  font-weight: normal;
+		  src: url(http://themes.googleusercontent.com/static/fonts/opensans/v8/cJZKeOuBrn4kERxqtaUH3aCWcynf_cDxXwCLxiixG1c.ttf) format('truetype');
+		}
+	    header { position: fixed; top: -70px; left: 0px; right: 0px; height: 20px; }
+		.footer { position: fixed; bottom: -70px; left: 0px; right: 0px; height: 50px; }
+		.footer .pagenum:before {
+		      content: counter(page);
+		}
+	    .page_break { page-break-before: always; }
+	    h1 {
+			color: #999999;
+			font-family: arial, sans-serif;
+			font-size: 32px;
+			font-weight: bold;
+			margin-top: 0px;
+			margin-bottom: 1px;
+			}
+		h2 {
+			color: #818181;
+			font-size: 24px;
+			margin-top: 0px;
+			margin-bottom: 1px;
+			}
+	</style>
+    
+</head>
+
+
+<body class="white-bg">
+		<div class="row">
+			<header>
+				<table class="table">
+				    <tr>
+						<td style="">
+							<img src="Documents/images/{{ flux.customer.image.name }}" style="max-height:60px" alt="{{ flux.customer.description }}">
+						</td>
+						<td style="" class="text-right">RGPD-{{ flux.id }} {{ flux.designation }}</td>
+					</tr>
+			    </table>
+				
+			</header>
+				<table class="footer">
+				    <tr>
+						<td style="width: 19%">{{ flux.customer.designation }}</td>
+						<td style="width: 62%"><div class="text-center">
+							  <img src="img/mapsi.png">
+							</div>
+						</td>
+						<td style="width: 19%" class="text-right"><p class="text-xs-right"><span class="pagenum"></span></p></td>
+					</tr>
+			    </table>
+			<table class="table">
+				<td colspan="2">
+					<h1>Fiche de registre des DCP</h1>
+				</td>
+			</table>			
+		</div>
+		<div class="row">
+			<table class="table">
+				<tr>
+					<td colspan="2"><h2>{{ flux.designation }}</h2></td>
+				</tr>
+				<tr>
+					<th style="width: 19%" class="table-primary">Référence</th>
+					<td>RGPD-{{ flux.id }}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Création</td>
+					<td>le {{ flux.PublishedAt | date("d M Y")}} par {{ flux.publisher.firstname | default("") }} {{ flux.publisher.lastname | default("") }}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Mise à jour</td>
+					<td>le {{ flux.PublishedAt | date("d M Y")}} par {{ flux.publisher.firstname | default("") }} {{ flux.publisher.lastname | default("") }}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Responsable</td>
+					<td>{{ flux.responsable.firstname | default("") }} {{ flux.responsable.lastname | default("") }}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Délégué à la protection des données</td>
+					<td>{{ flux.responsable.firstname | default("") }} {{ flux.responsable.lastname | default("") }}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Criticité</td>
+					<td>{{ flux.criticite.designation | default("N/C") }}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Description</td>
+					<td>{{ flux.description | raw }}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Finalités</td>
+					<td>{{ flux.finalite | raw }}</td>
+				</tr>
+			</table>
+		</div>
+		<div class="page_break"></div>
+		
+		<div class="row">
+			<h2>Identification et diagnostic des données concernées par ce traitement</h2>
+		</div>
+		<div class="row">
+		<p>Il s'agit des données collectées ou diffusées dans le flux {{ flux.designation }}. <br>Le diagnostic permet de visualiser la composition de ces données ainsi que les moyens et actions associées à leur traitement au regard du règlement général sur la protection des données.</p>
+			<br>
+		</div>
+		<div class="row">
+			<table class="table">
+				
+				<tr>
+					<td>Données sensibles</td>
+					<td>{% for dcpsensibl in flux.dcpsensible %}
+						<span><b>{{ dcpsensibl.designation | default('N/C')  }}</span><br>
+								
+						{% endfor %}</td>
+				</tr>
+				<tr>
+					<td class="table-primary">Transferts des données hors UE</td>
+					<td>{{ flux.transferthorsue.designation | default("Non connu") }}</td>
+				</tr>
+				
+				
+				<tr>
+					<td>Type de traitement</td>
+					<td>{% for typetraitementrgpd in flux.typetraitementrgpds %}
+						<span><b>{{loop.index}}. {{ typetraitementrgpd.designation | default('N/C')  }}</span><br>
+								
+						{% endfor %}</td>
+				</tr>
+				<tr>
+					<td>Fréquence</td>
+					<td> 
+						{% if flux.periodicites|length == 0 %}<small><i>Non renseigné</i></small>{% endif %}
+						{% for period in flux.periodicites %}
+						<span class='small'><b>{{loop.index}}. {{ period.designation | default('N/C')  }}</span><br>	
+						{% endfor %}						
+					</td>
+				</tr>
+					
+				<tr>
+					<td>Mesure de prévention / sécurisation</td>
+					<td> 
+						{% for om in flux.objetmetiers %}
+						<span><b>{{loop.index}}. {{ om.designation | default('N/C')  }}</span><br>
+						{% if om.mesuresprev|length == 0 %}<small><i>Non connue</i></small>{% endif %}
+							{% for mesure in om.mesuresprev %}
+								<span  class='small'>{{ mesure.designation | default("") }}</span><br>
+							{% endfor %}	
+						{% endfor %}						
+					</td>
+				</tr>			
+			</table>
+		</div>
+		<div class="page_break"></div>
+		<div class="row">
+			<h2>Quelles sont les relations et les dépendances du traitement ?</h2>
+		</div>
+		<div class="row">
+		<p>Liste des composants de l'organisation associés/p>
+			<br>
+		</div>
+		<div class="row">
+			<table class="table">
+				<tr>
+					<td style="width: 19%">Activités métiers</td>
+					<td> 
+						{% if flux.fluxConnectActivites|length == 0 %}<small><i>Non renseigné</i></small>{% endif %}
+						{% for appconnect in flux.fluxConnectActivites %}
+						<span class='small'><b>{{loop.index}}. {{ appconnect.activite.designation | default('N/C')  }}</span><br>	
+						{% endfor %}						
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 19%">Applications</td>
+					<td> 
+						{% if flux.applications|length == 0 %}<small><i>Non renseigné</i></small>{% endif %}
+						{% for app in flux.applications%}
+						<span class='small'><b>{{loop.index}}. {{ app.designation | default('N/C')  }}</span><br>	
+						{% endfor %}						
+					</td>
+				</tr>
+				<tr>
+					<td>Expéditeurs</td>
+					<td> 
+						Interne<br>
+						{% if flux.expin|length == 0 %}<small><i>Non renseigné</i></small>{% endif %}
+						{% for expi in flux.expin %}
+					        <span class='small'><b>{{loop.index}}. {{ expi.designation | default('N/C')  }}</b></span><br>	
+					     {% endfor %}
+					     <div class='hr-line-dashed'></div>
+					     Externe<br>
+					     {% if flux.expout|length == 0 %}<small><i>Non renseigné</i></small>{% endif %}
+					     {% for expou in flux.expout %}
+					        <span class='small'><b>{{loop.index}}. {{ expou.designation | default('N/C')  }}</b></span><br>	
+					     {% endfor %}	
+					     <br>					
+					</td>
+				</tr>
+				<tr>
+					<td>Destinataires</td>
+					<td> 
+						Interne<br>
+						{% if flux.destin|length == 0 %}<small><i>Non renseigné</i></small>{% endif %}
+						{% for desti in flux.destin %}
+					        <span class='small'><b>{{loop.index}}. {{ desti.designation | default('N/C')  }}</b></span><br>	
+					     {% endfor %}
+					    <div class='hr-line-dashed'></div>
+					     Externe<br>
+					     {% if flux.destext|length < 0 %}Non renseigné{% endif %}
+					     {% for destex in flux.destext %}
+					        <span class='small'><b>{{loop.index}}. {{ destex.designation | default('N/C')  }}</b></span><br>	
+					     {% endfor %}	
+					     <br>					
+					</td>
+				</tr>
+				<tr>
+					<td>Personnes concernées<br>
+						<small><i>Liste des différents types de personnes dont les données sont collectées ou utilisées</i></small>
+					</td>
+					<td> 
+						{% for personneconcern in flux.personneconcerne %}
+						<span><b>{{loop.index}}. {{ personneconcern.designation | default('N/C')  }}</span><br>
+								
+						{% endfor %}
+												
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="page_break"></div>
+		<div class="row">
+			<h2>Quelles sont les actions de mise en conformité au RGPD ?</h2>
+		</div>
+		<div class="row">
+		<p>Liste des actions de mise en conformité identifiées au sein de l'organisation</p>
+			<br>
+		</div>
+		<div class="row">
+            <table class="table" >
+                <tr>
+				  	<th scope="col">Référence</th>
+				  	<th scope="col">Statut</th>
+			   		<th scope="col">Désignation</th>
+			   		<th scope="col">Progression</th>
+			   		<th scope="col">Priorité</th>
+			   		<th scope="col">Jalon</th>
+			   		<th scope="col">Resp. / Sup.</th>
+			    </tr>
+           
+				{% for action in flux.actions %}
+				<tr>
+					<td>
+						<span class="badge badge-secondary small">AC-{{ action.id }}</span>
+					</td>
+				
+					<td scope="row">
+				      	<span class="badge badge-secondary" style="background-color:{{ action.statut.color | default("N/C")}}">
+					  	  	{{ action.statut.designation | default("N/C")  }}
+					  	</span>
+				    </td>
+				    <td class="table-title" scope="row">
+					    <a class="" href="{{path('action_edit',{'id' : action.id,'r' : 'rgpd'} ) }}">{{ action.designation }}</a></td>
+				    <td scope="row" class="project-completion">
+                        <small>Progression : {{ action.progression | round | default("0")  }}%</small>
+                            <div class="progress progress-mini">
+                                <div style="width: {{ action.progression | round | default("0")  }}%;" class="progress-bar"></div>
+                            </div>
+                    </td>
+                    <td scope="row"> <span class="badge {{ action.priorite.color | default("N/C")  }}">{{ action.priorite.designation | default("N/C")  }}</span>
+				    </td>
+				    <td scope="row">
+								{% for jalon in action.jalonConnectActions %}
+									<span class='small'><b>{% if jalon.fini ==1 %} <i class='fa fa-check'></i>{% endif %} {{ jalon.date | date('M Y')  }}</b> {{ jalon.jalon | default('N/C')  }}</span><br>								
+				    {% endfor %}
+				    </td>
+				    	
+				    <td scope="row"><b>{{ action.responsable.firstname | default("N/C")  }} {{ action.responsable.lastname | default("")  }}</b><br>
+				    	{{ action.suppleant.firstname | default("N/C")  }} {{ action.suppleant.lastname | default("")  }}
+				    </td>
+				</tr>						
+				{% endfor %}
+            </table>
+		</div>
+
+</body>

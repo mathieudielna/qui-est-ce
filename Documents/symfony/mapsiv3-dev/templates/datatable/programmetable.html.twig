@@ -1,0 +1,93 @@
+<table class="hover table table-bordered dataTables-program" >
+    <thead>
+        <tr>
+            <th scope="col" class"export pdf">Etat</th>
+            <th scope="col" class"export pdf">Désignation</th>
+            <th scope="col" class"export pdf">Progression</th>
+            <th scope="col" class"export pdf">Projet</th>
+            <th scope="col" class"export pdf">Pilote</th>
+            <th scope="col" class="no-sort"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for program in programs %}
+        <article>
+            <tr>
+                <td>
+                    <span class="badge">
+                        {% for place in workflow_marked_places(program) %}
+                            <strong>{{ workflow_metadata(program, 'title', place) ?: ''}}</strong>
+                        {% endfor %}
+                    </span>
+                </td>
+                <td class="table-title" scope="row" data-order="{{ program.id }}">
+                    <a class="" href="{{path('program_edit',{'id' : program.id, 'r' : 'portfolio_list', 'rr' : 'SI'} ) }}">{{ program.designation }}</a> 
+                        <span class="badge badge-secondary small">PROG-{{ program.id }}</span>  {{ program.code }}
+                        
+                </td>
+                <td>
+                    {% set sumratings = 0 %}
+                    {% for projet in program.projets %}
+                        {% for action in projet.actions if action.id is defined %}																																					{% set sumratings = sumratings + action.progression %}
+                        {% endfor %}
+                    {% if projet.actions|length >0  %}
+                        {% set sumratings = sumratings / projet.actions|length %}
+                    {% endif  %}
+                    {% endfor %}
+                    <small>Progression : {{  sumratings | number_format(0, '.', ' ') }}%</small>
+                        <div class="progress progress-mini">
+                            <div style="width: {{  sumratings | number_format(0, '.', ' ') }}%;" class="progress-bar"></div>
+                        </div>
+                </td>
+                <td scope="row">
+                    <a  tabindex="1"
+                        id="projet{{ program.id }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        role="button" 
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-title="{{ program.designation }}" 
+                        data-trigger="focus" 
+                        data-content="
+                            {% for projet in program.projets %}
+                                <p class='small'><b>{{ loop.index }}</b> {{ projet.designation | default('N/C')  }}</p>							
+                            {% endfor %}">
+                            {{ program.projets | length  }} projet{% if program.projets | length > 1 %}s{% endif %}
+                    </a>
+                </td>
+                <td>
+                    {{ program.metier.code | default("N/C") }} - {{ program.responsable.firstname | default("")  }} {{ program.responsable.lastname | default("N/C")  }}
+                </td>
+                
+                <td data-order="{{ program.PublishedAt | date("Ymd")}}">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('program_edit',{'slug' : program.slug, 'id' : program.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('program_remove',{'slug' : program.slug, 'id' : program.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                        <a class="dropdown-item">
+                            <small>Modifiée le {{ program.PublishedAt | date("d M Y")}}</small>
+                            <small> {% set today = "now"|date("Y/m/d") %}
+                            {% set difference = date(program.PublishedAt).diff(date(today)) %}
+                            {% set leftDays = difference.days %}
+                            {% if leftDays >= 180 and leftDays < 360 %}
+                            <small class="text-warning">({{ leftDays }}j)</small>
+                            {% elseif leftDays >= 360 %}
+                                <small class="text-danger">({{ leftDays }}j)</small>
+                            {% else %}
+                                <small>({{ leftDays }}j)</small>
+                            {% endif %}
+                            <br>par {{program.publisher.firstname | default("") }} {{ program.publisher.lastname | default("") }}</small>
+                        </a>
+                    </div>
+                </td>
+                
+            </tr>
+        </article>
+        {% endfor %}
+    </tbody>
+</table>

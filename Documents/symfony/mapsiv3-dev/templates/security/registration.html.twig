@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+             
+					<h2>Créer un nouveau utilisateur</h2>
+
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{path('start')}}">Mapsi</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{path('security_list')}}">Utilisateur
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <strong><a>Nouvel utilisateur</a></strong>
+                        </li>
+                    </ol>
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-action">
+                       
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+{% block titrefiche %}
+	Nouvel utilisateur
+{% endblock %}
+
+{% block closingfiche %}
+	<a class="" href="{{path('security_list')}}">
+        <i class="fa fa-times"></i>
+    </a>
+{% endblock %}
+
+{% block body %}
+
+{{ form_start(formUser) }}
+	<div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-title">
+	                <h5>
+						{% if not editMode %}
+						Nouvel utilisateur
+						{% else %}
+						US-{{ user.id }} {{ user.username | capitalize }}
+						{% endif %}
+	                </h5>
+	                <div class="ibox-tools">
+						<a class="" href="{{path('security_list')}}">
+					        <i class="fa fa-times"></i>
+					    </a>
+	                </div>
+	            </div>
+	            <div class="ibox-content">
+
+					<div class="form-group  row">
+						<label class="col-sm-2 col-form-label">{{ form_label(formUser.email, 'Email / User ID') }}</label>
+						<div class="col-sm-10">{{ form_widget(formUser.email)}}</div>
+				    </div>
+				    
+				 
+				    
+				    <div class="hr-line-dashed"></div>
+				    
+				    <div class="form-group  row">
+						<label class="col-sm-2 col-form-label">{{ form_label(formUser.nom, 'Nom') }}</label>
+						<div class="col-sm-10">{{ form_widget(formUser.nom)}}</div>
+				    </div>
+				    
+				    <div class="hr-line-dashed"></div>
+				    
+				    <div class="form-group  row">
+						<label class="col-sm-2 col-form-label">{{ form_label(formUser.prenom, 'Prénom') }}</label>
+						<div class="col-sm-10">{{ form_widget(formUser.prenom)}}</div>
+				    </div>
+				    
+				    <div class="hr-line-dashed"></div>
+				        
+				    <div class="form-group  row">
+						<label class="col-sm-2 col-form-label">{{ form_label(formUser.password, 'Mot de passe') }}</label>
+						<div class="col-sm-10">{{ form_widget(formUser.password)}}</div>
+				    </div>
+				    
+				    <div class="hr-line-dashed"></div>
+				        
+				    <div class="form-group  row">
+						<label class="col-sm-2 col-form-label">{{ form_label(formUser.confirm_password, 'Confirmation du mot de passe') }}</label>
+						<div class="col-sm-10">{{ form_widget(formUser.confirm_password)}}</div>
+				    </div>
+				    
+				    <div class="hr-line-dashed"></div>
+				
+					
+					<div class="form-group  row">
+						<label class="col-sm-2 col-form-label"></label>
+						<div class="col-sm-10">
+							<a class="btn btn-white btn-sm" href="{{path('security_list')}}">Annuler</a>
+							{% if is_granted('ROLE_SUPER_ADMIN') %}
+							<button type='submit' class="btn btn-primary btn-sm">
+							{% if editMode %}
+							Enregistrer les modifications
+							{% else %}
+							Ajouter
+							{% endif %}
+							</button>
+							{% endif %}
+						</div>
+				    </div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+
+
+{{ form_end(formUser) }}
+
+
+{% endblock %}

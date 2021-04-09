@@ -1,0 +1,11 @@
+<h1>Bonjour, </h1>
+
+<p>Utilisez le lien suivant pour réinitialiser votre mot de passe</p>
+
+<a href="{{ url('app_reset_password', {token: resetToken.token}) }}">{{ url('app_reset_password', {token: resetToken.token}) }}</a>
+
+<p>Le lien expire dans {{ tokenLifetime|date('g') }} heure(s).</p>
+
+<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cette email et contactez votre administrateur</p>
+
+<p>Mapsi manager</p>

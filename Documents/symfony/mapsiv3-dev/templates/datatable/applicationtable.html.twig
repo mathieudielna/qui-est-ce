@@ -1,0 +1,216 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'application' }) }}
+
+<table id="dataTables-application" class="table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th class="export pdf">Etat</th>
+            <th>Désignation</th>
+            <th class="export">Type</th>
+            <th>Managers</th>
+            <th>Relations</th>
+            <th class="export pdf">Comply</th>
+            <th class="no-sort"></th>
+            <th class="no-show export">ID</th>
+            <th class="no-show export pdf">Désignation</th> 
+            <th class="no-show export pdf">Responsable</th>
+            <th class="no-show export">Statut</th>
+            <th class="no-show export">Description</th>
+            <th class="no-show export">Nb activités</th>
+            <th class="no-show export">Activités</th>
+            <th class="no-show export">Nb App connexes</th>
+            <th class="no-show export">App connexes</th>
+            <th class="no-show export">Nb Systèmes</th>
+            <th class="no-show export">Systèmes</th>
+            <th class="no-show export">Maj</th>
+            <th class="no-show export">Editeur</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for application in applications %}
+        <tr>
+            <td></td>
+            <td>
+                <span class="badge">
+                    {% for place in workflow_marked_places(application) %}
+                        <strong>{{ workflow_metadata(application, 'title', place) ?: ''}}</strong>
+                    {% endfor %}
+                </span>
+            </td>
+            <td  class="table-title"  scope="row" data-order="{{ application.designation }}">
+                <a class="" href="{{path('appli_edit',{'slug' : application.slug, 'id' : application.id, 'r' : 'si_list', 'rr' : 'SI'} ) }}">{{ application.designation }}</a> 
+                <span class="badge badge-secondary small">APP-{{ application.id }}</span>
+            </td>
+            <td>{{ application.typeappli.designation | default("N/C") }}</td>
+            <td>
+                <strong>{{ application.responsable.firstname | default("") }} {{ application.responsable.lastname | default("") }}</strong>
+                <br>
+                {{ application.suppleant.firstname | default("") }} {{ application.suppleant.lastname | default("") }}
+            </td>
+            <td>
+                <span class="badge badge-{% if application.AppConnectActivites|length > 0 %}primary{% else %}gray{% endif %}"
+                    tabindex="0"
+                        role="button" 
+                        id="activite{{ loop.index }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-trigger="focus"
+                        data-title="Activités" 
+                        data-content="
+                        {% for appconnect in application.AppConnectActivites %}
+                            <a class='text-dark' href='{{path('activite_edit',{'id' : appconnect.id} ) }}'><span class='small'><b>{{loop.index}}. {{ appconnect.activite.designation | default('N/C')  }}</span></a><br>	
+                            {% endfor %}">
+                            <i class="fa fa-sitemap"></i> {{ application.AppConnectActivites | length  }}  
+                </span>
+                <span class="badge badge-{% if application.applicationlink|length > 0 %}primary{% else %}gray{% endif %}"
+                    tabindex="0"
+                        role="button" 
+                        id="applilink{{ loop.index }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-trigger="focus"
+                        data-title="Applications connexes" 
+                        data-content="
+                        {% for applicationlin in application.applicationlink %}
+                            <a class='text-dark' href='{{path('appli_edit',{'id' : applicationlin.id} ) }}'><span class='small'><b>{{loop.index}}. {{ applicationlin.designation | default('N/C')  }}</span></a><br>	
+                            {% endfor %}">
+                            <i class="fa fa-laptop"></i> {{ application.applicationlink | length  }}  
+                </span>
+                <span class="badge badge-{% if application.systemes|length > 0 %}primary{% else %}gray{% endif %}"
+                    tabindex="0"
+                        role="button" 
+                        id="systeme{{ application.id }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-trigger="focus"
+                        data-title="Systèmes" 
+                        data-content="
+                        {% for systeme in application.systemes %}
+                            <a class='text-dark' href='{{path('systeme_edit',{'id' : systeme.id} ) }}'><span class='small'><b>{{loop.index}}. {{ systeme.designation | default('N/C')  }}</span></a><br>	
+                            {% endfor %}">
+                            <i class="fa fa-cubes"></i> {{ application.systemes | length  }}  
+                </span>
+                {% set dcp = "" %}
+                
+                <span class="badge badge-{% if application.objetmetiers|length > 0 %}primary{% else %}gray{% endif %}"
+                    tabindex="0"
+                        role="button" 
+                        id="om{{ application.id }}"
+                        data-container="body" 
+                        data-toggle="popover"
+                        data-placement="bottom" 
+                        data-html="true"
+                        data-trigger="focus"
+                        data-title="Objet métier" 
+                        data-content="
+                        {% for om in application.objetmetiers %}
+                            {% if om.dcp.code is defined and om.dcp.code == 1 %}{% set dcp = 'RGPD' %}{% endif %}
+                            <span class='small'><b>{{loop.index}}. {{ om.designation | default('N/C')  }}</span><br>	
+                        {% endfor %}">
+                            <i class="fa fa-file"></i> {{ application.objetmetiers| length  }}  
+                </span>
+            </td>
+            <td>
+                <span class="badge badge-{% if dcp == 'RGPD' %}warning{% else %}gray{% endif %}">{{ dcp }}</span>
+                {% set minDima = 1000 %}
+                {% set desiDima = "NC" %}
+                {% set colorDima = "NC" %}
+                {% set heureDima = "" %}
+                {% for activite in application.appConnectActivites %}
+                    {% if activite.dima.dureeheure is defined %}
+                        {% set minDima = min(activite.dima.dureeheure, minDima) %}
+                        {% if activite.dima.dureeheure == minDima %}
+                            {% set desiDima = activite.dima.designation %}
+                            {% set colorDima = activite.dima.color %}
+                            {% set heureDima = activite.dima.dureeheure %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}	
+                {% if desiDima != "NC" %}			                 
+                    <span class="badge {{colorDima}}">
+                        PCA {{desiDima | default("N/C")}}
+                    </span>
+                {% endif %}
+            </td>
+            
+            <td data-order="{{ application.PublishedAt | date("Ymd")}}">
+                <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-info"></i>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                    <a class="dropdown-item" href="{{path('appli_edit',{'slug' : application.slug, 'id' : application.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                    {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                    <a class="dropdown-item del" href="{{path('appli_remove',{'slug' : application.slug, 'id' : application.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                    {% endif %}
+                    <a class="dropdown-item">
+                        <small>Modifiée le {{ application.PublishedAt | date("d M Y")}}</small>
+                        <small> {% set today = "now"|date("Y/m/d") %}
+                        {% set difference = date(application.PublishedAt).diff(date(today)) %}
+                        {% set leftDays = difference.days %}
+                        {% if leftDays >= 180 and leftDays < 360 %}
+                        <small class="text-warning">({{ leftDays }}j)</small>
+                        {% elseif leftDays >= 360 %}
+                            <small class="text-danger">({{ leftDays }}j)</small>
+                        {% else %}
+                            <small>({{ leftDays }}j)</small>
+                        {% endif %}
+                        <br>par {{application.publisher.firstname | default("") }} {{ application.publisher.lastname | default("") }}</small>
+                    </a>
+                </div>
+            </td>
+            <td>
+                APP-{{ application.id }}
+            </td>
+            <td>
+                {{ application.designation | default("N/C") }}
+            </td>
+                
+            <td>
+                    {{ application.responsable.firstname | default("N/C") }} {{ application.responsable.lastname | default("") }}
+            </td>
+            <td>
+                    {{ application.statut.designation | default("N/C")  }}
+            </td>
+        
+            <td>{{ application.description | default("") }}</td>
+            <td>
+                {{ application.AppConnectActivites | length  }}
+            </td>
+            <td>
+                {% for appconnect in application.AppConnectActivites %}
+                    {{ appconnect.activite.designation | default('N/C')  }},	
+                {% endfor %}
+            </td>
+            <td>
+                {{ application.applicationlink | length  }} 
+            </td>
+            <td>
+                {% for applicationlin in application.applicationlink %}
+                    {{ applicationlin.designation | default('N/C')  }},	
+                {% endfor %}
+            </td>
+            <td>
+                {{ application.systemes | length  }} 
+            </td>
+            <td>
+                {% for systeme in application.systemes %}
+                    {{ systeme.designation | default('N/C')  }},	
+                {% endfor %}
+            </td>
+            <td>
+                {{ application.PublishedAt | date("d M Y")}}
+            </td>
+            <td>
+                {{application.publisher.firstname | default("") }} {{ application.publisher.lastname | default("") }}
+            </td>
+
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

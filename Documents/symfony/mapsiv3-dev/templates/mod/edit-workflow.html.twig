@@ -1,0 +1,83 @@
+
+<dd class="mb-1"><small><code>Maj</code> le {{ ent.publishedat | date("d M Y")  }} par {{ ent.Publisher.firstname | default("n/c") }}</small></dd>
+<dd class="mb-1">{% for place in workflow_marked_places(ent) %} <small><code>{{ workflow_metadata(ent, 'title', place) ?: ''}}</code>{% endfor %} le {{ ent.validatedat | date("d M Y")  }} par {{ ent.validator.firstname | default("n/c") }} </dd>
+
+{% set roler = "" %}{% if ent.redacteur == app.user.people  %}{% set roler = "redacteur" %}{% endif %}
+{% set roles = "" %}{% if ent.suppleant == app.user.people  %}{% set roles = "suppleant" %}{% set roler = "redacteur" %}{% endif %}
+{% set roleresp = "" %}{% if ent.responsable == app.user.people or is_granted('ROLE_ADMIN')  %}{% set roleresp = "responsable" %}{% set roler = "redacteur" %}{% set roles = "suppleant" %}{% endif %}
+{% set roledpo = "" %}{% if app.user.customer.dpo == app.user.people  %}{% set roledpo = "dpo" %}{% endif %}
+
+{% for transition in workflow_transitions(ent) %}
+    {% if workflow_can(ent, transition.name) %}
+        {% if workflow_metadata(ent, 'role', transition) in [roler, roles, roleresp, roledpo] %}
+            <a type="button" href="#" style="margin: 2px" class="ajaxWorkflow btn btn-{{ workflow_metadata(ent, 'ambiance', transition)}} btn-xs adisab" data-id="{{ entid }}" data-statewk="{{ transition.name }}" data-entite="{{entname}}">
+            {{ workflow_metadata(ent, 'title', transition) ?: 'n-a'}}
+            </a>
+        {% endif %}
+    {% endif %}
+    {% else %}
+        Aucune action possible
+{% endfor %}
+
+<ul class="steps">
+    <li class="step {% if workflow_has_marked_place(ent, 'review') or workflow_has_marked_place(ent, 'validation') or workflow_has_marked_place(ent, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(ent, 'draft') %}step-active{% elseif workflow_has_marked_place(ent, 'rejected') %}step-error{% endif %}">
+        <div class="step-content">
+        <span class="step-circle">1</span>
+        <span class="step-text">{% if workflow_has_marked_place(ent, 'draft') or workflow_has_marked_place(ent, 'rejected') %}Rédaction{% else %}Rédigé{% endif %}</span>
+        </div>
+    </li>
+
+    <li class="step {% if workflow_has_marked_place(ent, 'validation') or workflow_has_marked_place(ent, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(ent, 'review') %}step-active{% endif %}">
+        <div class="step-content">
+        <span class="step-circle">2</span>
+        <span class="step-text">{% if workflow_has_marked_place(ent, 'pre_running') or workflow_has_marked_place(ent, 'running') or workflow_has_marked_place(ent, 'draft') or workflow_has_marked_place(ent, 'rejected') %}En cours{% else %}Relecture{% endif%}</span>
+        </div>
+    </li>
+
+    <li class="step {% if workflow_has_marked_place(ent, 'validation_ok')  %}step-success{% elseif workflow_has_marked_place(ent, 'validation') %}step-active{% endif %}">
+        <div class="step-content">
+        <span class="step-circle">3</span>
+        <span class="step-text">{% if workflow_has_marked_place(ent, 'validation_ok') %}Validé{% else %}Validation{% endif%}</span>
+        </div>
+    </li>
+</ul>
+
+
+
+{# <p>
+    <strong>Workflow</strong>:<br>
+    <code>{{ workflow_metadata(ent, 'title') }}</code>
+</p>
+<p>
+    <strong>Current place(s)</strong>
+    <ul>
+        {% for place in workflow_marked_places(ent) %}
+            <li>
+                {{ place }}:
+                <code>{{ workflow_metadata(ent, 'title', place) ?: 'no title'}}</code>
+            </li>
+        {% endfor %}
+    </ul>
+</p>
+<p>
+    <strong>place(s)</strong>
+    <ul>
+        {% for place in workflow_marked_places(ent) %}
+            <li>
+                {{ place }}:
+                <code>{{ workflow_metadata(ent, 'title', place) ?: 'no title'}}</code>
+            </li>
+        {% endfor %}
+    </ul>
+</p>
+<p>
+    <strong>Enabled transition(s)</strong>
+    <ul>
+        {% for transition in workflow_transitions(ent) %}
+            <li>
+                {{ transition.name }}:
+                <code>{{ workflow_metadata(ent, 'title', transition) ?: 0 }}</code>
+            </li>
+        {% endfor %}
+    </ul>
+</p> #}

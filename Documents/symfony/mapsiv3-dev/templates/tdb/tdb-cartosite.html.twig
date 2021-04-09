@@ -1,0 +1,29 @@
+<div id="mapid" style="height: 700px"></div>
+
+<script>
+///////////// Carte des sites
+var satellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {id: mymap, tileSize: 512, subdomains:['mt0','mt1','mt2','mt3'], zoomOffset: -1, attribution: '© OpenStreetMap'}),	
+        rues = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {id: mymap, tileSize: 512, subdomains:['mt0','mt1','mt2','mt3'], zoomOffset: -1, attribution: '© OpenStreetMap'});
+
+    var mymap = L.map('mapid',{
+        layers: [rues]
+    }).fitBounds([{% for site in allsites %}{% if loop.first == false %},{% endif%}[{{ site.latlng | raw }}]{% endfor %}]);
+
+    {% for site in allsites %}
+        L.marker([{{ site.latlng | raw }}])
+            .bindTooltip('<h5>{{ site.designation | raw }}</h5>')
+            .addTo(mymap)
+            .on('click', function(e) {
+                window.location.href = "{{path('site_edit',{'id' : site.id} ) }}";
+            });
+    {% endfor %}
+
+    var baseMaps = {
+            "Satellite": satellite,
+            "Rues": rues
+        };
+
+    L.control.layers(baseMaps).addTo(mymap);
+
+///////////// 
+</script>

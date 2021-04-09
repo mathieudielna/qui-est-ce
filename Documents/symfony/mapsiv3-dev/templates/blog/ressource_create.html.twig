@@ -1,0 +1,285 @@
+{% extends 'basev2.html.twig' %}
+
+{% form_theme formRessource  'bootstrap_4_layout.html.twig' %}
+{% block stylesheets %}
+{% endblock %}
+
+{% block header %}
+
+			<div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-8">
+                    {% if editMode %}
+					<h2>Fiche ressource</h2>
+					{% else %}
+					<h2>Créer une nouvelle ressource</h2>
+					{% endif %} 
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{path('asset_list')}}">Organisation
+                            </a>
+                        </li>
+                        {% if editMode %}
+                        <li class="breadcrumb-item active">
+                            <strong> <a href="{{path('asset_list')}}">Assets</a></strong>
+                        </li>
+                        {% else %}
+                        <li class="breadcrumb-item active">
+                            <strong><a>Nouveau ressource</a></strong>
+                        </li>
+						{% endif %}
+                    </ol>
+                </div>
+                <div class="col-sm-4">
+                    <div class="title-action">
+                       
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+
+
+{% block body %}
+
+	{{ form_start(formRessource) }}
+ 	<div class="row">
+        <div class="col-lg-12">
+	        <div class="ibox" id="printed">
+	            <div class="ibox-content">
+					<div class="row">
+						<div class="col-lg-12">
+                            <div class="m-b-md">
+                                <span class="float-right">
+				                    <button type='button'  class="btn btn-white" data-target="{{path('asset_list')}}"  data-action="leave">Quitter</button>
+									<button type='submit' class="btn btn-primary">
+									{% if editMode %}
+									Enregistrer
+									{% else %}
+									Ajouter
+									{% endif %}
+									</button>
+			                    </span>
+								<h2>
+									{% if not editMode %}
+									Nouvelle fiche
+									{% else %}
+									RESS-{{ ressource.id }} {{ ressource.designation | capitalize }}
+									{% endif %}
+								</h2>
+                            </div>
+                        </div>
+					</div>
+                    {% if editMode %}
+                    <div class="row">
+                        <div class="col-lg-6">
+                           
+                         
+                        </div>
+                        <div class="col-lg-6" id="cluster_info">
+
+                            <dl class="row mb-0">
+                                <div class="col-sm-4 text-sm-right">
+                                    <dt>Mise à jour :</dt>
+                                </div>
+                                <div class="col-sm-8 text-sm-left">
+                                    <dd class="mb-1">le {{ ressource.publishedat | date("d M Y")  }} par {{ ressource.Publisher.firstname | default("n/c") }} </dd>
+                                </div>
+                            </dl>
+                            
+                        </div>
+                    </div>
+
+                    {% endif %}
+                    
+					<br><br>
+					
+		            <div class="row">
+						<div class="col-lg-12">
+		            		<div class="tabs-container">
+		                        <ul class="nav nav-tabs">
+		                            <li><a class="nav-link active show" data-toggle="tab" href="#tab-info"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-info-circle"></i>
+											</span>
+										</a>
+									</li>
+									{% if editMode %}
+		                            <li>
+		                            	<a class="nav-link" data-toggle="tab" href="#tab-files"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-files-o"></i>
+											</span>
+										</a>
+									</li>
+									{% endif %}
+		                            <li><a class="nav-link" data-toggle="tab" href="#tab-note"> 
+				                            <span style="font-size: 18px;">
+												<i class="fa fa-pencil-square-o"></i>
+											</span>
+										</a>
+									</li>
+		                        </ul>
+								<div class="tab-content">
+		                            <div id="tab-info" class="tab-pane active show">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Informations générales</h3></div>
+											</div>
+											<br>
+
+											<div class="form-group  row">
+											<label class="col-sm-2 col-form-label">{{ form_label(formRessource.designation, 'Designation') }}</label>
+											<div class="col-sm-10">{{ form_widget(formRessource.designation)}}</div>
+											</div>
+											
+											<div class="form-group  row">
+											<label class="col-sm-2 col-form-label">{{ form_label(formRessource.description, 'Description') }}</label>
+											<div class="col-sm-10">{{ form_widget(formRessource.description)}}</div>
+											</div>
+
+											<div class="hr-line-dashed"></div>
+																	
+											<div class="form-group row"><label class="col-sm-2 col-form-label">Equipe</label>
+												<div class="col-sm-10">
+													<div class="row">
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Responsable</span>{{ form_widget(formRessource.responsable)}}</div>
+														<div class="col-md-3"><span class="form-text m-b-none text-navy">Suppléant</span>{{ form_widget(formRessource.suppleant)}}</div>
+														<div class="col-md-6"><span class="form-text m-b-none text-navy">Contributeurs</span>{{ form_widget(formRessource.peoples)}}</div>
+													</div>
+												</div>
+											</div>
+											
+											
+											<div class="hr-line-dashed"></div>
+											
+											<div class="form-group  row">
+											<label class="col-sm-2 col-form-label">{{ form_label(formRessource.site, 'Site') }}</label>
+											<div class="col-sm-10">{{ form_widget(formRessource.site)}}</div>
+											</div>
+
+											
+		                                </div>
+		                            </div>
+		                            {% if editMode %}
+		                           <div id="tab-files" class="tab-pane">
+			                            <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+										            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entry', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Ressources', 'entryprefix': 'RESS', 'entryid': ressource.id}}) }}" width="100%" height="500" frameborder="0"></iframe>
+										        </div>
+										    </div>
+			                            </div>
+			                        </div>
+			                        {% endif %}
+		                            <div id="tab-note" class="tab-pane">
+		                                <div class="panel-body">
+			                                <div class="row">
+												<div class="col-md-12"><h3>Notes</h3></div>
+											</div>
+											<br>			                                
+			                                <div class="form-group row">				
+										        <div class="col-sm-12">
+											        {{ form_widget(formRessource.commentaire)}}
+										        </div>
+										    </div>
+		                                </div>
+		                            </div>
+								</div>
+		            		</div>
+			            </div>
+					</div>
+					<br><br>
+		            <div class="row">
+						<div class="col-12">
+		                    <br><br>
+		            <div class="row">
+						<div class="col-12">
+		                    <span class="float-right">
+			                    <button type='button'  class="btn btn-white" data-target="{{path('asset_list')}}"  data-action="leave">Quitter</button>
+			                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE')%}
+								<button type='submit' class="btn btn-primary">
+								{% if editMode %}
+								Enregistrer
+								{% else %}
+								Ajouter
+								{% endif %}
+								</button>
+								{% endif %}
+		                    </span>
+		                </div>
+					</div>
+		                </div>
+					</div>
+				</div>
+	        </div>
+    	</div>
+    </div>
+    {{ form_end(formRessource) }}	
+	
+{% endblock %}
+
+
+{% block javascripts %}
+	<script>
+	$(document).ready(function() {
+		$('.select2').select2();
+		CKEDITOR.replace( 'ressource_description' );
+		CKEDITOR.replace( 'ressource_commentaire' );
+	});
+
+	function saveLeave (){
+				$('button[data-action="leave"]').click(function(){
+					const target = this.dataset.target;
+					$.confirm({
+					     title: 'Attention',
+						    content: 'Voulez vous vraiment quitter cette fiche sans enregistrer les modifications ?',
+						    buttons: {
+						        quitter: function () {
+						           $(location).attr('href', target);
+						        },
+						        annuler: function () {
+						        }    
+						    }
+					});
+				});
+			}
+		saveLeave();
+		
+		
+		/// Save tab state
+		if (location.hash) {
+		  $('a[href=\'' + location.hash + '\']').tab('show');
+		}
+		var activeTab = localStorage.getItem('activeTab');
+		if (activeTab) {
+		  $('a[href="' + activeTab + '"]').tab('show');
+		}
+		
+		$('body').on('click', 'a[data-toggle=\'tab\']', function (e) {
+		  e.preventDefault()
+		  var tab_name = this.getAttribute('href')
+		  if (history.pushState) {
+		    history.pushState(null, null, tab_name)
+		  }
+		  else {
+		    location.hash = tab_name
+		  }
+		  localStorage.setItem('activeTab', tab_name)
+		
+		  $(this).tab('show');
+		  return false;
+		});
+		$(window).on('popstate', function () {
+		  var anchor = location.hash ||
+		    $('a[data-toggle=\'tab\']').first().attr('href');
+		  $('a[href=\'' + anchor + '\']').tab('show');
+		});
+
+	</script>
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+<style type="text/css">
+        .myDivIcon {
+  text-align: center; /* Horizontally center the text (icon) */
+  line-height: 20px; /* Vertically center the text (icon) */
+}
+    </style>
+{% endblock %}
+
+{% block header %}
+	<div class="row wrapper border-bottom white-bg page-heading">
+		<div class="col-sm-8">
+			<h2>Sites ({{ sites|length }})</h2>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="{{path('start')}}">Mapsi</a>
+				</li>
+				<li class="breadcrumb-item active">
+					<strong><a>Sites</a></strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-sm-4">
+			<div class="title-action">
+				{% if is_granted('ROLE_ADMIN') %}<a class="btn btn-primary" href="{{path('site_create')}}">+ Nouveau site</a>{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+
+
+{% block body %}
+	<div class="row">
+        <div class="col-lg-12">
+			<div class="tabs-container">
+                <ul class="nav nav-tabs" role="tablist">
+	                <li><a class="nav-link active show" data-toggle="tab" href="#tab-1"> Carte</a></li>
+                    <li><a class="nav-link" data-toggle="tab" href="#tab-2"> Liste</a></li>
+                    <li><a class="nav-link" data-toggle="tab" href="#tab-files"> Documents</a></li>
+                </ul>
+                <div class="tab-content">
+	                 <div role="tabpanel" id="tab-1" class="tab-pane active show">
+                        <div class="panel-body">
+	                        <div class="row">
+								<div class="col-lg-12">
+									<div class="ibox">
+										<div class="ibox-title">
+											<h5>Positionnement des sites {{ app.user.customer.designation }}</h5>
+											<div class="ibox-tools">
+												<a class="fullscreen-link">
+													<i class="fa fa-expand"></i>
+												</a>
+											</div>
+										</div>
+										<div class="ibox-content">
+											<div id="mapid" style="height: 600px"></div>	
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+                    </div>
+                    <div role="tabpanel" id="tab-2" class="tab-pane">
+                        <div class="panel-body">
+	                        <div class="row">
+								<div class="col-lg-12">
+									<section class="site">
+										<div class="table-responsive">
+											<table class="table table-hover dataTables-site" >
+											  <thead>
+											  	<tr>
+											   		<th scope="col">ID</th>
+											   		<th scope="col">Désignation</th>
+											   		<th scope="col">Description</th>
+											   		<th scope="col">Type de site</th>
+											   		<th scope="col">Ville</th>
+											   		<th scope="col">Responsable</th>
+											   		<th scope="col">Positions</th>
+											   		{% if is_granted('ROLE_ADMIN') %}<th scope="col" class="no-sort"></th>{% endif %}
+											    </tr>
+												</thead>
+												<tbody>
+													{% for site in sites %}
+														<article>
+															<tr>
+														      <th scope="row"><span class="badge badge-secondary">SIT-{{ site.id }}</span></th>
+														      <th scope="row"><a class="" href="{{path('site_edit',{'id' : site.id} ) }}">{{ site.designation | title }}</a></th>
+														      <td scope="row">{{ site.description | default("N/C")  }}</td>
+														      <td scope="row">{{ site.typedesite.designation | default("N/C")  }}</td>
+														      <td scope="row">{{ site.ville | default("N/C")  }}</td>
+														      <td scope="row">{{ site.responsable.firstname | default("N/C")  }} {{ site.responsable.lastname | default("")  }}</td>
+														      <td scope="row"><button class="btn btn-primary btn-circle" type="button">{{ site.peoples | length  }}</button></td>
+														      {% if is_granted('ROLE_ADMIN') %}
+														    <td>
+															    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+																    <i class="fa fa-info"></i>
+																</button>
+																<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+																	<a class="dropdown-item" href="{{path('site_edit',{'id' : site.id} ) }}"> Afficher</a>
+																    <a class="dropdown-item del" href="{{path('site_remove',{'id' : site.id} ) }}"> Supprimer</a>
+																</div>
+															</td>
+														{% endif %}
+									
+															</tr>
+														</article>
+													{% endfor %}
+												</tbody>
+											</table>
+										</div>
+									</section> 
+								</div>
+							</div>
+						</div>
+                    </div>
+                    <div id="tab-files" class="tab-pane">
+                        <div class="panel-body">
+                            <div class="row">
+								<div class="col-md-12"><h3>Gestionnaire de fichiers</h3></div>
+							</div>
+							<br>			                                
+                            <div class="form-group row">				
+						        <div class="col-sm-12">
+							        
+						            <iframe id="myframe" src="{{ path('file_manager', {module:1, conf:'entity', tree:0, extra: {'customer':app.user.customer.id, 'bigentity': 'Sites'}}) }}" width="100%" height="500" frameborder="0"></iframe>
+						        </div>
+						    </div>
+                        </div>
+                    </div>
+                </div>
+			</div>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+
+
+
+{% block javascripts %}
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function(){
+	        
+	        $('a.del').confirm({
+			    title: 'Attention',
+			    content: 'Voulez vous vraiment supprimer ce site ?',
+			    buttons: {
+			        supprimer: function () {
+			           location.href = this.$target.attr('href');
+			        },
+			        annuler: function () {
+			        }    
+			    }
+			});
+					
+			var satellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {id: mymap, tileSize: 512, subdomains:['mt0','mt1','mt2','mt3'], zoomOffset: -1, attribution: '© OpenStreetMap'}),	
+				rues = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {id: mymap, tileSize: 512, subdomains:['mt0','mt1','mt2','mt3'], zoomOffset: -1, attribution: '© OpenStreetMap'});
+
+			var mymap = L.map('mapid',{
+				layers: [rues]
+			}).fitBounds([{% for site in sites %}{% if loop.first == false %},{% endif%}[{{ site.latlng | raw }}]{% endfor %}]);
+
+	        
+
+				        
+	        {% for site in sites %}
+	        	L.marker([{{ site.latlng | raw }}])
+					.bindTooltip('<h5>{{ site.designation | raw }}</h5>')
+					.addTo(mymap)
+					.on('click', function(e) {
+						 window.location.href = "{{path('site_edit',{'id' : site.id} ) }}";
+					});
+	        {% endfor %}
+
+			var baseMaps = {
+					"Satellite": satellite,
+					"Rues": rues
+				};
+
+			L.control.layers(baseMaps).addTo(mymap);
+	        
+	        
+	        
+            $('.dataTables-site').DataTable({
+                pageLength: 25,
+                responsive: false,
+                dom: '<"html5buttons"B>lTfgitp',
+                columnDefs: [ 
+                { targets: 'no-sort', orderable: false },
+                { targets: 'no-show-metier',visible: false, searchable: false	},
+	             ],
+                buttons: [
+                    { extend: 'copy'},
+                    {extend: 'csv'},
+                    {extend: 'excel', title: 'ExampleFile'},
+                    {extend: 'pdf', title: 'ExampleFile'},
+
+                    {extend: 'print',
+                     customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                    }
+                    }
+                ],
+                language: {
+	                 "decimal":        "",
+					    "emptyTable":     "Pas de données disponibles",
+					    "info":           "De _START_ à _END_ sur _TOTAL_",
+					    "infoEmpty":      "De 0 à 0 sur 0 activités",
+					    "infoFiltered":   "(filtrée sur _MAX_ au total)",
+					    "infoPostFix":    "",
+					    "thousands":      ",",
+					    "lengthMenu":     "Afficher _MENU_",
+					    "loadingRecords": "Loading...",
+					    "processing":     "Processing...",
+					    "search":         "Rechercher :",
+					    "zeroRecords":    "Pas de résultat pour cette recherche",
+					    "paginate": {
+					        "first":      "Premier",
+					        "last":       "Dernier",
+					        "next":       "Suivant",
+					        "previous":   "Précédent"
+					    },
+					    "aria": {
+					        "sortAscending":  ": Tri montant",
+					        "sortDescending": ": Tri descendant"
+					    }
+		        }
+
+            });
+
+        });
+
+    </script>
+{% endblock %}

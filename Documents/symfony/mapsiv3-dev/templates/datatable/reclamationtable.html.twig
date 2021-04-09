@@ -1,0 +1,80 @@
+{{ include('datatable/tableheader.html.twig', {dtname : 'reclamation' }) }}
+
+<table id="dataTables-reclamation" class="table table-bordered select table-hover" >
+    <thead>
+        <tr>
+            <th style="width:15px"></th>
+            <th scope="col" class="export pdf" style="width:80px">Etat</th>
+            <th scope="col" class="export pdf">Désignation</th>
+            <th scope="col" class="export pdf">Type</th>
+            <th scope="col" class="export pdf">Managers</th>
+            <th scope="col" class="export pdf">Relations</th>
+            <th scope="col" class="export pdf">Comply</th>
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER_EDITABLE') %}<th scope="col" class="no-sort" style="width:60px"></th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for reclamation in reclamations %}
+            <tr>
+                <td></td>
+                <td class="text-center">
+                    <span class="badge">
+                        {% for place in workflow_marked_places(reclamation) %}
+                            <strong>{{ workflow_metadata(reclamation, 'title', place) ?: ''}}</strong>
+                        {% endfor %}
+                    </span>
+                </td>
+                    <td class="table-title" scope="row" data-order="{{ reclamation.designation }}">
+                    <a class="" href="{{path('reclamation_edit',{'id' : reclamation.id, 'r' : r, 'rr' : rr} ) }}">{{ reclamation.designation  }}</a> <span class="badge badge-secondary">REC-{{ reclamation.id }}</span>
+                    
+                    
+                </td>
+                <td>
+                    {% for typereclamation in reclamation.typereclamations %}
+                        <strong>{{ typereclamation.designation | default("") }}</strong><br>
+                    {% endfor %}
+                </td>
+                <td>
+                <strong>{{ reclamation.responsable.lastname | default("") }} {{ reclamation.responsable.firstname | default("") }}</strong><br>
+                    {{ reclamation.suppleant.lastname | default("") }} {{ reclamation.suppleant.firstname | default("") }}
+                </td>
+                
+                <td>
+
+                    
+                </td>
+                <td>
+               
+                    
+                </td>
+                
+                <td data-order="{{ reclamation.PublishedAt | date("Ymd")}}" class="text-center">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <a class="dropdown-item" href="{{path('reclamation_edit',{'slug' : reclamation.slug, 'id' : reclamation.id, 'r' : r, 'rr' : rr} ) }}"> Afficher</a>
+                        {% if is_granted('ROLE_ADMIN')  or is_granted('ROLE_USER_ALLOWDELETE') %}
+                        <a class="dropdown-item del" href="{{path('reclamation_remove',{'slug' : reclamation.slug, 'id' : reclamation.id, 'r' : r, 'rr' : rr} ) }}"> Supprimer</a>
+                        {% endif %}
+                        <a class="dropdown-item">
+                        <small>Modifié le {{ reclamation.PublishedAt | date("d M Y")}}</small>
+                        {% set today = "now"|date("Y/m/d") %}
+                        {% set difference = date(reclamation.PublishedAt).diff(date(today)) %}
+                        {% set leftDays = difference.days %}
+                        {% if leftDays >= 180 and leftDays < 360 %}
+                        <small class="text-warning">({{ leftDays }}j)</small>
+                        {% elseif leftDays >= 360 %}
+                            <small class="text-danger">({{ leftDays }}j)</small>
+                        {% else %}
+                            <small>({{ leftDays }}j)</small>
+                        {% endif %}
+                        <small><br> par {{ reclamation.publisher.firstname | default("") }} {{ reclamation.publisher.lastname | default("") }}</small>
+                        </a>
+                    </div>
+                </td>
+                
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

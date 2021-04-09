@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+	<article>
+			<h1>Systeme </h1>
+			<h2>{{ systeme.designation }}</h2>
+			<div class="content">
+				{{ systeme.role | raw }}
+			</div>
+			 <a class="btn btn-success" href="{{path('systeme_edit',{'id' : systeme.id} ) }}">Modifier</a>
+	</article>
+	
+{% endblock %}
