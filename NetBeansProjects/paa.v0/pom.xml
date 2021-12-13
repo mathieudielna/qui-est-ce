@@ -12,7 +12,8 @@
 	<artifactId>immo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>paa-immo</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Repaire old version
+</description>
 	<properties>
 		<java.version>11</java.version>
 		<testcontainers.version>1.16.2</testcontainers.version>
